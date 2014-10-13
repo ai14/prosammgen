@@ -51,16 +51,22 @@ public class Trainer {
   public Map<String, ArrayList<WordProbability>> getMarkovChain() {
     Map<String, ArrayList<WordProbability>> markovChain = new HashMap<>();
 
-    for (String word : nextWordCounter.keySet()) {
-      int n = nextWordCounter.get(word).size();
-      markovChain.put(word, new ArrayList<>(n));
+    for (Map.Entry<String, Map<String, Integer>> me : nextWordCounter.entrySet()) {
+      String word = me.getKey();
+      Map<String, Integer> wordCounts = me.getValue();
 
+      markovChain.put(word, new ArrayList<>(wordCounts.size()));
       ArrayList<WordProbability> probabilities = markovChain.get(word);
 
-      for (Map.Entry<String, Integer> wordFreq : nextWordCounter.get(word).entrySet()) {
+      int n = 0;
+      for (Map.Entry<String, Integer> wordFreq : wordCounts.entrySet()) {
+        n += wordFreq.getValue();
+      }
+
+      for (Map.Entry<String, Integer> wordFreq : wordCounts.entrySet()) {
         String w = wordFreq.getKey();
         int freq = wordFreq.getValue();
-        probabilities.add(new WordProbability(w, ((double) freq) / n));
+        probabilities.add(new WordProbability(w, ((double) freq / n)));
       }
 
       Collections.sort(probabilities);

@@ -20,6 +20,10 @@ public class Ngram {
     ngram.removeFirst();
   }
 
+  public String getLast() {
+    return ngram.getLast();
+  }
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();

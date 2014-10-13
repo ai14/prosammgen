@@ -26,7 +26,7 @@ public class TextGenerator {
     Ngram ngram = new Ngram(Trainer.markovOrder);
 
     for (int i = 0; i < 15; i++) {
-      sb.append(ngram.toString() + " ");
+      sb.append(ngram.getLast() + " ");
       getNextWord(markovChain, ngram);
     }
 
@@ -35,16 +35,14 @@ public class TextGenerator {
 
   private void getNextWord(Map<String, ArrayList<WordProbability>> markovChain, Ngram ngram) {
     ArrayList<WordProbability> wordProbabilities = markovChain.get(ngram.toString());
-    if (wordProbabilities == null) {
-      System.err.println(ngram.toString());
-    }
+
     double d = rand.nextDouble();
     double upperLimit = wordProbabilities.get(0).probability;
 
     for (int i = 0; i < wordProbabilities.size() - 1; i++) {
       if (Double.compare(d, upperLimit) < 0) {
-        System.out.println(wordProbabilities.get(i).word);
         ngram.pushWord(wordProbabilities.get(i).word);
+        return;
 
       } else {
         upperLimit += wordProbabilities.get(i + 1).probability;
