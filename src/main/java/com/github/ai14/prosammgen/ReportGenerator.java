@@ -26,17 +26,6 @@ public class ReportGenerator {
     initGrammar();
   }
 
-  public ProsammReport generateReport(List<String> questions) {
-    ProsammReport report = new ProsammReport(heading);
-
-    for (String question : questions) {
-
-      // report.addQuestionAnswer(
-    }
-
-    return report;
-  }
-
   private void initGrammar() {
     // TODO: add support for "productions" starting with $
     // these should be looked up for possible synonyms with the Synonyms class
