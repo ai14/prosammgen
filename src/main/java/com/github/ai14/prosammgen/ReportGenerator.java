@@ -36,11 +36,21 @@ public class ReportGenerator {
   }
 
   private void initGrammar() {
+    // TODO: add support for "productions" starting with $
+    // these should be looked up for possible synonyms with the Synonyms class
+
     grammar.put("#PARAGRAPH", new ArrayList<>());
     grammar.get("#PARAGRAPH").add(new StrDblPair("#INTRO #MIDDLE #CONCLUSION", 1.0));
 
     grammar.put("#INTRO", new ArrayList<>());
-    grammar.get("#INTRO").add(new StrDblPair("#INITSENTENCE", 1.0));
+    grammar.get("#INTRO").add(new StrDblPair("#INITSENTENCE #INITFOLLOWUP", 1.0));
+
+    grammar.put("#INITSENTENCE", new ArrayList<>());
+    grammar.get("#INITSENTENCE").add(new StrDblPair("#INITOPINION #KEYWORD #OPINIONEND", 1.0));
+    // add more here, change probs
+
+    grammar.put("#INITFOLLOWUP", new ArrayList<>());
+    grammar.get("#INITFOLLOWUP").add(new StrDblPair("This sentence is supportive for the previous sentence.", 1.0));
 
     grammar.put("#MIDDLE", new ArrayList<>());
     grammar.get("#MIDDLE").add(new StrDblPair("This is some markov generated crap. This will be trained on the input files.", 1.0));
@@ -48,15 +58,12 @@ public class ReportGenerator {
     grammar.put("#CONCLUSION", new ArrayList<>());
     grammar.get("#CONCLUSION").add(new StrDblPair("#CONCLUSIONSTART This is the rest of the conclusion.", 1.0));
 
-    grammar.put("#INITSENTENCE", new ArrayList<>());
-    grammar.get("#INITSENTENCE").add(new StrDblPair("#INITOPINION #KEYWORD #OPINIONEND", 1.0));
-    // add more here, change probs
-
     // add more production rules to this
     grammar.put("#INITOPINION", new ArrayList<>());
-    grammar.get("#INITOPINION").add(new StrDblPair("I feel like", 0.33));
-    grammar.get("#INITOPINION").add(new StrDblPair("I would argue that", 0.33));
-    grammar.get("#INITOPINION").add(new StrDblPair("It's difficult to say that", 0.33));
+    grammar.get("#INITOPINION").add(new StrDblPair("#METAPHORICALLY I feel like", 0.25));
+    grammar.get("#INITOPINION").add(new StrDblPair("I would argue that", 0.25));
+    grammar.get("#INITOPINION").add(new StrDblPair("It's difficult to say that", 0.25));
+    grammar.get("#INITOPINION").add(new StrDblPair("#METAPHORICALLY speaking #INITOPINION", 0.25));
 
     // TODO: this should be retrieved from the questions, change per paragraph?
     grammar.put("#KEYWORD", new ArrayList<>());
@@ -67,14 +74,26 @@ public class ReportGenerator {
     grammar.get("#OPINIONEND").add(new StrDblPair("is a very #INTERESTING topic.", 0.33));
     grammar.get("#OPINIONEND").add(new StrDblPair("is something that I'm passionate about.", 0.33));
 
+    grammar.put("#METAPHORICALLY", new ArrayList<>());
+    grammar.get("#METAPHORICALLY").add(new StrDblPair("Metaphorically", 0.25));
+    grammar.get("#METAPHORICALLY").add(new StrDblPair("Figuratively", 0.25));
+    grammar.get("#METAPHORICALLY").add(new StrDblPair("Illustratively", 0.25));
+    grammar.get("#METAPHORICALLY").add(new StrDblPair("", 0.25));
+
     grammar.put("#POSORNEG", new ArrayList<>());
     grammar.get("#POSORNEG").add(new StrDblPair("positive", 0.5));
     grammar.get("#POSORNEG").add(new StrDblPair("negative", 0.5));
 
     grammar.put("#INTERESTING", new ArrayList<>());
-    grammar.get("#INTERESTING").add(new StrDblPair("interesting", 0.33));
-    grammar.get("#INTERESTING").add(new StrDblPair("fascinating", 0.33));
-    grammar.get("#INTERESTING").add(new StrDblPair("intriguing", 0.33));
+    grammar.get("#INTERESTING").add(new StrDblPair("interesting", 0.2));
+    grammar.get("#INTERESTING").add(new StrDblPair("fascinating", 0.2));
+    grammar.get("#INTERESTING").add(new StrDblPair("intriguing", 0.2));
+    grammar.get("#INTERESTING").add(new StrDblPair("enthralling", 0.2));
+    grammar.get("#INTERESTING").add(new StrDblPair("stimulating", 0.2));
+
+    grammar.put("#MAYBENOT", new ArrayList<>());
+    grammar.get("#MAYBENOT").add(new StrDblPair("", 0.5));
+    grammar.get("#MAYBENOT").add(new StrDblPair("not", 0.5));
 
     grammar.put("#CONCLUSIONSTART", new ArrayList<>());
     grammar.get("#CONCLUSIONSTART").add(new StrDblPair("To summarize I would argue that #KEYWORD is something #POSORNEG", 1.0));
@@ -96,7 +115,8 @@ public class ReportGenerator {
         expand(sb, production);
 
       } else {
-        sb.append(word + " ");
+        sb.append(word);
+        if (word.length() > 0) sb.append(" ");
       }
     }
   }
