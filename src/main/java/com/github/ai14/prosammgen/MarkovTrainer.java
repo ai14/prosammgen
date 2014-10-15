@@ -3,12 +3,12 @@ package com.github.ai14.prosammgen;
 import java.io.*;
 import java.util.*;
 
-public class Trainer {
+public class MarkovTrainer {
 
   public static final int markovOrder = 2;
   private Map<String, Map<String, Integer>> nextWordCounter;
 
-  public Trainer() {
+  public MarkovTrainer() {
     nextWordCounter = new HashMap<>();
   }
 
