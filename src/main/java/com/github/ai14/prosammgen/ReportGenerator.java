@@ -3,6 +3,7 @@ package com.github.ai14.prosammgen;
 import java.io.File;
 import java.util.*;
 
+// TODO Rename class to ReflectionDocumentGenerator.
 public class ReportGenerator {
   private String heading = "prosamm report heading";
 
@@ -24,17 +25,6 @@ public class ReportGenerator {
     MarkovTextGenerator mtg = new MarkovTextGenerator(files);
     rand = new Random(System.currentTimeMillis());
     initGrammar();
-  }
-
-  public ProsammReport generateReport(List<String> questions) {
-    ProsammReport report = new ProsammReport(heading);
-
-    for (String question : questions) {
-
-      // report.addQuestionAnswer(
-    }
-
-    return report;
   }
 
   private void initGrammar() {
