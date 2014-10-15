@@ -1,5 +1,6 @@
 package com.github.ai14.prosammgen;
 
+import java.io.File;
 import java.util.*;
 
 public class ReportGenerator {
@@ -19,7 +20,8 @@ public class ReportGenerator {
 
   private Map<String, ArrayList<StrDblPair>> grammar = new HashMap<>();
 
-  public ReportGenerator() {
+  public ReportGenerator(File[] files) {
+    MarkovTextGenerator mtg = new MarkovTextGenerator(files);
     rand = new Random(System.currentTimeMillis());
     initGrammar();
   }
