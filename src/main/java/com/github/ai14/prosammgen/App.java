@@ -4,6 +4,7 @@ import java.io.File;
 
 public class App {
     public static void main(String[] args) {
+      /*
       File[] files = new File[args.length];
       for (int i = 0; i < files.length; i++) {
         files[i] = new File(args[i]);
@@ -13,5 +14,9 @@ public class App {
       String text = textGen.generateText();
 
       System.out.println(text);
+      */
+
+      ReportGenerator rg = new ReportGenerator();
+      rg.testGenerateParagraph();
     }
 }
