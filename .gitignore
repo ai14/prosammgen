@@ -4,3 +4,6 @@
 target/
 *.log
 *.tex
+*.bak
+*.aux
+*.pdf
