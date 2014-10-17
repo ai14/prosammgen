@@ -8,16 +8,21 @@ import java.util.*;
 
 // TODO Rename class to ReflectionDocumentGenerator.
 public class ReportGenerator {
+  static private Random rand = new Random();
+  private File previousReflectionDocument, readingMaterial, questions;
   private MarkovTextGenerator mtg;
-  private Random rand;
-  private Map<String, ArrayList<StrDblPair>> grammar;
-  private Synonyms synonyms;
+  private Map<String, ArrayList<StrDblPair>> grammar = new HashMap<>();
+  
+  public ReportGenerator(File previousReflectionDocument, File readingMaterial, File questions) {
+    this.previousReflectionDocument = previousReflectionDocument;
+    this.readingMaterial = readingMaterial;
+    this.questions = questions;
 
-  public ReportGenerator(File[] files) {
-    //this.mtg = new MarkovTextGenerator(files);
-    this.rand = new Random(System.currentTimeMillis());
-    this.grammar = new HashMap<>();
-    this.synonyms = new WordNetSynonyms();
+    this.mtg = new MarkovTextGenerator(new File[]{readingMaterial}); //TODO Train on questions as well?
+
+    //TODO Determine keywords in the questions by cross-referencing with the reading material.
+
+    //TODO Determine personal writing style by statistically analysing the previous reflection document.
 
     File grammarFile = new File("res/grammar");
     try {
@@ -27,14 +32,38 @@ public class ReportGenerator {
       System.exit(1);
     }
   }
+  
+  /**
+   * Generate a LaTeX formatted PROSAMM report.
+   *
+   * @return
+   */
+  public String generateReport() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(
+            "\\documentclass{article}"
+                    + "\\begin{document}"
+                    + "\\title{My Prosamm Report}"
+                    + "\\author{Author}"
+                    + "\\maketitle"
+    );
 
-  public void testGenerateParagraph() {
-    System.out.println(generateParagraph("asasdadsa"));
-  }
+    // Parse questions and generate a paragraph each with the grammar and the trained markov chain.
+    try {
+      BufferedReader br = new BufferedReader(new FileReader(questions));
+      String question;
+      while ((question = br.readLine()) != null) {
+        sb.append("\\section{" + question + "}");
+        sb.append(generateText());
+      }
+      br.close();
+    } catch (IOException e) {
+      System.err.println("Could not generate report. Questions could not be parsed. Make sure that every question is written on a single line each.");
+    }
 
+    sb.append("\\end{document}");
 
-  public void generateReport(String filepath, List<String> questions) {
-
+    return sb.toString();
   }
 
   private void setKeywords(String[] keywords) {
@@ -45,32 +74,26 @@ public class ReportGenerator {
     String[] words = rule.split(" ");
 
     for (String word : words) {
-      switch (word.charAt(0)) {
+      if (word.startsWith(("#"))) {
 
-        // Production word
-        case '#':
-          ArrayList<StrDblPair> productions = grammar.get(word);
-          String production = chooseProduction(productions);
+        // TODO: create a paragraph class that we append to instead that fixes periods and stuff
+        String dot = "";
+        if (word.endsWith(".")) {
+          word = word.substring(0, word.length() - 1);
+          dot = ".";
+        }
 
-          expand(sb, production);
-          break;
+        ArrayList<StrDblPair> productions = grammar.get(word);
+        String production = chooseProduction(productions);
 
-        // Synonym word
-        case '$':
-          sb.append(synonyms.getSynonym(word.substring(1)) + " ");
-          break;
+        expand(sb, production);
+        sb.append(dot);
 
-        case '@':
-          // use this char for punctuation signs
-          break;
-
-        // Normal word
-        default:
-          sb.append(word);
-          if (word.length() > 0) {
-            sb.append(" ");
-          }
-
+      } else {
+        sb.append(word);
+        if (word.length() > 0) {
+          sb.append(" ");
+        }
       }
     }
   }
@@ -119,18 +142,12 @@ public class ReportGenerator {
       for (int i = 1; i < words.length; i++) {
         sb.append(words[i] + " ");
       }
-
-      if (sb.length() > 0) {
-        sb.deleteCharAt(sb.length() - 1); // remove last space
-      }
-
+      sb.deleteCharAt(sb.length() - 1); // remove last space
       String productionRHS = sb.toString();
 
       // Add probability 1.0 first, this changes later to make it stochastic
       grammar.get(productionLHS).add(new StrDblPair(productionRHS, 1.0));
     }
-
-    br.close();
 
     // now make it stochastic
     for (Map.Entry<String, ArrayList<StrDblPair>> grammarEntry : grammar.entrySet()) {
@@ -140,6 +157,8 @@ public class ReportGenerator {
         sdp.dbl = 1.0 / n;
       }
     }
+
+    br.close();
   }
 
   private class StrDblPair {
