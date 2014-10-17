@@ -1,7 +1,10 @@
 package com.github.ai14.prosammgen;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MarkovTrainer {
 
@@ -39,7 +42,7 @@ public class MarkovTrainer {
             }
 
             int c = nextWordCounter.get(ns).get(nw);
-            nextWordCounter.get(ns).put(nw, c+1);
+            nextWordCounter.get(ns).put(nw, c + 1);
 
             ngram.pushWord(nw);
           }

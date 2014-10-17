@@ -1,24 +1,16 @@
 package com.github.ai14.prosammgen;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 // TODO Rename class to ReflectionDocumentGenerator.
 public class ReportGenerator {
   private String heading = "prosamm report heading";
 
   private Random rand;
-
-  private class StrDblPair {
-    String str;
-    double dbl;
-
-    StrDblPair(String str, double dbl) {
-      this.str = str;
-      this.dbl = dbl;
-    }
-  }
-
   private Map<String, ArrayList<StrDblPair>> grammar = new HashMap<>();
 
   public ReportGenerator(File[] files) {
@@ -187,5 +179,15 @@ public class ReportGenerator {
 
   public void testGenerateParagraph() {
     System.out.println(generateParagraph("asasdadsa"));
+  }
+
+  private class StrDblPair {
+    String str;
+    double dbl;
+
+    StrDblPair(String str, double dbl) {
+      this.str = str;
+      this.dbl = dbl;
+    }
   }
 }
