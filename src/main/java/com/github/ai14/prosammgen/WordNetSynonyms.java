@@ -25,6 +25,8 @@ public class WordNetSynonyms implements Synonyms {
 
     private List<String> lookup(String word) {
         ArrayList<String> synonyms = new ArrayList<>();
+        boolean capitalize = Character.isUpperCase(word.charAt(0));
+        word = word.toLowerCase();
         synonyms.add(word); // The input word is always thought of as a synonym to itself.
 
         try {
@@ -34,7 +36,7 @@ public class WordNetSynonyms implements Synonyms {
             String line;
             // TODO Lookup in the index smarter than reading through the file.
             while ((line = br.readLine()) != null) {
-                String[] ss = line.split("|");
+                String[] ss = line.split("\\|");
                 if (ss[0].equals(word)) offset = Long.parseLong(ss[1]);
             }
             br.close();
@@ -47,22 +49,29 @@ public class WordNetSynonyms implements Synonyms {
                 // Data format:
                 // word|no. of entries
                 // (wordType)|synonym|synonym|synonym (related term)|synonym (generic term)|...
-                int entries = Integer.parseInt(raf.readLine().split("|")[1]);
+                int entries = Integer.parseInt(raf.readLine().split("\\|")[1]);
                 for (int entry = 0; entry < entries; ++entry) {
-                    String[] entryFields = raf.readLine().split("|");
+                    String[] entryFields = raf.readLine().split("\\|");
                     String wordType = entryFields[0]; // TODO Perhaps use NLP logic in the text generation? Verb, noun, adj info is available here.
                     for (int field = 1; field < entryFields.length; ++field) {
+
+                        // TODO Currently skipping related terms, generic terms, antonyms, etc. Maybe use them in the text generation?
                         if (entryFields[field].contains("(")) {
-                            continue; // TODO Currently skipping related terms, generic terms, antonyms, etc. Maybe use them in the text generation?
-                        } else {
-                            synonyms.add(entryFields[field]);
+                            continue;
                         }
+
+                        synonyms.add(entryFields[field]);
                     }
                 }
             }
         } catch (IOException e) {
             System.err.println("Synonym database unavailable. Returning the input word only.");
         } finally {
+            if (capitalize) {
+                for (int i = 0; i < synonyms.size(); ++i) {
+                    synonyms.set(i, Character.toUpperCase(synonyms.get(i).charAt(0)) + synonyms.get(i).substring(1));
+                }
+            }
             return synonyms;
         }
     }
