@@ -1,0 +1,81 @@
+// README
+// This is the file that defines the grammar used for the report generation
+//
+// - Two slashes on the beginning of a line is a comment (obviously)
+// - Words starting with # are production rules that expands
+// - Words starting with $ are words that will be looked up in a synonym database
+// and a random synonym will be used at that position
+//
+
+#EPSILON epsilonTODO
+#DOT .
+#COMMA ,
+#NL newlineTODO
+#Q ?
+
+#PARAGRAPH #INTRO #MIDDLE #CONCLUSION
+
+#INTRO #INITSENTENCE #INITFOLLOWUP
+
+#INITSENTENCE #INITOPINION #KEYWORD #OPINIONEND
+
+#INITOPINION #METAPHORICALLY I feel like
+#INITOPINION #METAPHORICALLY I would argue that
+#INITOPINION #METAPHORICALLY It's difficult to say that
+#INITOPINION #METAPHORICALLY my experiences point to the fact that
+
+#INITFOLLOWUP This means that #FAMOUSPERSON was wrong and #FILLERSENTENCE
+#INITFOLLOWUP For this reason I $think that #FAMOUSPERSON has been proven correct #DOT
+#INITFOLLOWUP What #FAMOUSPERSON had to say about this is obviously also $related #DOT
+
+#FILLERSENTENCE this is an $important point to $understand #DOT
+#FILLERSENTENCE of course, this is not always the case though #DOT
+
+#MIDDLE %MARKOV(50,10)
+
+#CONCLUSION #CONCLUSIONSTART This is the rest of the conclusion #DOT
+
+// dont use "to summarize", better sentences needed
+#CONCLUSIONSTART To summarize I would argue that #KEYWORD is something
+
+#KEYWORD the placeholder keyword
+
+#OPINIONEND is very #POSORNEG for today's society #DOT
+#OPINIONEND is a very $interesting topic #DOT
+#OPINIONEND is something that I'm passionate about #DOT
+
+#METAPHORICALLY Metaphorically
+#METAPHORICALLY Figuratively
+#METAPHORICALLY Illustratively
+
+#FAMOUSPERSON Albert Einstein
+#FAMOUSPERSON Thomas Kuhn
+#FAMOUSPERSON Immanuel Kant
+#FAMOUSPERSON Karl Popper
+#FAMOUSPERSON Viggo Kann
+#FAMOUSPERSON Descartes
+#FAMOUSPERSON Aristotle
+
+#BUZZWORD synergy
+#BUZZWORD paradigm
+#BUZZWORD ideology
+#BUZZWORD altruism
+
+#CSBUZZWORD technology
+#CSBUZZWORD cloud based solution
+#CSBUZZWORD big data
+#CSBUZZWORD data mining
+#CSBUZZWORD JVM based language
+#CSBUZZWORD decision problem
+#CSBUZZWORD privacy concern
+#CSBUZZWORD cloud computing
+#CSBUZZWORD distributed computing
+#CSBUZZWORD SCRUM methodology
+#CSBUZZWORD the internet of things
+
+#POSORNEG positive
+#POSORNEG negative
+
+#MAYBENOT #EPSILON
+#MAYBENOT not
+

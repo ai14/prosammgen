@@ -2,3 +2,8 @@
 !.git*
 !.travis.yml
 target/
+*.log
+*.tex
+*.bak
+*.aux
+*.pdf
