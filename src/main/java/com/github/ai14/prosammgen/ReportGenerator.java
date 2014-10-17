@@ -4,17 +4,28 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 // TODO Rename class to ReflectionDocumentGenerator.
 public class ReportGenerator {
+  static private Random rand = new Random();
+  private File previousReflectionDocument, readingMaterial, questions;
   private MarkovTextGenerator mtg;
-  private Random rand;
   private Map<String, ArrayList<StrDblPair>> grammar = new HashMap<>();
 
-  public ReportGenerator(File[] files) {
-    this.mtg = new MarkovTextGenerator(files);
-    this.rand = new Random(System.currentTimeMillis());
+  public ReportGenerator(File previousReflectionDocument, File readingMaterial, File questions) {
+    this.previousReflectionDocument = previousReflectionDocument;
+    this.readingMaterial = readingMaterial;
+    this.questions = questions;
+
+    this.mtg = new MarkovTextGenerator(new File[]{readingMaterial}); //TODO Train on questions as well?
+
+    //TODO Determine keywords in the questions by cross-referencing with the reading material.
+
+    //TODO Determine personal writing style by statistically analysing the previous reflection document.
 
     File grammarFile = new File("res/grammar");
     try {
@@ -25,12 +36,37 @@ public class ReportGenerator {
     }
   }
 
-  public void generateReport(String filepath, List<String> questions) {
+  /**
+   * Generate a LaTeX formatted PROSAMM report.
+   *
+   * @return
+   */
+  public String generateReport() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(
+            "\\documentclass{article}"
+                    + "\\begin{document}"
+                    + "\\title{My Prosamm Report}"
+                    + "\\author{Author}"
+                    + "\\maketitle"
+    );
 
-  }
+    // Parse questions and generate a paragraph each with the grammar and the trained markov chain.
+    try {
+      BufferedReader br = new BufferedReader(new FileReader(questions));
+      String question;
+      while ((question = br.readLine()) != null) {
+        sb.append("\\section{" + question + "}");
+        sb.append(generateText());
+      }
+      br.close();
+    } catch (IOException e) {
+      System.err.println("Could not generate report. Questions could not be parsed. Make sure that every question is written on a single line each.");
+    }
 
-  public void testGenerateParagraph() {
-    System.out.println(generateParagraph("asasdadsa"));
+    sb.append("\\end{document}");
+
+    return sb.toString();
   }
 
   private void setKeywords(String[] keywords) {
@@ -79,13 +115,9 @@ public class ReportGenerator {
     return productions.get(productions.size() - 1).str;
   }
 
-  private String generateParagraph(String question) {
+  private String generateText() {
     StringBuilder sb = new StringBuilder();
-
-    // update grammar with question?
-
     expand(sb, "#PARAGRAPH");
-
     return sb.toString();
   }
 
