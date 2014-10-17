@@ -1,3 +1,18 @@
+// README
+// This is the file that defines the grammar used for the report generation
+//
+// - Two slashes on the beginning of a line is a comment (obviously)
+// - Words starting with # are production rules that expands
+// - Words starting with $ are words that will be looked up in a synonym database
+// and a random synonym will be used at that position
+//
+
+#EPSILON epsilonTODO
+#DOT .
+#COMMA ,
+#NL newlineTODO
+#Q ?
+
 #PARAGRAPH #INTRO #MIDDLE #CONCLUSION
 
 #INTRO #INITSENTENCE #INITFOLLOWUP
@@ -9,29 +24,29 @@
 #INITOPINION #METAPHORICALLY It's difficult to say that
 #INITOPINION #METAPHORICALLY my experiences point to the fact that
 
-#INITFOLLOWUP This means that #FAMOUSPERSON was wrong.
-#INITFOLLOWUP For this reason I #THINK that #FAMOUSPERSON has been proven correct.
-#INITFOLLOWUP What #FAMOUSPERSON had to say about this is obviously also #RELATED.
+#INITFOLLOWUP This means that #FAMOUSPERSON was wrong and #FILLERSENTENCE
+#INITFOLLOWUP For this reason I $think that #FAMOUSPERSON has been proven correct #DOT
+#INITFOLLOWUP What #FAMOUSPERSON had to say about this is obviously also $related #DOT
 
-#MIDDLE This is some markov generated crap. This will be trained on the input files.
+#FILLERSENTENCE this is an $important point to $understand #DOT
+#FILLERSENTENCE of course, this is not always the case though #DOT
 
-#CONCLUSION #CONCLUSIONSTART This is the rest of the conclusion.
+#MIDDLE This is some markov generated crap #DOT This will be trained on the input files #DOT
 
-#KEYWORD intended learning outcomes
+#CONCLUSION #CONCLUSIONSTART This is the rest of the conclusion #DOT
 
-#OPINIONEND is very #POSORNEG for today's society.
-#OPINIONEND is a very #INTERESTING topic.
-#OPINIONEND is something that I'm passionate about.
+// dont use "to summarize", better sentences needed
+#CONCLUSIONSTART To summarize I would argue that #KEYWORD is something
+
+#KEYWORD the placeholder keyword
+
+#OPINIONEND is very #POSORNEG for today's society #DOT
+#OPINIONEND is a very $interesting topic #DOT
+#OPINIONEND is something that I'm passionate about #DOT
 
 #METAPHORICALLY Metaphorically
 #METAPHORICALLY Figuratively
 #METAPHORICALLY Illustratively
-
-// TODO: change this to use $ and synonyms instead, also group all synonym productions?
-#THINK think
-#THINK conceive
-#THINK consider
-#THINK believe
 
 #FAMOUSPERSON Albert Einstein
 #FAMOUSPERSON Thomas Kuhn
@@ -58,21 +73,9 @@
 #CSBUZZWORD SCRUM methodology
 #CSBUZZWORD the internet of things
 
-#RELATED related
-#RELATED correlated
-#RELATED relevant
-#RELATED connected
-
 #POSORNEG positive
 #POSORNEG negative
 
-#INTERESTING interesting
-#INTERESTING fascinating
-#INTERESTING intriguing
-#INTERESTING enthralling
-#INTERESTING stimulating
-
-#MAYBENOT epsilon
+#MAYBENOT #EPSILON
 #MAYBENOT not
 
-#CONCLUSIONSTART To summarize I would argue that #KEYWORD is something

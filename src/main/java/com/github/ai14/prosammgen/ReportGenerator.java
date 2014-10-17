@@ -10,11 +10,14 @@ import java.util.*;
 public class ReportGenerator {
   private MarkovTextGenerator mtg;
   private Random rand;
-  private Map<String, ArrayList<StrDblPair>> grammar = new HashMap<>();
+  private Map<String, ArrayList<StrDblPair>> grammar;
+  private Synonyms synonyms;
 
   public ReportGenerator(File[] files) {
-    this.mtg = new MarkovTextGenerator(files);
+    //this.mtg = new MarkovTextGenerator(files);
     this.rand = new Random(System.currentTimeMillis());
+    this.grammar = new HashMap<>();
+    this.synonyms = new WordNetSynonyms();
 
     File grammarFile = new File("res/grammar");
     try {
@@ -25,12 +28,13 @@ public class ReportGenerator {
     }
   }
 
-  public void generateReport(String filepath, List<String> questions) {
-
-  }
-
   public void testGenerateParagraph() {
     System.out.println(generateParagraph("asasdadsa"));
+  }
+
+
+  public void generateReport(String filepath, List<String> questions) {
+
   }
 
   private void setKeywords(String[] keywords) {
@@ -41,26 +45,32 @@ public class ReportGenerator {
     String[] words = rule.split(" ");
 
     for (String word : words) {
-      if (word.startsWith(("#"))) {
+      switch (word.charAt(0)) {
 
-        // TODO: create a paragraph class that we append to instead that fixes periods and stuff
-        String dot = "";
-        if (word.endsWith(".")) {
-          word = word.substring(0, word.length() - 1);
-          dot = ".";
-        }
+        // Production word
+        case '#':
+          ArrayList<StrDblPair> productions = grammar.get(word);
+          String production = chooseProduction(productions);
 
-        ArrayList<StrDblPair> productions = grammar.get(word);
-        String production = chooseProduction(productions);
+          expand(sb, production);
+          break;
 
-        expand(sb, production);
-        sb.append(dot);
+        // Synonym word
+        case '$':
+          sb.append(synonyms.getSynonym(word.substring(1)) + " ");
+          break;
 
-      } else {
-        sb.append(word);
-        if (word.length() > 0) {
-          sb.append(" ");
-        }
+        case '@':
+          // use this char for punctuation signs
+          break;
+
+        // Normal word
+        default:
+          sb.append(word);
+          if (word.length() > 0) {
+            sb.append(" ");
+          }
+
       }
     }
   }
@@ -109,12 +119,18 @@ public class ReportGenerator {
       for (int i = 1; i < words.length; i++) {
         sb.append(words[i] + " ");
       }
-      sb.deleteCharAt(sb.length() - 1); // remove last space
+
+      if (sb.length() > 0) {
+        sb.deleteCharAt(sb.length() - 1); // remove last space
+      }
+
       String productionRHS = sb.toString();
 
       // Add probability 1.0 first, this changes later to make it stochastic
       grammar.get(productionLHS).add(new StrDblPair(productionRHS, 1.0));
     }
+
+    br.close();
 
     // now make it stochastic
     for (Map.Entry<String, ArrayList<StrDblPair>> grammarEntry : grammar.entrySet()) {
@@ -124,8 +140,6 @@ public class ReportGenerator {
         sdp.dbl = 1.0 / n;
       }
     }
-
-    br.close();
   }
 
   private class StrDblPair {
