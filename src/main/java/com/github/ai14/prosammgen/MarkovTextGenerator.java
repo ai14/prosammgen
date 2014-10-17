@@ -33,21 +33,16 @@ public class MarkovTextGenerator {
     rand = new Random(System.currentTimeMillis());
   }
 
-  public String generateText() {
+  // TODO: maybe give this method an ngram that the markov chain can build from?
+  public String getText(int goalWordcount, int avgSentenceLength) {
     Map<String, ArrayList<WordProbability>> markovChain = trainer.getMarkovChain();
-
-    // TODO: find actual start words in the training data
     StringBuilder sb = new StringBuilder();
-    Ngram ngram = new Ngram(MarkovTrainer.markovOrder);
 
-    int lineLen = 0;
-    for (int i = 0; i < 1000; i++) {
+    Ngram ngram = trainer.getNewNgram();
+
+    // TODO: goalWordcount should be the goal, doesnt have to be exactly the same
+    for (int i = 0; i < goalWordcount; i++) {
       sb.append(ngram.getLast() + " ");
-      lineLen += ngram.getLast().length() + 1;
-      if (lineLen > 100) {
-        lineLen = 0;
-        sb.append("\n");
-      }
       getNextWord(markovChain, ngram);
     }
 

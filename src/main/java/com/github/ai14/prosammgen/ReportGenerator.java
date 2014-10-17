@@ -11,12 +11,15 @@ public class ReportGenerator {
   static private Random rand = new Random();
   private File previousReflectionDocument, readingMaterial, questions;
   private MarkovTextGenerator mtg;
-  private Map<String, ArrayList<StrDblPair>> grammar = new HashMap<>();
+  private Map<String, ArrayList<StrDblPair>> grammar;
+  private Synonyms synonyms;
   
   public ReportGenerator(File previousReflectionDocument, File readingMaterial, File questions) {
     this.previousReflectionDocument = previousReflectionDocument;
     this.readingMaterial = readingMaterial;
     this.questions = questions;
+    this.synonyms = new WordNetSynonyms();
+    this.grammar = new HashMap<>();
 
     this.mtg = new MarkovTextGenerator(new File[]{readingMaterial}); //TODO Train on questions as well?
 
@@ -74,6 +77,46 @@ public class ReportGenerator {
     String[] words = rule.split(" ");
 
     for (String word : words) {
+      switch (word.charAt(0)) {
+
+        case '#':
+          ArrayList<StrDblPair> productions = grammar.get(word);
+          String production = chooseProduction(productions);
+          expand(sb, production);
+          break;
+
+        case '$':
+          sb.append(synonyms.getSynonym(word.substring(1)) + " ");
+          break;
+
+        case '@':
+          // TODO: use this for punctuation characters later
+
+          break;
+
+        case '%':
+          String[] parts = word.substring(1).split("\\(");
+          String command = parts[0];
+          String argumentsStr = parts[1].substring(0, parts[1].length() - 1); // remove the closing paranthesis
+          String[] arguments = argumentsStr.split(",");
+
+          if (word.substring(1).equals("MARKOV")) {
+            int goalWordcount = Integer.parseInt(arguments[0]);
+            int avgSentenceLen = Integer.parseInt(arguments[1]);
+            sb.append(mtg.getText(goalWordcount, avgSentenceLen) + " ");
+          }
+
+          break;
+
+        default:
+          sb.append(word);
+          if (word.length() > 0) {
+            sb.append(" ");
+          }
+      }
+
+
+      /*
       if (word.startsWith(("#"))) {
 
         // TODO: create a paragraph class that we append to instead that fixes periods and stuff
@@ -95,6 +138,7 @@ public class ReportGenerator {
           sb.append(" ");
         }
       }
+      */
     }
   }
 
@@ -112,13 +156,9 @@ public class ReportGenerator {
     return productions.get(productions.size() - 1).str;
   }
 
-  private String generateParagraph(String question) {
+  private String generateText() {
     StringBuilder sb = new StringBuilder();
-
-    // update grammar with question?
-
     expand(sb, "#PARAGRAPH");
-
     return sb.toString();
   }
 

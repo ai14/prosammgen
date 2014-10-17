@@ -59,6 +59,10 @@ public class MarkovTrainer {
     System.out.println();
   }
 
+  public Ngram getNewNgram() {
+    return new Ngram(markovOrder);
+  }
+
   public Map<String, ArrayList<WordProbability>> getMarkovChain() {
     Map<String, ArrayList<WordProbability>> markovChain = new HashMap<>();
 

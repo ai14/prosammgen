@@ -31,7 +31,7 @@
 #FILLERSENTENCE this is an $important point to $understand #DOT
 #FILLERSENTENCE of course, this is not always the case though #DOT
 
-#MIDDLE This is some markov generated crap #DOT This will be trained on the input files #DOT
+#MIDDLE %MARKOV(50,10)
 
 #CONCLUSION #CONCLUSIONSTART This is the rest of the conclusion #DOT
 
