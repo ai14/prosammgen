@@ -1,0 +1,78 @@
+#PARAGRAPH #INTRO #MIDDLE #CONCLUSION
+
+#INTRO #INITSENTENCE #INITFOLLOWUP
+
+#INITSENTENCE #INITOPINION #KEYWORD #OPINIONEND
+
+#INITOPINION #METAPHORICALLY I feel like
+#INITOPINION #METAPHORICALLY I would argue that
+#INITOPINION #METAPHORICALLY It's difficult to say that
+#INITOPINION #METAPHORICALLY my experiences point to the fact that
+
+#INITFOLLOWUP This means that #FAMOUSPERSON was wrong.
+#INITFOLLOWUP For this reason I #THINK that #FAMOUSPERSON has been proven correct.
+#INITFOLLOWUP What #FAMOUSPERSON had to say about this is obviously also #RELATED.
+
+#MIDDLE This is some markov generated crap. This will be trained on the input files.
+
+#CONCLUSION #CONCLUSIONSTART This is the rest of the conclusion.
+
+#KEYWORD intended learning outcomes
+
+#OPINIONEND is very #POSORNEG for today's society.
+#OPINIONEND is a very #INTERESTING topic.
+#OPINIONEND is something that I'm passionate about.
+
+#METAPHORICALLY Metaphorically
+#METAPHORICALLY Figuratively
+#METAPHORICALLY Illustratively
+
+// TODO: change this to use $ and synonyms instead, also group all synonym productions?
+#THINK think
+#THINK conceive
+#THINK consider
+#THINK believe
+
+#FAMOUSPERSON Albert Einstein
+#FAMOUSPERSON Thomas Kuhn
+#FAMOUSPERSON Immanuel Kant
+#FAMOUSPERSON Karl Popper
+#FAMOUSPERSON Viggo Kann
+#FAMOUSPERSON Descartes
+#FAMOUSPERSON Aristotle
+
+#BUZZWORD synergy
+#BUZZWORD paradigm
+#BUZZWORD ideology
+#BUZZWORD altruism
+
+#CSBUZZWORD technology
+#CSBUZZWORD cloud based solution
+#CSBUZZWORD big data
+#CSBUZZWORD data mining
+#CSBUZZWORD JVM based language
+#CSBUZZWORD decision problem
+#CSBUZZWORD privacy concern
+#CSBUZZWORD cloud computing
+#CSBUZZWORD distributed computing
+#CSBUZZWORD SCRUM methodology
+#CSBUZZWORD the internet of things
+
+#RELATED related
+#RELATED correlated
+#RELATED relevant
+#RELATED connected
+
+#POSORNEG positive
+#POSORNEG negative
+
+#INTERESTING interesting
+#INTERESTING fascinating
+#INTERESTING intriguing
+#INTERESTING enthralling
+#INTERESTING stimulating
+
+#MAYBENOT epsilon
+#MAYBENOT not
+
+#CONCLUSIONSTART To summarize I would argue that #KEYWORD is something

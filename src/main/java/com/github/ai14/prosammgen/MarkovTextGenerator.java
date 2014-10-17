@@ -73,4 +73,3 @@ public class MarkovTextGenerator {
     ngram.pushWord(wordProbabilities.get(wordProbabilities.size() - 1).word);
   }
 }
-
