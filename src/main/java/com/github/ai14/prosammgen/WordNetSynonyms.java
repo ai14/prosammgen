@@ -13,21 +13,22 @@ public class WordNetSynonyms implements Synonyms {
   private static final String index = "res/wordnet.idx", data = "res/wordnet.dat";
 
   @Override
-  public String getSynonym(String word) {
+  public String getSynonym(String... word) {
     List<String> synonyms = lookup(word);
     return synonyms.get(random.nextInt(synonyms.size()));
   }
 
   @Override
-  public List<String> getSynonyms(String word) {
+  public List<String> getSynonyms(String... word) {
     return lookup(word);
   }
 
-  private List<String> lookup(String word) {
+  private List<String> lookup(String... word) {
+    //TODO Cross reference database with all input words.
     ArrayList<String> synonyms = new ArrayList<>();
-    boolean capitalize = Character.isUpperCase(word.charAt(0));
-    word = word.toLowerCase();
-    synonyms.add(word); // The input word is always thought of as a synonym to itself.
+    boolean capitalize = Character.isUpperCase(word[0].charAt(0));
+    word[0] = word[0].toLowerCase();
+    synonyms.add(word[0]); // The input word is always thought of as a synonym to itself.
 
     try {
       // Lookup the word in the smaller index file to find the byte offset for the word in the data file.
@@ -54,7 +55,6 @@ public class WordNetSynonyms implements Synonyms {
           String[] entryFields = raf.readLine().split("\\|");
           String wordType = entryFields[0]; // TODO Perhaps use NLP logic in the text generation? Verb, noun, adj info is available here.
           for (int field = 1; field < entryFields.length; ++field) {
-
             // TODO Currently skipping related terms, generic terms, antonyms, etc. Maybe use them in the text generation?
             if (entryFields[field].contains("(")) {
               continue;

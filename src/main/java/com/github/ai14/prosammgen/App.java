@@ -30,6 +30,8 @@ public class App {
       PrintWriter out = new PrintWriter("reflectiondocument.tex");
       out.write(report);
       out.close();
+      //TODO Fix pdftex on unix.
+      //TODO Fix that prosammgen has to be run twice to output a pdf.
       String[] cmd = {"pdftex", "'&pdflatex'", "reflectiondocument.tex"};
       Process p = Runtime.getRuntime().exec(cmd);
       if (p.getErrorStream().available() == 0)
