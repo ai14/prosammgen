@@ -36,6 +36,10 @@ public class Ngram {
     return ngram.getFirst();
   }
 
+  public LinkedList<String> getAll() {
+    return ngram;
+  }
+
   public int order() {
     return order;
   }

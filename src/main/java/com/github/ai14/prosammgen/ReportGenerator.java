@@ -39,7 +39,13 @@ public class ReportGenerator {
       s.close();
 
       // Make grammar probabilities stochastic.
-      for (ArrayList<StringDoublePair> g : grammar.values()) for (StringDoublePair sdp : g) sdp.d /= g.size();
+      for (ArrayList<StringDoublePair> g : grammar.values()) {
+        for (StringDoublePair sdp : g) {
+          sdp.d /= g.size();
+        }
+      }
+
+
     } catch (IOException e) {
       System.err.println("Could not load grammar file.");
       System.exit(1);
@@ -82,8 +88,6 @@ public class ReportGenerator {
 
     //TODO Replace weird characters with LaTeX formatting. Use a Java library.
 
-    System.err.println(sb.toString());
-
     return sb.toString();
   }
 
@@ -107,7 +111,7 @@ public class ReportGenerator {
           switch (command) {
             case "%MARKOV":
               int sentences = Integer.parseInt(arguments[0]);
-              sb.append(markovTextGenerator.getText(sentences, 10)); //TODO Remove second argument?
+              sb.append(markovTextGenerator.getText(sentences)); //TODO Remove second argument?
               break;
             case "%SYNONYM":
               sb.append(synonyms.getSynonym(arguments));

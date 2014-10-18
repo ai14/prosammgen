@@ -34,7 +34,7 @@
 
 #CONCLUSION	#CONCLUSIONSTART	This is the rest of the conclusion.
 
-#CONCLUSIONSTART	To summarize I would argue that	#KEYWORD	is something #POSORNEG.
+#CONCLUSIONSTART	To summarize I would argue that	#KEYWORD	is something #POSORNEG	.
 
 #KEYWORD	the placeholder keyword
 
