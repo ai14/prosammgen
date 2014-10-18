@@ -16,7 +16,7 @@
 
 #INTRO	#INITSENTENCE	#INITFOLLOWUP
 
-#INITSENTENCE	#INITOPINION	#KEYWORD	#OPINIONEND
+#INITSENTENCE	#INITOPINION	%KEYWORD()	#OPINIONEND
 
 #INITOPINION	#METAPHORICALLY	I feel like
 #INITOPINION	#METAPHORICALLY	I would argue that
@@ -34,9 +34,7 @@
 
 #CONCLUSION	#CONCLUSIONSTART	This is the rest of the conclusion.
 
-#CONCLUSIONSTART	To summarize I would argue that	#KEYWORD	is something	#POSORNEG	.
-
-#KEYWORD	the placeholder keyword
+#CONCLUSIONSTART	To summarize I would argue that	%KEYWORD()	is something	#POSORNEG	.
 
 #OPINIONEND	is very	#POSORNEG	for today's society.
 #OPINIONEND	is a very	%SYNONYM(interesting,fascinating)	topic.
