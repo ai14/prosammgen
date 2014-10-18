@@ -12,37 +12,113 @@
 //   %SYNONYM(Word 1,Word 2,...,Word n) is substituted with a random joint synonym of the n input words. Note: whitespace sensitive.
 //   %KEYWORD() is substituted with the keyword, determined by the parser.
 
-#PARAGRAPH	#INTRO	#MIDDLE	#CONCLUSION
+// TODO: talk more about courses and stuff like that
 
-#INTRO	#INITSENTENCE	#INITFOLLOWUP
+#PARAGRAPH	#FILLER
+#PARAGRAPH	#CONTEXT	#OPINION	#ARGUMENT	#ARGUMENT	#CONCLUSION
 
-#INITSENTENCE	#INITOPINION	%KEYWORD()	#OPINIONEND
+#FILLER	It is difficult to decide where to begin...
+#FILLER	Things are very uncertain.
+#FILLER	Who knows how things will change.
+#FILLER	I just love this question!
+#FILLER	This is a subject I feel very strongly about.
+#FILLER	I have only been here for a while, so I wish I knew more about this issue.
+#FILLER	I can finally talk about this!
+#FILLER	Is this really a serious assignment? I wouldn't consider this even worth talking about.
 
-#INITOPINION	#METAPHORICALLY	I feel like
-#INITOPINION	#METAPHORICALLY	I would argue that
-#INITOPINION	#METAPHORICALLY	It's difficult to say that
-#INITOPINION	#METAPHORICALLY	my experiences point to the fact that
+#CONTEXT	#CPRELUDE	#CCONCLUSION	%MARKOV(2)
+#CONTEXT	Society today shows some disregard towards subjects that interest academia.
+#CONTEXT	It is well known that the	%KEYWORD()	affects everybody in this course.
+#CONTEXT	I don't know how the others will feel about	%KEYWORD().
 
-#INITFOLLOWUP	This means that	#FAMOUSPERSON	was wrong and	#FILLERSENTENCE
-#INITFOLLOWUP	For this reason I	%SYNONYM(think,believe)	that	#FAMOUSPERSON	has been proven correct	.
-#INITFOLLOWUP	What	#FAMOUSPERSON	had to say about this is obviously also	%SYNONYM(related)	.
+#CPRELUDE	Considering recent developments,
+#CPRELUDE	With all of the	%SYNONYM(drama)	going on,
+#CPRELUDE	According to many students I have talked to,
+#CPRELUDE	In light of recent events,
+#CPRELUDE	As I understand it,
+#CPRELUDE	I don't know about others; but to me,
 
-#FILLERSENTENCE	this is an	%SYNONYM(important)	point to	%SYNONYM(get,understand,realize)	.
-#FILLERSENTENCE	of course, this is not always the case though.
+#CCONCLUSION	%KEYWORD()	is an issue that is not getting	%SYNONYM(enough)	%SYNONYM(attention).
+#CCONCLUSION	one might say that	%KEYWORD()	has gotten a	%SYNONYM(bad,good)	rap recently.
+#CCONCLUSION	%KEYWORD()	is not all that interesting.
+#CCONCLUSION	it feels like	%KEYWORD()	is being taken way too seriously.
+#CCONCLUSION	a lot is still	%SYNONYM(unknown,unclear,controversial)	about	%KEYWORD()	.
+#CCONCLUSION	I would need to gather more information about	%KEYWORD()	to form a clear opinion.
+#CCONCLUSION	%KEYWORD()	is something that everybody should talk more about.
 
-#MIDDLE	%MARKOV(5)
+#OPINION	#OQUAL	#OOP
 
-#CONCLUSION	#CONCLUSIONSTART	This is the rest of the conclusion.
+#OQUAL	I feel like
+#OQUAL	One could say that
+#OQUAL	There is no doubt, then, that
+#OQUAL	I suspect everybody %SYNONYM(thinks,believes) that
+#OQUAL	I know that
+#OQUAL	I don't know about others, but to me it is clear that
+#OQUAL	What I want to say, then, is that
+#OQUAL	Without a doubt,
+#OQUAL	With some hesitation, I would say that
 
-#CONCLUSIONSTART	To summarize I would argue that	%KEYWORD()	is something	#POSORNEG	.
+#OOP	one needs to do something about this.
+#OOP	there should be more discussions in this area.
+#OOP	this needs to be changed.
+#OOP	there is not much to be done about the situation.
+#OOP	more effort could be spent in this area.
+#OOP	it is up to my fellow students to get more involved.
+#OOP	far too many are trying to solve the problem.
+#OOP	there are too many unknowns for there to be an easy solution.
 
-#OPINIONEND	is very	#POSORNEG	for today's society.
-#OPINIONEND	is a very	%SYNONYM(interesting,fascinating)	topic.
-#OPINIONEND	is something that I'm passionate about.
+#ARGUMENT	#ARGCTX	#FACT	%MARKOV(3)
 
-#METAPHORICALLY	Metaphorically
-#METAPHORICALLY	Figuratively
-#METAPHORICALLY	Illustratively
+#ARGCTX	The best indication for this is
+#ARGCTX	What everybody probably notices is
+#ARGCTX	It might not be clear to everybody, but
+#ARGCTX	It is no doubt true that
+#ARGCTX	Most things point towards that
+#ARGCTX	What convinces me is
+#ARGCTX	I firmly believe that
+
+#FACT	people such as	#FAMOUSPERSON	already	#ACTION	.
+#FACT	the research in the area is conclusive.
+#FACT	no more needs to be said on the matter.
+#FACT	there are many groups involved in making changes happen.
+#FACT	everybody can make a difference.
+#FACT	people are trying.
+#FACT	research hasn't proven anything yet.
+#FACT	there is too many people who disagree for it to be believable.
+#FACT	it is impossible to say for sure what's going on.
+#FACT	someone like	#FAMOUSPERSON	might be the only person who previously	#ACTION	.
+#FACT	we can't put our trust in	#FAMOUSPERSON	, as has been shown before.
+#FACT	things get confusing, really quickly.
+#FACT	if	#FAMOUSPERSON	were present, the discussion would be much more	%SYNONYM(clear,interesting,informed)	.
+#FACT	nothing more can be said about it.
+
+#ACTION	#APREFIX	#REALACTION
+#ACTION	#REALACTION
+
+#APREFIX	(as isn't unheard of)
+#APREFIX	(not too surprisingly)
+#APREFIX	, which I consider to be very inspirational, by the way,
+
+// TODO: consider different tenses here
+#REALACTION	tried, and failed
+#REALACTION	successfully applied the theory
+#REALACTION	talked about the issue at great length
+#REALACTION	considered everything we have suggested
+#REALACTION	thought about it
+#REALACTION	voiced some theories
+#REALACTION	had a lecture about this
+#REALACTION	wrote a book on the subject
+#REALACTION	must have been bored enough to even address the issue
+
+// TODO: this can be split into more segments
+#CONCLUSION	I hope that this is not considered too controversial!
+#CONCLUSION	I am very interested to see if somebody agrees with me!
+#CONCLUSION	But who knows, maybe I'm just babbling...
+#CONCLUSION	I'm not feeling like I'm very qualified to talk about this, though.
+#CONCLUSION	In general, this gives me hope, and I will continue to follow the progress!
+#CONCLUSION	It is of course very controversial to even talk about this.
+#CONCLUSION	Since it's not the end of the world, I'm not too worried, however.
+#CONCLUSION	That's really all I can say about the situation today.
 
 #FAMOUSPERSON	%SYNONYM(Albert Einstein)
 #FAMOUSPERSON	Thomas Kuhn
@@ -51,23 +127,3 @@
 #FAMOUSPERSON	Viggo Kann
 #FAMOUSPERSON	Descartes
 #FAMOUSPERSON	Aristotle
-
-#BUZZWORD	synergy
-#BUZZWORD	paradigm
-#BUZZWORD	ideology
-#BUZZWORD	altruism
-
-#CSBUZZWORD	technology
-#CSBUZZWORD	cloud based solution
-#CSBUZZWORD	big data
-#CSBUZZWORD	data mining
-#CSBUZZWORD	JVM based language
-#CSBUZZWORD	decision problem
-#CSBUZZWORD	privacy concern
-#CSBUZZWORD	cloud computing
-#CSBUZZWORD	distributed computing
-#CSBUZZWORD	SCRUM methodology
-#CSBUZZWORD	the internet of things
-
-#POSORNEG	positive
-#POSORNEG	negative
