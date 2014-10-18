@@ -100,10 +100,10 @@ public class ReportGenerator {
           String argumentsStr = parts[1].substring(0, parts[1].length() - 1); // remove the closing paranthesis
           String[] arguments = argumentsStr.split(",");
 
-          if (word.substring(1).equals("MARKOV")) {
-            int goalWordcount = Integer.parseInt(arguments[0]);
+          if (command.equals("MARKOV")) {
+            int numSentences = Integer.parseInt(arguments[0]);
             int avgSentenceLen = Integer.parseInt(arguments[1]);
-            sb.append(mtg.getText(goalWordcount, avgSentenceLen) + " ");
+            sb.append(mtg.getText(numSentences, avgSentenceLen) + " ");
           }
 
           break;
@@ -114,31 +114,6 @@ public class ReportGenerator {
             sb.append(" ");
           }
       }
-
-
-      /*
-      if (word.startsWith(("#"))) {
-
-        // TODO: create a paragraph class that we append to instead that fixes periods and stuff
-        String dot = "";
-        if (word.endsWith(".")) {
-          word = word.substring(0, word.length() - 1);
-          dot = ".";
-        }
-
-        ArrayList<StrDblPair> productions = grammar.get(word);
-        String production = chooseProduction(productions);
-
-        expand(sb, production);
-        sb.append(dot);
-
-      } else {
-        sb.append(word);
-        if (word.length() > 0) {
-          sb.append(" ");
-        }
-      }
-      */
     }
   }
 

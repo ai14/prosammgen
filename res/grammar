@@ -31,13 +31,14 @@
 #FILLERSENTENCE this is an $important point to $understand #DOT
 #FILLERSENTENCE of course, this is not always the case though #DOT
 
-#MIDDLE %MARKOV(50,10)
+#MIDDLE %MARKOV(6,10)
 
 #CONCLUSION #CONCLUSIONSTART This is the rest of the conclusion #DOT
 
 // dont use "to summarize", better sentences needed
 #CONCLUSIONSTART To summarize I would argue that #KEYWORD is something
 
+// TODO: change this to predicate
 #KEYWORD the placeholder keyword
 
 #OPINIONEND is very #POSORNEG for today's society #DOT

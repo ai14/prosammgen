@@ -15,6 +15,14 @@ public class Ngram {
     }
   }
 
+  public Ngram(Ngram ngramToCopy) {
+    this.order = ngramToCopy.order;
+    this.ngram = new LinkedList<>();
+    for (String s : ngramToCopy.ngram) {
+      this.ngram.add(s);
+    }
+  }
+
   public void pushWord(String word) {
     ngram.addLast(word);
     ngram.removeFirst();
@@ -22,6 +30,10 @@ public class Ngram {
 
   public String getLast() {
     return ngram.getLast();
+  }
+
+  public String getFirst() {
+    return ngram.getFirst();
   }
 
   @Override

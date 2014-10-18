@@ -1,18 +1,17 @@
 package com.github.ai14.prosammgen;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class MarkovTrainer {
 
   public static final int markovOrder = 2;
   private Map<String, Map<String, Integer>> nextWordCounter;
+  private List<Ngram> sentenceStarts;
 
   public MarkovTrainer() {
     nextWordCounter = new HashMap<>();
+    sentenceStarts = new LinkedList<>();
   }
 
   public void train(File[] files) {
@@ -26,12 +25,19 @@ public class MarkovTrainer {
         Ngram ngram = new Ngram(markovOrder);
 
         String line;
+        String wordBeforeNgram = "";
         while ((line = br.readLine()) != null) {
           String[] words = line.split("(\\s+)");
 
           for (int i = 0; i < words.length; i++) {
             String ns = ngram.toString();
             String nw = words[i];
+
+            // find starts of sentences
+            if (wordBeforeNgram.equals("") || wordBeforeNgram.endsWith(".")) {
+              Ngram ngramCopy = new Ngram(ngram);
+              sentenceStarts.add(ngramCopy);
+            }
 
             if (!nextWordCounter.containsKey(ns)) {
               nextWordCounter.put(ns, new HashMap<>());
@@ -44,6 +50,7 @@ public class MarkovTrainer {
             int c = nextWordCounter.get(ns).get(nw);
             nextWordCounter.get(ns).put(nw, c + 1);
 
+            wordBeforeNgram = ngram.getFirst();
             ngram.pushWord(nw);
           }
         }
@@ -88,5 +95,9 @@ public class MarkovTrainer {
     }
 
     return markovChain;
+  }
+
+  public List<Ngram> getSentenceStarts() {
+    return sentenceStarts;
   }
 }
