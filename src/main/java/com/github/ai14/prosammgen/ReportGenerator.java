@@ -81,71 +81,41 @@ public class ReportGenerator {
   }
 
   private void expand(StringBuilder sb, String rule) {
-    String[] words = rule.split(" ");
-
-    for (String word : words) {
-      switch (word.charAt(0)) {
-
-        case '#':
-          ArrayList<StrDblPair> productions = grammar.get(word);
+    String[] symbols = rule.split("\\t");
+    for (int i = 0; i < symbols.length; i++) {
+      String symbol = symbols[i];
+      switch (symbol.charAt(0)) { //TODO Carl fixar.
+        case '#': // Production rule
+          ArrayList<StrDblPair> productions = grammar.get(symbol);
           String production = chooseProduction(productions);
           expand(sb, production);
           break;
+        case '%': // Predicate
 
-        case '$':
-          sb.append(synonyms.getSynonym(word.substring(1)) + " ");
-          break;
-
-        case '@':
-          // TODO: use this for punctuation characters later
-
-          break;
-
-        case '%':
-          String[] parts = word.substring(1).split("\\(");
+          // Parse out arguments.
+          String[] parts = symbol.split("\\(|\\)");
           String command = parts[0];
-          String argumentsStr = parts[1].substring(0, parts[1].length() - 1); // remove the closing paranthesis
-          String[] arguments = argumentsStr.split(",");
+          String[] arguments = parts[1].split(",");
 
-          if (word.substring(1).equals("MARKOV")) {
-            int goalWordcount = Integer.parseInt(arguments[0]);
-            int avgSentenceLen = Integer.parseInt(arguments[1]);
-            sb.append(mtg.getText(goalWordcount, avgSentenceLen) + " ");
+          // Call predicate function.
+          switch (command) {
+            case "%MARKOV":
+              int goalWordcount = Integer.parseInt(arguments[0]); //TODO Fix mismatch between grammar readme and variable naming. What is goalWordcount?
+              int avgSentenceLen = Integer.parseInt(arguments[1]); //TODO Fix mismatch between grammar readme and variable naming. What is avgSentenceLen?
+              sb.append(mtg.getText(goalWordcount, avgSentenceLen));
+              break;
+            case "%SYNONYM":
+              sb.append(synonyms.getSynonym(arguments));
+              break;
+            //TODO case "%KEYWORD(sentence)"
           }
-
           break;
-
         default:
-          sb.append(word);
-          if (word.length() > 0) {
-            sb.append(" ");
-          }
+          sb.append(symbol);
       }
 
-
-      /*
-      if (word.startsWith(("#"))) {
-
-        // TODO: create a paragraph class that we append to instead that fixes periods and stuff
-        String dot = "";
-        if (word.endsWith(".")) {
-          word = word.substring(0, word.length() - 1);
-          dot = ".";
-        }
-
-        ArrayList<StrDblPair> productions = grammar.get(word);
-        String production = chooseProduction(productions);
-
-        expand(sb, production);
-        sb.append(dot);
-
-      } else {
-        sb.append(word);
-        if (word.length() > 0) {
-          sb.append(" ");
-        }
-      }
-      */
+      // Add space if not followed by punctuation.
+      if (i < symbols.length-1 && !symbols[i+1].matches("\\.|,|;|:|!|\\?")) sb.append(' ');
     }
   }
 
@@ -174,29 +144,15 @@ public class ReportGenerator {
 
     String line;
     while ((line = br.readLine()) != null) {
-      if (line.length() == 0 || line.startsWith("//")) {
-        continue;
-      }
-
-      String[] words = line.split(" ");
-      String productionLHS = words[0];
-
-      if (!grammar.containsKey(productionLHS)) {
-        grammar.put(productionLHS, new ArrayList<>());
-      }
-
-      StringBuilder sb = new StringBuilder();
-      for (int i = 1; i < words.length; i++) {
-        sb.append(words[i] + " ");
-      }
-      sb.deleteCharAt(sb.length() - 1); // remove last space
-      String productionRHS = sb.toString();
-
-      // Add probability 1.0 first, this changes later to make it stochastic
-      grammar.get(productionLHS).add(new StrDblPair(productionRHS, 1.0));
+      if (line.length() == 0 || line.startsWith("//")) continue;
+      String[] words = line.split("\\t");
+      String lhs = words[0];
+      String rhs = line.replaceFirst(lhs, "");
+      if (!grammar.containsKey(lhs)) grammar.put(lhs, new ArrayList<>());
+      grammar.get(lhs).add(new StrDblPair(rhs, 1.0)); // Initial probability is always 1.0.
     }
 
-    // now make it stochastic
+    // Make stochastic.
     for (Map.Entry<String, ArrayList<StrDblPair>> grammarEntry : grammar.entrySet()) {
       int n = grammarEntry.getValue().size();
 

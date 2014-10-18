@@ -1,81 +1,77 @@
 // README
-// This is the file that defines the grammar used for the report generation
+// This file defines the grammar for report generation.
 //
-// - Two slashes on the beginning of a line is a comment (obviously)
-// - Words starting with # are production rules that expands
-// - Words starting with $ are words that will be looked up in a synonym database
-// and a random synonym will be used at that position
+// Terminal symbols and non-terminal symbols are tab-delimited.
 //
+// Two slashes on the beginning of a line is a comment.
+// Words starting with # are production rules. A production rule must be on the form #[A-Z]+ but may be directly followed by another rule or terminal symbol.
+// Words starting with % are predicates. A predicate take arguments and is substituted with a value.
+//
+// Available predicates:
+// %MARKOV(Number of sentences) is substituted with markov chain generated text.
+// %SYNONYM(Word 1,Word 2,...,Word n) is substituted with a random joint synonym of the n input words. Note that whitespace is part of the word.
+// TODO Add %KEYWORD(sentence) predicate.
 
-#EPSILON epsilonTODO
-#DOT .
-#COMMA ,
-#NL newlineTODO
-#Q ?
+// TODO Make grammar describe an entire reflection document (set of question/answer pairs) instead.
 
-#PARAGRAPH #INTRO #MIDDLE #CONCLUSION
+#PARAGRAPH	#INTRO	#MIDDLE	#CONCLUSION
 
-#INTRO #INITSENTENCE #INITFOLLOWUP
+#INTRO	#INITSENTENCE	#INITFOLLOWUP
 
-#INITSENTENCE #INITOPINION #KEYWORD #OPINIONEND
+#INITSENTENCE	#INITOPINION	#KEYWORD	#OPINIONEND
 
-#INITOPINION #METAPHORICALLY I feel like
-#INITOPINION #METAPHORICALLY I would argue that
-#INITOPINION #METAPHORICALLY It's difficult to say that
-#INITOPINION #METAPHORICALLY my experiences point to the fact that
+#INITOPINION	#METAPHORICALLY	I feel like
+#INITOPINION	#METAPHORICALLY	I would argue that
+#INITOPINION	#METAPHORICALLY	It's difficult to say that
+#INITOPINION	#METAPHORICALLY	my experiences point to the fact that
 
-#INITFOLLOWUP This means that #FAMOUSPERSON was wrong and #FILLERSENTENCE
-#INITFOLLOWUP For this reason I $think that #FAMOUSPERSON has been proven correct #DOT
-#INITFOLLOWUP What #FAMOUSPERSON had to say about this is obviously also $related #DOT
+#INITFOLLOWUP	This means that	#FAMOUSPERSON	was wrong and	#FILLERSENTENCE
+#INITFOLLOWUP	For this reason I	%SYNONYM(think,believe)	that	#FAMOUSPERSON	has been proven correct	.
+#INITFOLLOWUP	What	#FAMOUSPERSON	had to say about this is obviously also	%SYNONYM(related)	.
 
-#FILLERSENTENCE this is an $important point to $understand #DOT
-#FILLERSENTENCE of course, this is not always the case though #DOT
+#FILLERSENTENCE	this is an	%SYNONYM(important)	point to	%SYNONYM(get,understand,realize)	.
+#FILLERSENTENCE	of course, this is not always the case though.
 
-#MIDDLE %MARKOV(50,10)
+#MIDDLE	%MARKOV(50,10)
 
-#CONCLUSION #CONCLUSIONSTART This is the rest of the conclusion #DOT
+#CONCLUSION	#CONCLUSIONSTART	This is the rest of the conclusion.
 
-// dont use "to summarize", better sentences needed
-#CONCLUSIONSTART To summarize I would argue that #KEYWORD is something
+#CONCLUSIONSTART	To summarize I would argue that	#KEYWORD	is something #POSORNEG.
 
-#KEYWORD the placeholder keyword
+#KEYWORD	the placeholder keyword
 
-#OPINIONEND is very #POSORNEG for today's society #DOT
-#OPINIONEND is a very $interesting topic #DOT
-#OPINIONEND is something that I'm passionate about #DOT
+#OPINIONEND	is very	#POSORNEG	for today's society.
+#OPINIONEND	is a very	%SYNONYM(interesting,fascinating)	topic.
+#OPINIONEND	is something that I'm passionate about.
 
-#METAPHORICALLY Metaphorically
-#METAPHORICALLY Figuratively
-#METAPHORICALLY Illustratively
+#METAPHORICALLY	Metaphorically
+#METAPHORICALLY	Figuratively
+#METAPHORICALLY	Illustratively
 
-#FAMOUSPERSON Albert Einstein
-#FAMOUSPERSON Thomas Kuhn
-#FAMOUSPERSON Immanuel Kant
-#FAMOUSPERSON Karl Popper
-#FAMOUSPERSON Viggo Kann
-#FAMOUSPERSON Descartes
-#FAMOUSPERSON Aristotle
+#FAMOUSPERSON	%SYNONYM(Albert Einstein)
+#FAMOUSPERSON	Thomas Kuhn
+#FAMOUSPERSON	Immanuel Kant
+#FAMOUSPERSON	Karl Popper
+#FAMOUSPERSON	Viggo Kann
+#FAMOUSPERSON	Descartes
+#FAMOUSPERSON	Aristotle
 
-#BUZZWORD synergy
-#BUZZWORD paradigm
-#BUZZWORD ideology
-#BUZZWORD altruism
+#BUZZWORD	synergy
+#BUZZWORD	paradigm
+#BUZZWORD	ideology
+#BUZZWORD	altruism
 
-#CSBUZZWORD technology
-#CSBUZZWORD cloud based solution
-#CSBUZZWORD big data
-#CSBUZZWORD data mining
-#CSBUZZWORD JVM based language
-#CSBUZZWORD decision problem
-#CSBUZZWORD privacy concern
-#CSBUZZWORD cloud computing
-#CSBUZZWORD distributed computing
-#CSBUZZWORD SCRUM methodology
-#CSBUZZWORD the internet of things
+#CSBUZZWORD	technology
+#CSBUZZWORD	cloud based solution
+#CSBUZZWORD	big data
+#CSBUZZWORD	data mining
+#CSBUZZWORD	JVM based language
+#CSBUZZWORD	decision problem
+#CSBUZZWORD	privacy concern
+#CSBUZZWORD	cloud computing
+#CSBUZZWORD	distributed computing
+#CSBUZZWORD	SCRUM methodology
+#CSBUZZWORD	the internet of things
 
-#POSORNEG positive
-#POSORNEG negative
-
-#MAYBENOT #EPSILON
-#MAYBENOT not
-
+#POSORNEG	positive
+#POSORNEG	negative
