@@ -2,17 +2,15 @@
 // This file defines the grammar for report generation.
 //
 // Terminal symbols and non-terminal symbols are tab-delimited.
-//
-// Two slashes on the beginning of a line is a comment.
-// Words starting with # are production rules. A production rule must be on the form #[A-Z]+ but may be directly followed by another rule or terminal symbol.
-// Words starting with % are predicates. A predicate take arguments and is substituted with a value.
+// The first symbol on each line is the left-hand side in a production rule. The remaining symbols make up the right-hand side.
+// Text preceded by two slashes is a comment and is stripped by the parser.
+// Words starting with # are production rules. A production rule must be on the form #[A-Z]+.
+// Words starting with % are predicates. A predicate is a dynamic terminal symbol used by the parser.
 //
 // Available predicates:
-// %MARKOV(Number of sentences) is substituted with markov chain generated text.
-// %SYNONYM(Word 1,Word 2,...,Word n) is substituted with a random joint synonym of the n input words. Note that whitespace is part of the word.
-// TODO Add %KEYWORD(sentence) predicate.
-
-// TODO Make grammar describe an entire reflection document (set of question/answer pairs) instead.
+//   %MARKOV(Number of sentences) is substituted with markov chain generated text.
+//   %SYNONYM(Word 1,Word 2,...,Word n) is substituted with a random joint synonym of the n input words. Note: whitespace sensitive.
+//   %KEYWORD() is substituted with the keyword, determined by the parser.
 
 #PARAGRAPH	#INTRO	#MIDDLE	#CONCLUSION
 
@@ -32,7 +30,7 @@
 #FILLERSENTENCE	this is an	%SYNONYM(important)	point to	%SYNONYM(get,understand,realize)	.
 #FILLERSENTENCE	of course, this is not always the case though.
 
-#MIDDLE	%MARKOV(50,10)
+#MIDDLE	%MARKOV(5)
 
 #CONCLUSION	#CONCLUSIONSTART	This is the rest of the conclusion.
 

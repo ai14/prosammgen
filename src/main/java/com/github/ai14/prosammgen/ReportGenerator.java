@@ -1,40 +1,47 @@
 package com.github.ai14.prosammgen;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 // TODO Rename class to ReflectionDocumentGenerator.
 public class ReportGenerator {
-  static private Random rand = new Random();
-  private File previousReflectionDocument, readingMaterial, questions;
-  private MarkovTextGenerator mtg;
-  private Map<String, ArrayList<StrDblPair>> grammar;
-  private Synonyms synonyms;
+  static private Random random = new Random();
+  String keyword;
+  private File questions;
+  private MarkovTextGenerator markovTextGenerator;
+  private Map<String, ArrayList<StringDoublePair>> grammar = new HashMap<>();
+  private Synonyms synonyms = new WordNetSynonyms();
 
   public ReportGenerator(File previousReflectionDocument, File readingMaterial, File questions) {
-    this.previousReflectionDocument = previousReflectionDocument;
-    this.readingMaterial = readingMaterial;
+    // Remember questions for the parsing, as they are used as headlines.
     this.questions = questions;
-    this.synonyms = new WordNetSynonyms();
-    this.grammar = new HashMap<>();
 
-    this.mtg = new MarkovTextGenerator(new File[]{readingMaterial}); //TODO Train on questions as well?
+    // Train markov chain on the reading material.
+    this.markovTextGenerator = new MarkovTextGenerator(readingMaterial);
 
-    //TODO Determine keywords in the questions by cross-referencing with the reading material.
+    //TODO Determine personal writing style analysing the previous reflection document.
+    // writingStyleAnalyzer.analyzeWritingStyle(previousReflectionDocument);
 
-    //TODO Determine personal writing style by statistically analysing the previous reflection document.
-
-    File grammarFile = new File("res/grammar");
+    // Load grammar.
     try {
-      loadGrammar(grammarFile);
+      Scanner s = new Scanner(new FileReader(new File("res/grammar")));
+      while (s.hasNextLine()) {
+        String line = s.nextLine();
+        if (line.length() == 0 || line.startsWith("//")) continue;
+        String[] words = line.split("\t");
+        String lhs = words[0];
+        String rhs = line.replaceFirst(lhs + "\t", "");
+        if (!grammar.containsKey(lhs)) grammar.put(lhs, new ArrayList<>());
+        grammar.get(lhs).add(new StringDoublePair(rhs, 1.0));
+      }
+      s.close();
+
+      // Make grammar probabilities stochastic.
+      for (ArrayList<StringDoublePair> g : grammar.values()) for (StringDoublePair sdp : g) sdp.d /= g.size();
     } catch (IOException e) {
-      System.err.println("failed to load grammar");
+      System.err.println("Could not load grammar file.");
       System.exit(1);
     }
   }
@@ -49,7 +56,6 @@ public class ReportGenerator {
    */
   public String generateReport(String title, String author, int words) {
     StringBuilder sb = new StringBuilder();
-    //TODO Latexify title and author (i.e. escape characters etc.).
     sb.append(
             "\\documentclass{article}"
                     + "\\begin{document}"
@@ -60,38 +66,38 @@ public class ReportGenerator {
 
     // Parse questions and generate a paragraph each with the grammar and the trained markov chain.
     try {
-      BufferedReader br = new BufferedReader(new FileReader(questions));
-      String question;
-      while ((question = br.readLine()) != null) {
+      Scanner s = new Scanner(new FileReader(questions));
+      while (s.hasNextLine()) {
+        String question = s.nextLine();
         sb.append("\\section{" + question + "}");
-        sb.append(generateText()); //TODO generateText should try to match the suggested word count.
+        //TODO Identify keywords in the question.
+        // this.keyword = keywordIdentifier.identifyKeywords(question);
+        expand(sb, "#PARAGRAPH");
       }
-      br.close();
+      s.close();
     } catch (IOException e) {
       System.err.println("Could not generate report. Questions could not be parsed. Make sure that every question is written on a single line each.");
     }
-
     sb.append("\\end{document}");
+
+    //TODO Replace weird characters with LaTeX formatting. Use a Java library.
+
+    System.err.println(sb.toString());
 
     return sb.toString();
   }
 
-  private void setKeywords(String[] keywords) {
-    // TODO: update the grammar with these keywords, used for each paragraph
-  }
-
   private void expand(StringBuilder sb, String rule) {
-    String[] symbols = rule.split("\\t");
+    String[] symbols = rule.split("\t");
     for (int i = 0; i < symbols.length; i++) {
       String symbol = symbols[i];
-      switch (symbol.charAt(0)) { //TODO Carl fixar.
+      switch (symbol.charAt(0)) {
         case '#': // Production rule
-          ArrayList<StrDblPair> productions = grammar.get(symbol);
+          ArrayList<StringDoublePair> productions = grammar.get(symbol);
           String production = chooseProduction(productions);
           expand(sb, production);
           break;
         case '%': // Predicate
-
           // Parse out arguments.
           String[] parts = symbol.split("\\(|\\)");
           String command = parts[0];
@@ -100,14 +106,15 @@ public class ReportGenerator {
           // Call predicate function.
           switch (command) {
             case "%MARKOV":
-              int goalWordcount = Integer.parseInt(arguments[0]); //TODO Fix mismatch between grammar readme and variable naming. What is goalWordcount?
-              int avgSentenceLen = Integer.parseInt(arguments[1]); //TODO Fix mismatch between grammar readme and variable naming. What is avgSentenceLen?
-              sb.append(mtg.getText(goalWordcount, avgSentenceLen));
+              int sentences = Integer.parseInt(arguments[0]);
+              sb.append(markovTextGenerator.getText(sentences, 10)); //TODO Remove second argument?
               break;
             case "%SYNONYM":
               sb.append(synonyms.getSynonym(arguments));
               break;
-            //TODO case "%KEYWORD(sentence)"
+            case "%KEYWORD":
+              sb.append(this.keyword);
+              break;
           }
           break;
         default:
@@ -115,62 +122,29 @@ public class ReportGenerator {
       }
 
       // Add space if not followed by punctuation.
-      if (i < symbols.length-1 && !symbols[i+1].matches("\\.|,|;|:|!|\\?")) sb.append(' ');
+      if (i < symbols.length - 1 && !symbols[i + 1].matches("\\.|,|;|:|!|\\?")) sb.append(' ');
     }
   }
 
-  private String chooseProduction(ArrayList<StrDblPair> productions) {
-    double d = rand.nextDouble();
-    double upperLimit = 0.0;
+  private String chooseProduction(ArrayList<StringDoublePair> productions) {
+    double d = random.nextDouble();
+    double limit = 0.0;
     for (int i = 0; i < productions.size(); i++) {
-      upperLimit = upperLimit + productions.get(i).dbl;
-
-      if (Double.compare(d, upperLimit) < 0) {
-        return productions.get(i).str;
+      limit += productions.get(i).d;
+      if (Double.compare(d, limit) < 0) {
+        return productions.get(i).s;
       }
     }
-
-    return productions.get(productions.size() - 1).str;
+    return productions.get(productions.size() - 1).s;
   }
 
-  private String generateText() {
-    StringBuilder sb = new StringBuilder();
-    expand(sb, "#PARAGRAPH");
-    return sb.toString();
-  }
+  private class StringDoublePair {
+    String s;
+    double d;
 
-  private void loadGrammar(File grammarFile) throws IOException {
-    BufferedReader br = new BufferedReader(new FileReader(grammarFile));
-
-    String line;
-    while ((line = br.readLine()) != null) {
-      if (line.length() == 0 || line.startsWith("//")) continue;
-      String[] words = line.split("\\t");
-      String lhs = words[0];
-      String rhs = line.replaceFirst(lhs, "");
-      if (!grammar.containsKey(lhs)) grammar.put(lhs, new ArrayList<>());
-      grammar.get(lhs).add(new StrDblPair(rhs, 1.0)); // Initial probability is always 1.0.
-    }
-
-    // Make stochastic.
-    for (Map.Entry<String, ArrayList<StrDblPair>> grammarEntry : grammar.entrySet()) {
-      int n = grammarEntry.getValue().size();
-
-      for (StrDblPair sdp : grammarEntry.getValue()) {
-        sdp.dbl = 1.0 / n;
-      }
-    }
-
-    br.close();
-  }
-
-  private class StrDblPair {
-    String str;
-    double dbl;
-
-    StrDblPair(String str, double dbl) {
-      this.str = str;
-      this.dbl = dbl;
+    StringDoublePair(String s, double d) {
+      this.s = s;
+      this.d = d;
     }
   }
 }
