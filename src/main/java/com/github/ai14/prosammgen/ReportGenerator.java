@@ -4,7 +4,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 // TODO Rename class to ReflectionDocumentGenerator.
 public class ReportGenerator {
@@ -13,7 +16,7 @@ public class ReportGenerator {
   private MarkovTextGenerator mtg;
   private Map<String, ArrayList<StrDblPair>> grammar;
   private Synonyms synonyms;
-  
+
   public ReportGenerator(File previousReflectionDocument, File readingMaterial, File questions) {
     this.previousReflectionDocument = previousReflectionDocument;
     this.readingMaterial = readingMaterial;
@@ -35,19 +38,23 @@ public class ReportGenerator {
       System.exit(1);
     }
   }
-  
+
   /**
    * Generate a LaTeX formatted PROSAMM report.
    *
+   * @param title  Title of the report.
+   * @param author Author of the report.
+   * @param words  Suggested word count.
    * @return
    */
-  public String generateReport() {
+  public String generateReport(String title, String author, int words) {
     StringBuilder sb = new StringBuilder();
+    //TODO Latexify title and author (i.e. escape characters etc.).
     sb.append(
             "\\documentclass{article}"
                     + "\\begin{document}"
-                    + "\\title{My Prosamm Report}"
-                    + "\\author{Author}"
+                    + "\\title{" + title + "}"
+                    + "\\author{" + author + "}"
                     + "\\maketitle"
     );
 
@@ -57,7 +64,7 @@ public class ReportGenerator {
       String question;
       while ((question = br.readLine()) != null) {
         sb.append("\\section{" + question + "}");
-        sb.append(generateText());
+        sb.append(generateText()); //TODO generateText should try to match the suggested word count.
       }
       br.close();
     } catch (IOException e) {
@@ -74,46 +81,41 @@ public class ReportGenerator {
   }
 
   private void expand(StringBuilder sb, String rule) {
-    String[] words = rule.split(" ");
-
-    for (String word : words) {
-      switch (word.charAt(0)) {
-
-        case '#':
-          ArrayList<StrDblPair> productions = grammar.get(word);
+    String[] symbols = rule.split("\\t");
+    for (int i = 0; i < symbols.length; i++) {
+      String symbol = symbols[i];
+      switch (symbol.charAt(0)) { //TODO Carl fixar.
+        case '#': // Production rule
+          ArrayList<StrDblPair> productions = grammar.get(symbol);
           String production = chooseProduction(productions);
           expand(sb, production);
           break;
+        case '%': // Predicate
 
-        case '$':
-          sb.append(synonyms.getSynonym(word.substring(1)) + " ");
-          break;
-
-        case '@':
-          // TODO: use this for punctuation characters later
-
-          break;
-
-        case '%':
-          String[] parts = word.substring(1).split("\\(");
+          // Parse out arguments.
+          String[] parts = symbol.split("\\(|\\)");
           String command = parts[0];
-          String argumentsStr = parts[1].substring(0, parts[1].length() - 1); // remove the closing paranthesis
-          String[] arguments = argumentsStr.split(",");
+          String[] arguments = parts[1].split(",");
 
-          if (command.equals("MARKOV")) {
-            int numSentences = Integer.parseInt(arguments[0]);
-            int avgSentenceLen = Integer.parseInt(arguments[1]);
-            sb.append(mtg.getText(numSentences, avgSentenceLen) + " ");
+          // Call predicate function.
+          switch (command) {
+            case "%MARKOV":
+              int goalWordcount = Integer.parseInt(arguments[0]); //TODO Fix mismatch between grammar readme and variable naming. What is goalWordcount?
+              int avgSentenceLen = Integer.parseInt(arguments[1]); //TODO Fix mismatch between grammar readme and variable naming. What is avgSentenceLen?
+              sb.append(mtg.getText(goalWordcount, avgSentenceLen));
+              break;
+            case "%SYNONYM":
+              sb.append(synonyms.getSynonym(arguments));
+              break;
+            //TODO case "%KEYWORD(sentence)"
           }
-
           break;
-
         default:
-          sb.append(word);
-          if (word.length() > 0) {
-            sb.append(" ");
-          }
+          sb.append(symbol);
       }
+
+      // Add space if not followed by punctuation.
+      if (i < symbols.length-1 && !symbols[i+1].matches("\\.|,|;|:|!|\\?")) sb.append(' ');
     }
   }
 
@@ -142,29 +144,15 @@ public class ReportGenerator {
 
     String line;
     while ((line = br.readLine()) != null) {
-      if (line.length() == 0 || line.startsWith("//")) {
-        continue;
-      }
-
-      String[] words = line.split(" ");
-      String productionLHS = words[0];
-
-      if (!grammar.containsKey(productionLHS)) {
-        grammar.put(productionLHS, new ArrayList<>());
-      }
-
-      StringBuilder sb = new StringBuilder();
-      for (int i = 1; i < words.length; i++) {
-        sb.append(words[i] + " ");
-      }
-      sb.deleteCharAt(sb.length() - 1); // remove last space
-      String productionRHS = sb.toString();
-
-      // Add probability 1.0 first, this changes later to make it stochastic
-      grammar.get(productionLHS).add(new StrDblPair(productionRHS, 1.0));
+      if (line.length() == 0 || line.startsWith("//")) continue;
+      String[] words = line.split("\\t");
+      String lhs = words[0];
+      String rhs = line.replaceFirst(lhs, "");
+      if (!grammar.containsKey(lhs)) grammar.put(lhs, new ArrayList<>());
+      grammar.get(lhs).add(new StrDblPair(rhs, 1.0)); // Initial probability is always 1.0.
     }
 
-    // now make it stochastic
+    // Make stochastic.
     for (Map.Entry<String, ArrayList<StrDblPair>> grammarEntry : grammar.entrySet()) {
       int n = grammarEntry.getValue().size();
 
