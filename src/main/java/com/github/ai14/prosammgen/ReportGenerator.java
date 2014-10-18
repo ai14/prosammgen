@@ -82,8 +82,6 @@ public class ReportGenerator {
 
     //TODO Replace weird characters with LaTeX formatting. Use a Java library.
 
-    System.err.println(sb.toString());
-
     return sb.toString();
   }
 
