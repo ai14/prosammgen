@@ -36,6 +36,10 @@ public class Ngram {
     return ngram.getFirst();
   }
 
+  public int order() {
+    return order;
+  }
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();

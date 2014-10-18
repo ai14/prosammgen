@@ -8,10 +8,12 @@ public class MarkovTrainer {
   public static final int markovOrder = 2;
   private Map<String, Map<String, Integer>> nextWordCounter;
   private List<Ngram> sentenceStarts;
+  private Set<Ngram> sentenceEnds;
 
   public MarkovTrainer() {
     nextWordCounter = new HashMap<>();
     sentenceStarts = new LinkedList<>();
+    sentenceEnds = new HashSet<>();
   }
 
   public void train(File[] files) {
@@ -37,6 +39,12 @@ public class MarkovTrainer {
             if (wordBeforeNgram.equals("") || wordBeforeNgram.endsWith(".")) {
               Ngram ngramCopy = new Ngram(ngram);
               sentenceStarts.add(ngramCopy);
+            }
+
+            // find ends of sentences
+            if (ngram.getLast().endsWith(".")) {
+              Ngram ngramCopy = new Ngram(ngram);
+              sentenceEnds.add(ngramCopy);
             }
 
             if (!nextWordCounter.containsKey(ns)) {
@@ -99,5 +107,9 @@ public class MarkovTrainer {
 
   public List<Ngram> getSentenceStarts() {
     return sentenceStarts;
+  }
+
+  public Set<Ngram> getSentenceEnds() {
+    return sentenceEnds;
   }
 }
