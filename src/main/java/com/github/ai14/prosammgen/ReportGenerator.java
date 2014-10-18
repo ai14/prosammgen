@@ -4,7 +4,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 // TODO Rename class to ReflectionDocumentGenerator.
 public class ReportGenerator {
@@ -13,7 +16,7 @@ public class ReportGenerator {
   private MarkovTextGenerator mtg;
   private Map<String, ArrayList<StrDblPair>> grammar;
   private Synonyms synonyms;
-  
+
   public ReportGenerator(File previousReflectionDocument, File readingMaterial, File questions) {
     this.previousReflectionDocument = previousReflectionDocument;
     this.readingMaterial = readingMaterial;
@@ -35,19 +38,23 @@ public class ReportGenerator {
       System.exit(1);
     }
   }
-  
+
   /**
    * Generate a LaTeX formatted PROSAMM report.
    *
+   * @param title  Title of the report.
+   * @param author Author of the report.
+   * @param words  Suggested word count.
    * @return
    */
-  public String generateReport() {
+  public String generateReport(String title, String author, int words) {
     StringBuilder sb = new StringBuilder();
+    //TODO Latexify title and author (i.e. escape characters etc.).
     sb.append(
             "\\documentclass{article}"
                     + "\\begin{document}"
-                    + "\\title{My Prosamm Report}"
-                    + "\\author{Author}"
+                    + "\\title{" + title + "}"
+                    + "\\author{" + author + "}"
                     + "\\maketitle"
     );
 
@@ -57,7 +64,7 @@ public class ReportGenerator {
       String question;
       while ((question = br.readLine()) != null) {
         sb.append("\\section{" + question + "}");
-        sb.append(generateText());
+        sb.append(generateText()); //TODO generateText should try to match the suggested word count.
       }
       br.close();
     } catch (IOException e) {
