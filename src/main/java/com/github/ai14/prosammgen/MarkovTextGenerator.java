@@ -4,13 +4,16 @@ import java.io.File;
 import java.util.*;
 
 public class MarkovTextGenerator {
-
   private MarkovTrainer trainer;
   private Random rand;
 
   public MarkovTextGenerator(File... files) {
     trainer = new MarkovTrainer();
-    trainer.train(files);
+    trainer.train(files); // train on assignment files
+
+    TextSource textSource = new WikipediaArticles();
+    trainer.train(textSource.getTexts()); // train on featured wiki articles
+
     rand = new Random(System.currentTimeMillis());
   }
 
