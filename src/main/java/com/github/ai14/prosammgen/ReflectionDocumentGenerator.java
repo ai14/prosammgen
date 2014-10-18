@@ -5,16 +5,17 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
-// TODO Rename class to ReflectionDocumentGenerator.
-public class ReportGenerator {
+public class ReflectionDocumentGenerator {
   static private Random random = new Random();
-  String keyword;
-  private File questions;
-  private MarkovTextGenerator markovTextGenerator;
+  private String keyword = "";
   private Map<String, ArrayList<StringDoublePair>> grammar = new HashMap<>();
   private Synonyms synonyms = new WordNetSynonyms();
+  private File questions;
+  private MarkovTextGenerator markovTextGenerator;
+  private KeywordIdentifier keywordIdentifier;
+  private WritingStyleAnalyzer writingStyleAnalyzer;
 
-  public ReportGenerator(File previousReflectionDocument, File readingMaterial, File questions) {
+  public ReflectionDocumentGenerator(File previousReflectionDocument, File readingMaterial, File questions) {
     // Remember questions for the parsing, as they are used as headlines.
     this.questions = questions;
 
@@ -22,7 +23,7 @@ public class ReportGenerator {
     this.markovTextGenerator = new MarkovTextGenerator(readingMaterial);
 
     //TODO Determine personal writing style analysing the previous reflection document.
-    // writingStyleAnalyzer.analyzeWritingStyle(previousReflectionDocument);
+    //writingStyleAnalyzer.analyze(previousReflectionDocument);
 
     // Load grammar.
     try {
@@ -76,8 +77,8 @@ public class ReportGenerator {
       while (s.hasNextLine()) {
         String question = s.nextLine();
         sb.append("\\section{" + question + "}");
-        //TODO Identify keywords in the question.
-        // this.keyword = keywordIdentifier.identifyKeywords(question);
+        //TODO Identify keyword.
+        //this.keyword = keywordIdentifier.getKeyword(question);
         expand(sb, "#PARAGRAPH");
       }
       s.close();
@@ -105,13 +106,15 @@ public class ReportGenerator {
           // Parse out arguments.
           String[] parts = symbol.split("\\(|\\)");
           String command = parts[0];
-          String[] arguments = parts[1].split(",");
+          String[] arguments = (parts.length == 2) ? parts[1].split(",") : null;
 
           // Call predicate function.
           switch (command) {
             case "%MARKOV":
               int sentences = Integer.parseInt(arguments[0]);
-              sb.append(markovTextGenerator.getText(sentences)); //TODO Remove second argument?
+              //TODO Use writingStyleAnalyzer information.
+              String s = markovTextGenerator.getText(sentences);
+              sb.append(s);
               break;
             case "%SYNONYM":
               sb.append(synonyms.getSynonym(arguments));

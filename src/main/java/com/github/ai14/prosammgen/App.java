@@ -54,7 +54,7 @@ public class App {
     //TODO Sanitize input.
 
     // Create and train an AI with the input.
-    ReportGenerator rg = new ReportGenerator(previousReflectionDocument, readingMaterial, questions);
+    ReflectionDocumentGenerator rg = new ReflectionDocumentGenerator(previousReflectionDocument, readingMaterial, questions);
 
     // Generate a reflection document with the AI.
     String report = rg.generateReport(reflectionDocumentTitle, authorName, wordLimit);

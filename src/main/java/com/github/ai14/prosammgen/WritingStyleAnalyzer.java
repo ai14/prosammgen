@@ -1,5 +1,7 @@
 package com.github.ai14.prosammgen;
 
+import java.io.File;
+
 interface WritingStyleAnalyzer {
 
   /**
@@ -7,7 +9,7 @@ interface WritingStyleAnalyzer {
    *
    * @param text
    */
-  public void analyze(String text);
+  public void analyze(File text);
 
   /**
    * Get the probabilities for sentences of length [0..longest sentence in the text].
