@@ -61,12 +61,13 @@ public class App {
 
     // Generate PDF report if pdftex exists on the current system. Otherwise output the LaTeX source on stdout.
     try {
-      PrintWriter out = new PrintWriter("reflectiondocument.tex");
+      //TODO Replace characters in accordance with the prosamm instructions. å -> a, é -> e, etc.
+      String filename = authorName.replaceAll("[^A-Za-z0-9]", "_");
+      PrintWriter out = new PrintWriter(filename + ".tex");
       out.write(report);
       out.close();
-      //TODO Fix pdftex on unix.
-      //TODO Fix that prosammgen has to be run twice to output a pdf.
-      String[] cmd = {"pdftex", "'&pdflatex'", "reflectiondocument.tex"};
+      //TODO Prosammgen has to be run twice to output a PDF with cygwin pdftex.
+      String[] cmd = {"pdftex", "&pdflatex", filename + ".tex"}; //TODO This command doesn't start properly on unix, even though the same command works directly in a terminal.
       Process p = Runtime.getRuntime().exec(cmd);
       if (p.getErrorStream().available() == 0)
         System.out.println("Successfully generated a reflection document as PDF.");
