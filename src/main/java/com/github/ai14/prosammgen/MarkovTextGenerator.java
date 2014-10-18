@@ -24,7 +24,7 @@ public class MarkovTextGenerator {
     Ngram ngram = startNgrams.get(rand.nextInt(startNgrams.size()));
 
     for (int i = 0; i < numberSentences; i++) {
-      sb.append(getSentence(markovChain, startNgrams, ngram) + " ");
+      sb.append(getSentence(markovChain, startNgrams, ngram));
     }
 
     return sb.toString();
@@ -43,7 +43,7 @@ public class MarkovTextGenerator {
       sb.append(ngram.getFirst() + " ");
       currentLength++;
 
-      // TODO: less arbitrary maybe
+      // TODO: less arbitrary maybe and also not as strict, maybe write it as some kind of prob function
       boolean tryToEndSentence = currentLength >= avgSentenceLength - avgSentenceLength / 5;
 
       if (ngram.getFirst().endsWith(".")) {
@@ -53,6 +53,9 @@ public class MarkovTextGenerator {
 
       chooseNextWord(markovChain, startNgrams, ngram, tryToEndSentence);
     }
+
+    // remove the last space
+    sb.deleteCharAt(sb.length() - 1);
 
     return sb.toString();
   }
@@ -65,7 +68,6 @@ public class MarkovTextGenerator {
     String nextWord;
 
     if (wordProbabilities == null) {
-      // TODO: can we do this in any smarter way?
       Ngram newNgram = startNgrams.get(rand.nextInt(startNgrams.size()));
       for (String word : newNgram.getAll()) {
         ngram.pushWord(word);
