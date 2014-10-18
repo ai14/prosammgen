@@ -6,29 +6,17 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class WordNetSynonyms implements Synonyms {
-  private static final Random random = new Random();
   private static final String index = "res/wordnet.idx", data = "res/wordnet.dat";
 
   @Override
-  public String getSynonym(String... word) {
-    List<String> synonyms = lookup(word);
-    return synonyms.get(random.nextInt(synonyms.size()));
-  }
-
-  @Override
   public List<String> getSynonyms(String... word) {
-    return lookup(word);
-  }
-
-  private List<String> lookup(String... word) {
     //TODO Cross reference database with all input words.
     ArrayList<String> synonyms = new ArrayList<>();
     boolean capitalize = Character.isUpperCase(word[0].charAt(0));
     word[0] = word[0].toLowerCase();
-    synonyms.add(word[0]); // The input word is always thought of as a synonym to itself.
+    synonyms.add(word[0]); // The input words are always thought of as synonyms to themselves.
 
     try {
       // Lookup the word in the smaller index file to find the byte offset for the word in the data file.
