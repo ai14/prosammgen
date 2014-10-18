@@ -1,9 +1,9 @@
 // README
-// This file defines the grammar for report generation.
+// This file defines the grammar for the report generation.
 //
 // Terminal symbols and non-terminal symbols are tab-delimited.
 // The first symbol on each line is the left-hand side in a production rule. The remaining symbols make up the right-hand side.
-// Text preceded by two slashes is a comment and is stripped by the parser.
+// Lines beginning with two slashes is a comment and is stripped by the parser.
 // Words starting with # are production rules. A production rule must be on the form #[A-Z]+.
 // Words starting with % are predicates. A predicate is a dynamic terminal symbol used by the parser.
 //
