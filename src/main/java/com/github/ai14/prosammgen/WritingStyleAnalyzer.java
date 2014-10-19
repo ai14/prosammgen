@@ -41,7 +41,7 @@ interface WritingStyleAnalyzer {
         }
       }
       double[] prob = new double[sentenceSize.length];
-      for(int j = 0; j < prob.length; ++j){
+      for(int j = 0; j < prob.length; j++){
         prob[j] = sentenceSize[j]/numSentence;
       }
       return prob;
@@ -65,8 +65,8 @@ interface WritingStyleAnalyzer {
       }
       //calculate probs
       double[] prob = new double[wordSize.length];
-      for(int j = 0; j < prob.length ;++j){
-        prob[j] = wordSize[j]/words.length;;
+      for(int j = 0; j < prob.length ;j++){
+        prob[j] = wordSize[j]/words.length;
       }
       return prob;
   }
