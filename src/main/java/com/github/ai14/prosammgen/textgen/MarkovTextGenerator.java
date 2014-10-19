@@ -62,7 +62,7 @@ public class MarkovTextGenerator implements TextGenerator {
 
       chooseNextWord(rand, markovChain, startNgrams, ngram, tryToEndSentence);
     }
-    
+
     return sentence.toString();
   }
 

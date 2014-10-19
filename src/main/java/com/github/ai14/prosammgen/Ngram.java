@@ -1,6 +1,7 @@
 package com.github.ai14.prosammgen;
 
 import java.util.LinkedList;
+import java.util.StringJoiner;
 
 public class Ngram {
   private final int order;
@@ -46,17 +47,13 @@ public class Ngram {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
+    StringJoiner str = new StringJoiner(" ");
     for (String s : ngram) {
       if (s.length() > 0) {
-        sb.append(s + " ");
+        str.add(s);
       }
     }
 
-    if (sb.length() > 0) {
-      sb.deleteCharAt(sb.length() - 1);
-    }
-
-    return sb.toString();
+    return str.toString();
   }
 }
