@@ -40,8 +40,8 @@ interface WritingStyleAnalyzer {
           }
         }
       }
-      double[] prob = new double[sentenceSize.size()];
-      for(int j = 0; j < prob.size() ++j){
+      double[] prob = new double[sentenceSize.length];
+      for(int j = 0; j < prob.length; ++j){
         prob[j] = sentenceSize[j]/numSentence;
       }
       return prob;
@@ -52,7 +52,24 @@ interface WritingStyleAnalyzer {
    *
    * @return
    */
-  public double[] getWordLengthProbabilities(Path text);
+  public double[] getWordLengthProbabilities(Path text){
+    //probs from the text
+    list<int>wordSize;
+    //Read the text
+    for (String line : Files.readAllLines(file)) {
+        String[] words = line.split("\\s+");
+        for (int i = 0; i < words.length; i++) {
+          //word size
+          wordSize[words[i].length]++;
+        }
+      }
+      //calculate probs
+      double[] prob = new double[wordSize.length];
+      for(int j = 0; j < prob.length ;++j){
+        prob[j] = wordSize[j]/words.length;;
+      }
+      return prob;
+  }
 
   /**
    * Get the probabilities for number of sentences per paragraph from [0..most number of sentences in a paragraph in the text].
