@@ -1,35 +1,20 @@
 package com.github.ai14.prosammgen.textgen;
 
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
-import opennlp.tools.postag.POSModel;
+import com.github.ai14.prosammgen.NLPModel;
+
 import opennlp.tools.postag.POSTagger;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.sentdetect.SentenceDetector;
 import opennlp.tools.sentdetect.SentenceDetectorME;
-import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
-import opennlp.tools.tokenize.TokenizerModel;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 public class KeywordGenerator implements TextGenerator {
-
-  private static final CharMatcher LETTER_MATCHER = CharMatcher.JAVA_LETTER;
-  private static final Splitter STOPWORD_SPLITTER =
-      Splitter.on("#STOPWORD#").omitEmptyStrings().trimResults(
-          LETTER_MATCHER.negate());
-  private static final Splitter CLEAN_SPLITTER =
-      Splitter
-          .on(CharMatcher.JAVA_LETTER_OR_DIGIT.or(CharMatcher.INVISIBLE).negate()).trimResults()
-          .omitEmptyStrings();
 
   private final ImmutableSet<String> words;
 
@@ -37,35 +22,21 @@ public class KeywordGenerator implements TextGenerator {
     this.words = words;
   }
 
-  public static KeywordGenerator withPOSParsing(Path sentDb, Path tokenDb, Path posDb,
+  public static KeywordGenerator withPOSParsing(NLPModel NLPModel,
                                                 ImmutableSet<String> stopWords,
                                                 String body)
       throws IOException {
-    final SentenceModel sentenceModel;
-    try (InputStream is = Files.newInputStream(sentDb)) {
-      sentenceModel = new SentenceModel(is);
-    }
 
-    final TokenizerModel tokenizerModel;
-    try (InputStream is = Files.newInputStream(tokenDb)) {
-      tokenizerModel = new TokenizerModel(is);
-    }
-
-    POSModel posModel;
-    try (InputStream is = Files.newInputStream(posDb)) {
-      posModel = new POSModel(is);
-    }
-
-    SentenceDetector sentenceDetector = new SentenceDetectorME(sentenceModel);
+    SentenceDetector sentenceDetector = new SentenceDetectorME(NLPModel.getSentenceModel());
     String[] sentences = sentenceDetector.sentDetect(body);
 
     ImmutableSet.Builder<String> resultBuilder = ImmutableSet.builder();
 
     for (String sentence : sentences) {
-      Tokenizer tokenizer = new TokenizerME(tokenizerModel);
+      Tokenizer tokenizer = new TokenizerME(NLPModel.getTokenizerModel());
       String[] tokens = tokenizer.tokenize(sentence);
 
-      POSTagger posTagger = new POSTaggerME(posModel);
+      POSTagger posTagger = new POSTaggerME(NLPModel.getPosModel());
       String[] tags = posTagger.tag(tokens);
 
       StringBuilder wordBuilder = null;

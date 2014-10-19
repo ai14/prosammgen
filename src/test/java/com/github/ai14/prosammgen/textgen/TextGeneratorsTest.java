@@ -1,12 +1,10 @@
 package com.github.ai14.prosammgen.textgen;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import org.junit.Test;
 
-import java.util.function.Function;
 import java.util.regex.Matcher;
 
 import static org.junit.Assert.assertEquals;
@@ -56,8 +54,7 @@ public class TextGeneratorsTest {
   @Test
   public void testConstant() throws Exception {
     TextGenerator gen =
-        TextGenerators.parse("Hello, World!", ImmutableMap
-            .<String, Function<ImmutableList<String>, TextGenerator>>of());
+        TextGenerators.parse("Hello, World!");
 
     assertEquals(new Constant("Hello, World!"), gen);
   }
@@ -65,8 +62,7 @@ public class TextGeneratorsTest {
   @Test
   public void testRef() throws Exception {
     TextGenerator gen =
-        TextGenerators.parse("Hello, #FOO!", ImmutableMap
-            .<String, Function<ImmutableList<String>, TextGenerator>>of());
+        TextGenerators.parse("Hello, #FOO!");
 
     assertEquals(new Conjunction(new Constant("Hello, "), new Delegation("FOO"), new Constant("!")),
                  gen);
@@ -75,8 +71,7 @@ public class TextGeneratorsTest {
   @Test
   public void testRefEnd() throws Exception {
     TextGenerator gen =
-        TextGenerators.parse("Hello, #FOO", ImmutableMap
-            .<String, Function<ImmutableList<String>, TextGenerator>>of());
+        TextGenerators.parse("Hello, #FOO");
 
     assertEquals(new Conjunction(new Constant("Hello, "), new Delegation("FOO")),
                  gen);
@@ -85,20 +80,20 @@ public class TextGeneratorsTest {
   @Test
   public void testMacro() throws Exception {
     TextGenerator gen =
-        TextGenerators.parse("Hello, %FOO()",
-                             ImmutableMap.of("FOO", x -> new Constant("x")));
+        TextGenerators.parse("Hello, %FOO()");
 
-    assertEquals(new Conjunction(new Constant("Hello, "), new Constant("x")),
-                 gen);
+    assertEquals(
+        new Conjunction(new Constant("Hello, "), new Macro("FOO", ImmutableList.<String>of())),
+        gen);
   }
 
   @Test
   public void testMacroArgs() throws Exception {
     TextGenerator gen =
-        TextGenerators.parse("Hello, %FOO(a, b, c)",
-                             ImmutableMap.of("FOO", x -> new Constant(Joiner.on(',').join(x))));
+        TextGenerators.parse("Hello, %FOO(a, b, c)");
 
-    assertEquals(new Conjunction(new Constant("Hello, "), new Constant("a,b,c")),
+    assertEquals(new Conjunction(new Constant("Hello, "),
+                                 new Macro("FOO", ImmutableList.of("a", "b", "c"))),
                  gen);
   }
 
@@ -108,8 +103,7 @@ public class TextGeneratorsTest {
         ImmutableList.of("#FOO Bar");
 
     ImmutableMap<String, TextGenerator> grammar =
-        TextGenerators.parseGrammar(lines, ImmutableMap
-            .<String, Function<ImmutableList<String>, TextGenerator>>of());
+        TextGenerators.parseGrammar(lines);
 
     assertTrue(grammar.containsKey("FOO"));
     assertEquals(new Constant("Bar"), grammar.get("FOO"));
@@ -122,8 +116,7 @@ public class TextGeneratorsTest {
                          "#BAZ xyz");
 
     ImmutableMap<String, TextGenerator> grammar =
-        TextGenerators.parseGrammar(lines, ImmutableMap
-            .<String, Function<ImmutableList<String>, TextGenerator>>of());
+        TextGenerators.parseGrammar(lines);
 
     assertTrue(grammar.containsKey("FOO"));
     assertTrue(grammar.containsKey("BAZ"));
@@ -141,8 +134,7 @@ public class TextGeneratorsTest {
                          "#BAZ xyz");
 
     ImmutableMap<String, TextGenerator> grammar =
-        TextGenerators.parseGrammar(lines, ImmutableMap
-            .<String, Function<ImmutableList<String>, TextGenerator>>of());
+        TextGenerators.parseGrammar(lines);
 
     assertTrue(grammar.containsKey("FOO"));
     assertTrue(grammar.containsKey("BAZ"));

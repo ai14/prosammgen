@@ -1,19 +1,19 @@
 package com.github.ai14.prosammgen;
 
 import com.github.ai14.prosammgen.textgen.*;
-
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.Normalizer;
 import java.text.ParseException;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.function.Function;
 
@@ -49,23 +49,16 @@ public class App {
     }
 
     // Require input.
-    if (reflectionDocumentTitle == null || authorName == null || wordLimit == -1
-            || previousReflectionDocument == null | readingMaterial == null | questions == null) {
-      System.err.println(
-              "prosammgen [-t REFLECTION_DOCUMENT_TITLE | -a AUTHOR_NAME | -w WORD_LIMIT | -p PREVIOUS_REFLECTION_DOCUMENT | -r READING_MATERIAL | -q QUESTIONS]");
-      System.err.println(
-              "In order to generate a reflection document, start the program with the above arguments.");
+    if (reflectionDocumentTitle == null || authorName == null || wordLimit == -1 || previousReflectionDocument == null | readingMaterial == null | questions == null) {
+      System.err.println("prosammgen [-t REFLECTION_DOCUMENT_TITLE | -a AUTHOR_NAME | -w WORD_LIMIT | -p PREVIOUS_REFLECTION_DOCUMENT | -r READING_MATERIAL | -q QUESTIONS]");
+      System.err.println("In order to generate a reflection document, start the program with the above arguments.");
       System.err.println("Make sure: ");
-      System.err.println(
-              "  REFLECTION_DOCUMENT_TITLE is the title of the current reflection seminar surrounded by quotes.");
+      System.err.println("  REFLECTION_DOCUMENT_TITLE is the title of the current reflection seminar surrounded by quotes.");
       System.err.println("  AUTHOR_NAME is the author's name surrounded by quotes.");
       System.err.println("  WORD_LIMIT is a positive integer larger than zero.");
-      System.err.println(
-              "  PREVIOUS_REFLECTION_DOCUMENT is the path to a plaintext file with the author's previous reflection document.");
-      System.err.println(
-              "  READING_MATERIAL is the path to a plaintext file with all the reading material for the current reflection seminar.");
-      System.err.println(
-              "  QUESTIONS is the path to a plaintext file with the current seminar questions, with every question placed on its own line.");
+      System.err.println("  PREVIOUS_REFLECTION_DOCUMENT is the path to a plaintext file with the author's previous reflection document.");
+      System.err.println("  READING_MATERIAL is the path to a plaintext file with all the reading material for the current reflection seminar.");
+      System.err.println("  QUESTIONS is the path to a plaintext file with the current seminar questions, with every question placed on its own line.");
       System.exit(-1);
     }
 
@@ -79,49 +72,54 @@ public class App {
 
     // Create and train a markov chain for the grammar.
     MarkovTrainer trainer = new MarkovTrainer();
-    TextSource wa = new WikipediaArticles(10, "philosophy", "science"); //TODO Add keywords from the keyword identifier as well.
-
-    // temp
-    long rmSize = Files.size(readingMaterial);
-    long waSize = 0;
-    for (Path p : wa.getTexts()) {
-      waSize += Files.size(p);
-    }
-    // aim for reading material to be 50% of wiki articles
-    int weight = (int) (0.5 / (rmSize / ((double) waSize)));
-
-    trainer.train(5, readingMaterial);
+    trainer.train(readingMaterial);
+    //TODO Add keywords from the keyword identifier as well.
+    TextSource wa = new WikipediaArticles(10, "philosophy", "science");
     trainer.train(wa.getTexts());
 
     // Create a synonyms database for the grammar.
     Synonyms synonyms = new WordNetSynonyms();
 
-    ImmutableSet<String> stopWords = ImmutableSet.copyOf(Files.readAllLines(Paths.get("res/stopwords")));
-    KeywordGenerator keywordGenerator = KeywordGenerator.fromText(stopWords, Joiner.on('\n').join(questionList));
+    ImmutableSet<String> stopWords =
+            ImmutableSet.copyOf(Files.readAllLines(Paths.get("res/stopwords")));
+
+    NLPModel nlpModel =
+        NLPModel.loadFromDBs(Paths.get("res/en-sent.bin"), Paths.get("res/en-token.bin"),
+                             Paths.get("res/en-pos-maxent.bin"));
+
+    KeywordGenerator keywordGenerator =
+        KeywordGenerator.withPOSParsing(nlpModel, stopWords, Joiner.on('\n').join(questionList));
 
     ImmutableMap<String, Function<ImmutableList<String>, TextGenerator>> macros = ImmutableMap.of(
-        "MARKOV", n -> new MarkovTextGenerator(trainer, Integer.parseInt(n.get(0))),
-        "KEYWORD", x -> keywordGenerator, // TODO: add back the real keyword system
-        "SYNONYM", words -> new SynonymGenerator(words, synonyms)
+            "MARKOV", n -> new MarkovTextGenerator(trainer, Integer.parseInt(n.get(0))),
+            "SYNONYM", words -> new SynonymGenerator(words, synonyms)
     );
 
-    ImmutableMap<String, TextGenerator> generators = TextGenerators.parseGrammar(Files.readAllLines(Paths.get("res/grammar")), macros);
+    ImmutableMap<String, TextGenerator> generators =
+            TextGenerators.parseGrammar(Files.readAllLines(Paths.get("res/grammar")));
+
+    System.err.println("Grammar is:");
+    for (Map.Entry<String, TextGenerator> generator : generators.entrySet()) {
+      System.err.println(generator.getKey() + " :-\n    " + generator.getValue());
+    }
+    System.err.println();
 
     // Create and train an AI with the input.
-    ReflectionDocumentGenerator rg = new ReflectionDocumentGenerator(generators, questionList);
+    ReflectionDocumentGenerator rg = new ReflectionDocumentGenerator(generators, questionList,
+                                                                     macros, nlpModel, stopWords);
 
     // Generate a reflection document with the AI.
     String report = rg.generateReport(reflectionDocumentTitle, authorName, wordLimit);
 
     // Generate PDF report if pdftex exists on the current system. Otherwise output the LaTeX source on stdout.
     try {
-      //TODO Replace characters in accordance with the prosamm instructions. å -> a, é -> e, etc.
-      String filename = authorName.replaceAll("[^A-Za-z0-9]", "_");
+      // Replace characters in accordance with the prosamm instructions. å -> a, é -> e, etc.
+      String filename = Normalizer.normalize(authorName, Normalizer.Form.NFD).replaceAll(" ", "_").replaceAll("[^A-Za-z_]", "");
       PrintWriter out = new PrintWriter(filename + ".tex");
       out.write(report);
       out.close();
       //TODO Prosammgen has to be run twice to output a PDF with cygwin pdftex.
-      String[] cmd = {"pdftex", "&pdflatex", filename + ".tex"}; //TODO This command doesn't start properly on unix, even though the same command works directly in an unix terminal and on Windows.
+      String[] cmd = {"pdftex", "&pdflatex", "-halt-on-error", filename + ".tex"};
       Process p = Runtime.getRuntime().exec(cmd);
       if (p.getErrorStream().available() == 0) {
         System.out.println("Successfully generated a reflection document as PDF.");

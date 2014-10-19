@@ -40,9 +40,7 @@ public class Delegation implements TextGenerator {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this)
-        .add("production", production)
-        .toString();
+    return production;
   }
 
 }
