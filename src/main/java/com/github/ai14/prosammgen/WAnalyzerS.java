@@ -10,7 +10,9 @@ class WAnalyzerS implements WritingStyleAnalyzer {
    *
    * @param text
    */
-  public void analyze(Path text);
+  public void analyze(Path text){
+    int i = 0;
+  }
 
   /**
    * Get the probabilities for sentences of length [0..longest sentence in the text].
