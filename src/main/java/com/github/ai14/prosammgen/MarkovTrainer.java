@@ -1,7 +1,16 @@
 package com.github.ai14.prosammgen;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class MarkovTrainer {
 
@@ -16,52 +25,46 @@ public class MarkovTrainer {
     sentenceEnds = new HashSet<>();
   }
 
-  public void train(File[] files) {
-    for (File file : files) {
-      try {
-        BufferedReader br = new BufferedReader(new FileReader(file));
+  public void train(Path... files) throws IOException {
+    System.out.println("Starting training");
+    long trainStart = System.currentTimeMillis();
 
-        Ngram ngram = new Ngram(markovOrder);
+    for (Path file : files) {
+      Ngram ngram = new Ngram(markovOrder);
+      String wordBeforeNgram = "";
+      for (String line : Files.readAllLines(file)) {
+        String[] words = line.split("(\\s+)");
 
-        String line;
-        String wordBeforeNgram = "";
-        while ((line = br.readLine()) != null) {
-          String[] words = line.split("(\\s+)");
+        for (int i = 0; i < words.length; i++) {
+          String ns = ngram.toString();
+          String nw = words[i];
 
-          for (int i = 0; i < words.length; i++) {
-            String ns = ngram.toString();
-            String nw = words[i];
-
-            // find starts of sentences
-            if (wordBeforeNgram.equals("") || wordBeforeNgram.endsWith(".")) {
-              Ngram ngramCopy = new Ngram(ngram);
-              sentenceStarts.add(ngramCopy);
-            }
-
-            // find ends of sentences
-            if (ngram.getLast().endsWith(".")) {
-              Ngram ngramCopy = new Ngram(ngram);
-              sentenceEnds.add(ngramCopy);
-            }
-
-            if (!nextWordCounter.containsKey(ns)) {
-              nextWordCounter.put(ns, new HashMap<>());
-            }
-
-            if (!nextWordCounter.get(ns).containsKey(nw)) {
-              nextWordCounter.get(ns).put(nw, 0);
-            }
-
-            int c = nextWordCounter.get(ns).get(nw);
-            nextWordCounter.get(ns).put(nw, c + 1);
-
-            wordBeforeNgram = ngram.getFirst();
-            ngram.pushWord(nw);
+          // find starts of sentences
+          if (wordBeforeNgram.equals("") || wordBeforeNgram.endsWith(".")) {
+            Ngram ngramCopy = new Ngram(ngram);
+            sentenceStarts.add(ngramCopy);
           }
-        }
 
-      } catch (FileNotFoundException e) {
-      } catch (IOException e) {
+          // find ends of sentences
+          if (ngram.getLast().endsWith(".")) {
+            Ngram ngramCopy = new Ngram(ngram);
+            sentenceEnds.add(ngramCopy);
+          }
+
+          if (!nextWordCounter.containsKey(ns)) {
+            nextWordCounter.put(ns, new HashMap<>());
+          }
+
+          if (!nextWordCounter.get(ns).containsKey(nw)) {
+            nextWordCounter.get(ns).put(nw, 0);
+          }
+
+          int c = nextWordCounter.get(ns).get(nw);
+          nextWordCounter.get(ns).put(nw, c + 1);
+
+          wordBeforeNgram = ngram.getFirst();
+          ngram.pushWord(nw);
+        }
       }
     }
   }

@@ -102,4 +102,51 @@ public class TextGeneratorsTest {
                  gen);
   }
 
+  @Test
+  public void testGrammarParse() throws Exception {
+    ImmutableList<String> lines =
+        ImmutableList.of("#FOO Bar");
+
+    ImmutableMap<String, TextGenerator> grammar =
+        TextGenerators.parseGrammar(lines, ImmutableMap
+            .<String, Function<ImmutableList<String>, TextGenerator>>of());
+
+    assertTrue(grammar.containsKey("FOO"));
+    assertEquals(new Constant("Bar"), grammar.get("FOO"));
+  }
+
+  @Test
+  public void testGrammarParseTwo() throws Exception {
+    ImmutableList<String> lines =
+        ImmutableList.of("#FOO Bar #BAZ",
+                         "#BAZ xyz");
+
+    ImmutableMap<String, TextGenerator> grammar =
+        TextGenerators.parseGrammar(lines, ImmutableMap
+            .<String, Function<ImmutableList<String>, TextGenerator>>of());
+
+    assertTrue(grammar.containsKey("FOO"));
+    assertTrue(grammar.containsKey("BAZ"));
+    assertEquals(new Conjunction(new Constant("Bar "), new Delegation("BAZ")), grammar.get("FOO"));
+    assertEquals(new Constant("xyz"), grammar.get("BAZ"));
+  }
+
+  @Test
+  public void testGrammarParseTwoComments() throws Exception {
+    ImmutableList<String> lines =
+        ImmutableList.of("// Comment!",
+                         "#FOO Bar #BAZ",
+                         "    // Comment again!",
+                         "",
+                         "#BAZ xyz");
+
+    ImmutableMap<String, TextGenerator> grammar =
+        TextGenerators.parseGrammar(lines, ImmutableMap
+            .<String, Function<ImmutableList<String>, TextGenerator>>of());
+
+    assertTrue(grammar.containsKey("FOO"));
+    assertTrue(grammar.containsKey("BAZ"));
+    assertEquals(new Conjunction(new Constant("Bar "), new Delegation("BAZ")), grammar.get("FOO"));
+    assertEquals(new Constant("xyz"), grammar.get("BAZ"));
+  }
 }

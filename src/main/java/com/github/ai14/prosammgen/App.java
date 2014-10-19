@@ -1,18 +1,31 @@
 package com.github.ai14.prosammgen;
 
-import java.io.File;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+
+import com.github.ai14.prosammgen.textgen.Constant;
+import com.github.ai14.prosammgen.textgen.MarkovTextGenerator;
+import com.github.ai14.prosammgen.textgen.TextGenerator;
+import com.github.ai14.prosammgen.textgen.TextGenerators;
+
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.ParseException;
+import java.util.Random;
 import java.util.Scanner;
+import java.util.function.Function;
 
 public class App {
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException, ParseException {
 
     // Get input.
     String reflectionDocumentTitle = null, authorName = null;
     int wordLimit = -1;
-    File previousReflectionDocument = null, readingMaterial = null, questions = null;
+    Path previousReflectionDocument = null, readingMaterial = null, questions = null;
     for (int i = 0; i < args.length; i++) {
       switch (args[i]) {
         case "-t":
@@ -25,13 +38,13 @@ public class App {
           wordLimit = Integer.parseInt(args[i + 1]);
           break;
         case "-p":
-          previousReflectionDocument = new File(args[i + 1]);
+          previousReflectionDocument = Paths.get(args[i + 1]);
           break;
         case "-r":
-          readingMaterial = new File(args[i + 1]);
+          readingMaterial = Paths.get(args[i + 1]);
           break;
         case "-q":
-          questions = new File(args[i + 1]);
+          questions = Paths.get(args[i + 1]);
           break;
       }
     }
@@ -61,11 +74,31 @@ public class App {
 
     //TODO Sanitize input.
 
+    MarkovTrainer trainer = new MarkovTrainer();
+    trainer.train(readingMaterial);
+
+    Random random = new Random();
+
+    ImmutableMap<String, Function<ImmutableList<String>, TextGenerator>> macros =
+        ImmutableMap
+            .of("MARKOV", n -> new MarkovTextGenerator(trainer, Integer.parseInt(n.get(0))),
+                // TODO: add back the real keyword system
+                "KEYWORD", x -> new Constant("cars"),
+                // TODO: add back the real synonym system
+                "SYNONYM", alts -> new Constant(alts.get(random.nextInt(alts.size()))));
+
+    ImmutableMap<String, TextGenerator> generators = TextGenerators.parseGrammar(
+        Files.readAllLines(Paths.get("res/grammar")), macros);
+
+    Files.readAllLines(questions);
+
     // Create and train an AI with the input.
-    // ReflectionDocumentGenerator rg = new ReflectionDocumentGenerator(previousReflectionDocument, readingMaterial, questions);
+    ReflectionDocumentGenerator rg =
+        new ReflectionDocumentGenerator(generators,
+                                        ImmutableList.copyOf(Files.readAllLines(questions)));
 
     // Generate a reflection document with the AI.
-    String report = ""; // rg.generateReport(reflectionDocumentTitle, authorName, wordLimit);
+    String report = rg.generateReport(reflectionDocumentTitle, authorName, wordLimit);
 
     // Generate PDF report if pdftex exists on the current system. Otherwise output the LaTeX source on stdout.
     try {
@@ -93,4 +126,5 @@ public class App {
       System.out.println(report);
     }
   }
+
 }
