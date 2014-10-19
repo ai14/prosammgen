@@ -77,8 +77,8 @@ public class App {
     // Create and train a markov chain for the grammar.
     MarkovTrainer trainer = new MarkovTrainer();
     trainer.train(readingMaterial);
-    //TextSource wa = new WikipediaArticles(10, "philosophy", "science"); //TODO Add keywords from the keyword identifier as well.
-    //trainer.train(wa.getTexts());
+    TextSource wa = new WikipediaArticles(10, "philosophy", "science"); //TODO Add keywords from the keyword identifier as well.
+    trainer.train(wa.getTexts());
 
     // Create a synonyms database for the grammar.
     Synonyms synonyms = new WordNetSynonyms();
