@@ -59,7 +59,8 @@ public class WikipediaArticles implements TextSource {
 
           // Extract article content from the response.
           String content = response.replaceAll("\\<.*?\\>", ""); //TODO Don't strip actual text content surrounded by < and >.
-          content = StringEscapeUtils.unescapeHtml4(content);
+          content = StringEscapeUtils.unescapeHtml4(content); // Convert HTML entities to unicode.
+          content = content.replaceAll("&|%|\\$|#|_|\\{|\\}|~|\\^|\\\\", ""); // Strip LaTeX reserved characters.
 
           //TODO Try to filter out meta data sections such as "External links".
 
