@@ -1,5 +1,6 @@
 package com.github.ai14.prosammgen.textgen;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -43,9 +44,7 @@ public class Disjunction implements TextGenerator {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this)
-        .add("generators", generators)
-        .toString();
+    return Joiner.on("\n  | ").join(generators);
   }
 
 }

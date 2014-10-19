@@ -100,7 +100,7 @@ public class App {
 
     System.err.println("Grammar is:");
     for (Map.Entry<String, TextGenerator> generator : generators.entrySet()) {
-      System.err.println(generator.getKey() + " :- " + generator.getValue());
+      System.err.println(generator.getKey() + " :-\n    " + generator.getValue());
     }
     System.err.println();
 

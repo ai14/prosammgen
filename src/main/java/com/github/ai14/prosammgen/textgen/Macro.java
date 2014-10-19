@@ -1,5 +1,6 @@
 package com.github.ai14.prosammgen.textgen;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
@@ -20,9 +21,6 @@ public class Macro implements TextGenerator {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this)
-        .add("args", args)
-        .add("name", name)
-        .toString();
+    return name + "(" + Joiner.on(", ").join(args) + ")";
   }
 }
