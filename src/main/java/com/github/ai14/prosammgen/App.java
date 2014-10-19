@@ -1,8 +1,11 @@
 package com.github.ai14.prosammgen;
 
 import com.github.ai14.prosammgen.textgen.*;
+
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -69,6 +72,7 @@ public class App {
 
     //TODO Sanitize input.
 
+    ImmutableList<String> questionList = ImmutableList.copyOf(Files.readAllLines(questions));
     //TODO Create a keyword identifier for the grammar.
     //KeywordIdentifier keywordIdentifier = new ...
 
@@ -81,16 +85,19 @@ public class App {
     // Create a synonyms database for the grammar.
     Synonyms synonyms = new WordNetSynonyms();
 
+    ImmutableSet<String> stopWords = ImmutableSet.copyOf(Files.readAllLines(Paths.get("res/stopwords")));
+    KeywordGenerator keywordGenerator = KeywordGenerator.fromText(stopWords, Joiner.on('\n').join(questionList));
+
     ImmutableMap<String, Function<ImmutableList<String>, TextGenerator>> macros = ImmutableMap.of(
-            "MARKOV", n -> new MarkovTextGenerator(trainer, Integer.parseInt(n.get(0))),
-            "KEYWORD", x -> new Constant("cars"), // TODO: add back the real keyword system
-            "SYNONYM", words -> new SynonymGenerator(words, synonyms)
+        "MARKOV", n -> new MarkovTextGenerator(trainer, Integer.parseInt(n.get(0))),
+        "KEYWORD", x -> keywordGenerator, // TODO: add back the real keyword system
+        "SYNONYM", words -> new SynonymGenerator(words, synonyms)
     );
 
     ImmutableMap<String, TextGenerator> generators = TextGenerators.parseGrammar(Files.readAllLines(Paths.get("res/grammar")), macros);
 
     // Create and train an AI with the input.
-    ReflectionDocumentGenerator rg = new ReflectionDocumentGenerator(generators, ImmutableList.copyOf(Files.readAllLines(questions)));
+    ReflectionDocumentGenerator rg = new ReflectionDocumentGenerator(generators, questionList);
 
     // Generate a reflection document with the AI.
     String report = rg.generateReport(reflectionDocumentTitle, authorName, wordLimit);
