@@ -5,10 +5,7 @@ import com.github.ai14.prosammgen.Ngram;
 import com.github.ai14.prosammgen.WordProbability;
 import com.github.ai14.prosammgen.textgen.TextGenerator;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class MarkovTextGenerator implements TextGenerator {
 
@@ -29,16 +26,16 @@ public class MarkovTextGenerator implements TextGenerator {
   // use calculated statistics instead
   private static String getText(Random rand, int numberSentences, MarkovTrainer trainer) {
     Map<String, ArrayList<WordProbability>> markovChain = trainer.getMarkovChain();
-    StringBuilder sb = new StringBuilder();
 
     List<Ngram> startNgrams = trainer.getSentenceStarts();
     Ngram ngram = startNgrams.get(rand.nextInt(startNgrams.size()));
 
+    StringJoiner sentences = new StringJoiner(" ");
     for (int i = 0; i < numberSentences; i++) {
-      sb.append(getSentence(rand, markovChain, startNgrams, ngram));
+      sentences.add(getSentence(rand, markovChain, startNgrams, ngram));
     }
 
-    return sb.toString();
+    return sentences.toString();
   }
 
   private static String getSentence(Random rand,
