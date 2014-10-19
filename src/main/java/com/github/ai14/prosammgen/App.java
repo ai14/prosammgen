@@ -14,12 +14,13 @@ import java.nio.file.Paths;
 import java.text.Normalizer;
 import java.text.ParseException;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.function.Function;
+
+import static java.lang.ProcessBuilder.Redirect.INHERIT;
 
 public class App {
 
-  public static void main(String[] args) throws IOException, ParseException {
+  public static void main(String[] args) throws IOException, ParseException, InterruptedException {
 
     // Get input.
     String reflectionDocumentTitle = null, authorName = null;
@@ -94,11 +95,11 @@ public class App {
             ImmutableSet.copyOf(Files.readAllLines(Paths.get("res/stopwords")));
 
     NLPModel nlpModel =
-        NLPModel.loadFromDBs(Paths.get("res/en-sent.bin"), Paths.get("res/en-token.bin"),
-                             Paths.get("res/en-pos-maxent.bin"));
+            NLPModel.loadFromDBs(Paths.get("res/en-sent.bin"), Paths.get("res/en-token.bin"),
+                    Paths.get("res/en-pos-maxent.bin"));
 
     KeywordGenerator keywordGenerator =
-        KeywordGenerator.withPOSParsing(nlpModel, stopWords, Joiner.on('\n').join(questionList));
+            KeywordGenerator.withPOSParsing(nlpModel, stopWords, Joiner.on('\n').join(questionList));
 
     ImmutableMap<String, Function<ImmutableList<String>, TextGenerator>> macros = ImmutableMap.of(
             "MARKOV", n -> new MarkovTextGenerator(trainer, Integer.parseInt(n.get(0))),
@@ -116,30 +117,26 @@ public class App {
 
     // Create and train an AI with the input.
     ReflectionDocumentGenerator rg = new ReflectionDocumentGenerator(generators, questionList,
-                                                                     macros, nlpModel, stopWords);
+            macros, nlpModel, stopWords);
 
     // Generate a reflection document with the AI.
     String report = rg.generateReport(reflectionDocumentTitle, authorName, wordLimit);
 
     // Generate PDF report if pdftex exists on the current system. Otherwise output the LaTeX source on stdout.
-    try {
-      // Replace characters in accordance with the prosamm instructions. å -> a, é -> e, etc.
-      String filename = Normalizer.normalize(authorName, Normalizer.Form.NFD).replaceAll(" ", "_").replaceAll("[^A-Za-z_]", "");
-      PrintWriter out = new PrintWriter(filename + ".tex");
-      out.write(report);
-      out.close();
-      //TODO Prosammgen has to be run twice to output a PDF with cygwin pdftex.
-      Process p = Runtime.getRuntime().exec("pdftex -file-line-error -halt-on-error &pdflatex " + filename + ".tex");
-      if (p.getErrorStream().available() == 0) {
-        System.out.println("Successfully generated a reflection document as PDF.");
-      } else { //TODO Should output the errors from pdflatex.
-        Scanner s = new Scanner(p.getErrorStream());
-        while (s.hasNextLine()) System.err.println(s.nextLine());
-      }
-    } catch (IOException e) {
-      System.err.println("Install pdflatex to generate reflection documents as PDF.");
-      System.out.println(report);
-    }
+
+    // Replace characters in accordance with the prosamm instructions. å -> a, é -> e, etc.
+    String filename = Normalizer.normalize(authorName, Normalizer.Form.NFD).replaceAll(" ", "_").replaceAll("[^A-Za-z_]", "");
+    PrintWriter out = new PrintWriter(filename + ".tex");
+    out.write(report);
+    out.close();
+
+    //TODO Prosammgen has to be run twice to output a PDF with cygwin pdftex.
+    Process p = new ProcessBuilder()
+            .redirectError(INHERIT)
+            .redirectOutput(INHERIT)
+            .command("pdftex", "-file-line-error", "-halt-on-error", "&pdflatex", filename + ".tex")
+            .start();
+    if (p.waitFor() == 0) System.out.println("Successfully generated a reflection document as PDF.");
   }
 
 }
