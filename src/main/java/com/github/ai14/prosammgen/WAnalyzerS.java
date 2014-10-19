@@ -29,7 +29,7 @@ class WAnalyzerS implements WritingStyleAnalyzer{
    *
    * @return
    */
-  public double[] getSentenceLengthProbabilities(Path text) java.io.IOException {
+  public double[] getSentenceLengthProbabilities(Path text) throws java.io.IOException {
     //probs from the text
     int numSentence = 0;
     int beginT = 0;
@@ -66,7 +66,7 @@ class WAnalyzerS implements WritingStyleAnalyzer{
    *
    * @return
    */
-  public double[] getWordLengthProbabilities(Path text) java.io.IOException {
+  public double[] getWordLengthProbabilities(Path text) throws java.io.IOException {
     //probs from the text
     int textSize = 0;
     List<Integer>wordSize = new ArrayList<>();
@@ -94,7 +94,7 @@ class WAnalyzerS implements WritingStyleAnalyzer{
    *
    * @return
    */
-  public double[] getSentencesPerParagraphProbabilities(Path text) java.io.IOException{
+  public double[] getSentencesPerParagraphProbabilities(Path text) throws java.io.IOException{
 	//probs from the text
 	int numParagraph = 0;
 	List<Integer>SentencesParagraph = new ArrayList<>();
