@@ -52,7 +52,7 @@ public final class ReflectionDocumentGenerator {
       KeywordGenerator keywordGenerator = KeywordGenerator.withPOSParsing(nlp, stopWords, question);
 
       // Generate a Markov chain for the current question.
-      MarkovTrainer markovChain = generateMarkovChain(question, readingMaterial);
+      MarkovChain markovChain = generateMarkovChain(question, readingMaterial);
 
       // Define grammar macros for the current question.
       ImmutableMap.Builder<String, Function<ImmutableList<String>, TextGenerator>> macroBuilder = ImmutableMap.builder();
@@ -74,11 +74,12 @@ public final class ReflectionDocumentGenerator {
     return report.toString();
   }
 
-  private MarkovTrainer generateMarkovChain(String question, Path readingMaterial) {
-    MarkovTrainer markovChain = new MarkovTrainer();
+  private MarkovChain generateMarkovChain(String question, Path readingMaterial) {
+    MarkovChain markovChain = new MarkovChain();
 
     try {
       // Get additional training data for the question from text sources (Wikipedia articles).
+      //TODO Don't call with all keywords, use only the longest for example (or whatever is emph{} in the report.
       KeywordGenerator keywordGenerator = KeywordGenerator.withPOSParsing(nlp, stopWords, question);
       ImmutableSet<String> searchTerms = keywordGenerator.getWords();
       TextSource wa = new WikipediaArticles(100, searchTerms.toArray(new String[searchTerms.size()]));

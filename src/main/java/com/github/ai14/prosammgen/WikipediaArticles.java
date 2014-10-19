@@ -28,6 +28,9 @@ public class WikipediaArticles implements TextSource {
   public WikipediaArticles(int articles, String... searchTerms) {
     this.searchTerms = searchTerms;
     this.requestsPerSearchterm = 1 + articles / (1 + searchTerms.length);
+    if (requestsPerSearchterm > 500) {
+      throw new IllegalArgumentException("Searching for too many articles. Disallowed by the MediaWiki API.");
+    }
   }
 
   @Override
@@ -51,24 +54,26 @@ public class WikipediaArticles implements TextSource {
           int gaplimit = requestsPerSearchterm; // “Because excerpts generation can be slow the limit is capped at one whole-page extract.” Solution: do several requests. Sorry Wikipedia!
           for (int i = 0; i < gaplimit; i++) {
             String url = "http://en.wikipedia.org/w/api.php";
-            System.out.println(UrlEscapers.urlPathSegmentEscaper().escape(searchTerm)); //TODO
-            String query = "?redirects&format=xml&action=query&generator=allpages&gaplimit=" + gaplimit + "&gapfrom=" + UrlEscapers.urlPathSegmentEscaper().escape(searchTerm) + "&prop=extracts&exsectionformat=plain&explaintext&excontinue=" + i;
+            //TODO Use MediaWiki free-text search instead of gapfrom.
+            String query = "?format=xml&action=query&generator=allpages&gaplimit=" + gaplimit + "&gapfrom=" + UrlEscapers.urlPathSegmentEscaper().escape(searchTerm) + "&prop=extracts&exsectionformat=plain&explaintext&excontinue=" + i;
 
-            // Read url into a huge string.
-            Scanner s = new Scanner(new URL(url + query).openStream());
-            s.useDelimiter("\\Z");
-            String response = s.next();
+            try (Scanner s = new Scanner(new URL(url + query).openStream())) {
 
-            // Extract article content from the response.
-            String content = response.replaceAll("\\<.*?\\>", ""); //TODO Don't strip actual text content surrounded by < and >.
-            content = StringEscapeUtils.unescapeHtml4(content); // Convert HTML entities to unicode.
-            content = content.replaceAll("&|%|\\$|#|_|\\{|\\}|~|\\^|\\\\", ""); // Strip LaTeX reserved characters.
-            content = content.replace("π", "_"); // Strip unsupported characters.
+              // Read url into a huge string.
+              s.useDelimiter("\\Z");
+              String response = s.next();
 
-            //TODO Try to filter out meta data sections such as "External links".
+              // Extract article content from the response.
+              String content = response.replaceAll("\\<.*?\\>", ""); //TODO Don't strip actual text content surrounded by < and >.
+              content = StringEscapeUtils.unescapeHtml4(content); // Convert HTML entities to unicode.
+              content = content.replaceAll("&|%|\\$|#|_|\\{|\\}|~|\\^|\\\\", ""); // Strip LaTeX reserved characters.
+              content = content.replace("π", "_"); // Strip unsupported characters.
 
-            // Write article content to file.
-            out.print(content);
+              //TODO Try to filter out meta data sections such as "External links".
+
+              // Write article content to file.
+              out.print(content);
+            }
           }
         }
         articles.add(Paths.get(searchTerm + ".txt"));
