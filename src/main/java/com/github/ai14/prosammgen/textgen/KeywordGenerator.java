@@ -67,7 +67,7 @@ public class KeywordGenerator implements TextGenerator {
     }
 
     ImmutableSet<String> keywords = resultBuilder.build();
-    System.err.println("Keywords are: " + keywords);
+    System.err.println("Keywords are: " + keywords); //TODO Remove.
 
     ImmutableSet<String> filteredKeywords =
             ImmutableSet.copyOf(Iterables.filter(keywords,
