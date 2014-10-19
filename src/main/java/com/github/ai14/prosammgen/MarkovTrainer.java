@@ -26,9 +26,6 @@ public class MarkovTrainer {
   }
 
   public void train(Path... files) throws IOException {
-    System.out.println("Starting training");
-    long trainStart = System.currentTimeMillis();
-
     for (Path file : files) {
       Ngram ngram = new Ngram(markovOrder);
       String wordBeforeNgram = "";
