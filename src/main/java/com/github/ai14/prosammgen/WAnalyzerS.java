@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
-public class WAnalyzerS implements WritingStyleAnalyzer{
+public class WAnalyzerS{
 
   /**
    * Given a text this calculates the probabilities for different metrics that describes the writing style of the text author.
