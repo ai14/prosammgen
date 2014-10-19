@@ -1,25 +1,33 @@
-package com.github.ai14.prosammgen;
+package com.github.ai14.prosammgen.textgen;
 
-import java.io.File;
-import java.util.*;
+import com.github.ai14.prosammgen.MarkovTrainer;
+import com.github.ai14.prosammgen.Ngram;
+import com.github.ai14.prosammgen.WordProbability;
+import com.github.ai14.prosammgen.textgen.TextGenerator;
 
-public class MarkovTextGenerator {
-  private MarkovTrainer trainer;
-  private Random rand;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
-  public MarkovTextGenerator(File... files) {
-    trainer = new MarkovTrainer();
-    trainer.train(files); // train on assignment files
+public class MarkovTextGenerator implements TextGenerator {
 
-    TextSource textSource = new WikipediaArticles();
-    trainer.train(textSource.getTexts()); // train on featured wiki articles
+  private final MarkovTrainer trainer;
+  private final int numSentences;
 
-    rand = new Random(System.currentTimeMillis());
+  public MarkovTextGenerator(MarkovTrainer trainer, int numSentences) {
+    this.trainer = trainer;
+    this.numSentences = numSentences;
+  }
+
+  @Override
+  public String generateText(Context context) {
+    return getText(context.getRandom(), numSentences, trainer);
   }
 
   // TODO: remove averageSentenceLength from this method?
   // use calculated statistics instead
-  public String getText(int numberSentences) {
+  private static String getText(Random rand, int numberSentences, MarkovTrainer trainer) {
     Map<String, ArrayList<WordProbability>> markovChain = trainer.getMarkovChain();
     StringBuilder sb = new StringBuilder();
 
@@ -27,15 +35,16 @@ public class MarkovTextGenerator {
     Ngram ngram = startNgrams.get(rand.nextInt(startNgrams.size()));
 
     for (int i = 0; i < numberSentences; i++) {
-      sb.append(getSentence(markovChain, startNgrams, ngram));
+      sb.append(getSentence(rand, markovChain, startNgrams, ngram));
     }
 
     return sb.toString();
   }
 
-  private String getSentence(Map<String, ArrayList<WordProbability>> markovChain,
-                             List<Ngram> startNgrams,
-                             Ngram ngram) {
+  private static String getSentence(Random rand,
+                                    Map<String, ArrayList<WordProbability>> markovChain,
+                                    List<Ngram> startNgrams,
+                                    Ngram ngram) {
 
     StringBuilder sb = new StringBuilder();
 
@@ -54,7 +63,7 @@ public class MarkovTextGenerator {
         tryToEndSentence = false;
       }
 
-      chooseNextWord(markovChain, startNgrams, ngram, tryToEndSentence);
+      chooseNextWord(rand, markovChain, startNgrams, ngram, tryToEndSentence);
     }
 
     // remove the last space
@@ -63,9 +72,11 @@ public class MarkovTextGenerator {
     return sb.toString();
   }
 
-  private void chooseNextWord(Map<String, ArrayList<WordProbability>> markovChain,
-                              List<Ngram> startNgrams,
-                              Ngram ngram, boolean tryToEndSentence) {
+  private static void chooseNextWord(
+      Random rand,
+      Map<String, ArrayList<WordProbability>> markovChain,
+      List<Ngram> startNgrams,
+      Ngram ngram, boolean tryToEndSentence) {
 
     ArrayList<WordProbability> wordProbabilities = markovChain.get(ngram.toString());
     String nextWord;
@@ -96,17 +107,18 @@ public class MarkovTextGenerator {
         wp.probability = wp.probability / prob;
       }
 
-      nextWord = !endWords.isEmpty() ? chooseWord(endWords) : chooseWord(wordProbabilities);
+      nextWord =
+          !endWords.isEmpty() ? chooseWord(rand, endWords) : chooseWord(rand, wordProbabilities);
 
     } else {
       // choose from all possible next words
-      nextWord = chooseWord(wordProbabilities);
+      nextWord = chooseWord(rand, wordProbabilities);
     }
 
     ngram.pushWord(nextWord);
   }
 
-  private String chooseWord(ArrayList<WordProbability> wordProbabilities) {
+  private static String chooseWord(Random rand, ArrayList<WordProbability> wordProbabilities) {
     double d = rand.nextDouble();
     double upperLimit = wordProbabilities.get(0).probability;
 
