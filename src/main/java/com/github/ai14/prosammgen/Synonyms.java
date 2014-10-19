@@ -1,27 +1,12 @@
 package com.github.ai14.prosammgen;
 
-import java.util.List;
-import java.util.Random;
+import com.google.common.collect.ImmutableList;
 
-interface Synonyms {
-  static final Random random = new Random();
+public interface Synonyms {
 
   /**
-   * Get a random synonym for the input words. If no synonyms can be found the input words are returned. Make sure the input words are actually synonyms to each other.
-   *
-   * @param words
-   * @return
+   * Get all synonyms for the input words. If no synonyms can be found a list containing only the
+   * input words is returned. Make sure the input words are actually synonyms to each other.
    */
-  public default String getSynonym(String... words) {
-    List<String> synonyms = getSynonyms(words);
-    return synonyms.get(random.nextInt(synonyms.size()));
-  }
-
-  /**
-   * Get all synonyms for the input words. If no synonyms can be found a list containing only the input words is returned. Make sure the input words are actually synonyms to each other.
-   *
-   * @param words
-   * @return
-   */
-  public List<String> getSynonyms(String... words);
+  public ImmutableList<String> getSynonyms(ImmutableList<String> words);
 }
