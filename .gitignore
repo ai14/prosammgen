@@ -7,3 +7,4 @@ target/
 *.bak
 *.aux
 *.pdf
+*.txt
