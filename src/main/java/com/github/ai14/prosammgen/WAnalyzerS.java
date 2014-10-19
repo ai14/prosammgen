@@ -79,13 +79,13 @@ class WAnalyzerS {
 		  x++;
 		  wordSize.set(words[i].length(), x);
         }
-      }
-      //calculate probs
-      double[] prob = new double[wordSize.size()];
-      for(int j = 0; j < prob.length ;j++){
+    }
+    //calculate probs
+    double[] prob = new double[wordSize.size()];
+    for(int j = 0; j < prob.length ;j++){
         prob[j] = wordSize.get(j)/textSize;
-      }
-      return prob;
+    }
+    return prob;
   }
 
   /**
@@ -94,24 +94,23 @@ class WAnalyzerS {
    * @return
    */
   public double[] getSentencesPerParagraphProbabilities(Path text) throws IOException{
-	  //probs from the text
-    int numParagraph = 0;
-    int beginT = 0;
+	//probs from the text
+	int numParagraph = 0;
 	List<Integer>SentencesParagraph = new ArrayList<>();
-    //Read the text
-    for (String line : Files.readAllLines(text)) {
+	//Read the text
+	for (String line : Files.readAllLines(text)) {
 		//Split in paragraphs
-        String[] paragraphs = line.split("\r");
-        numParagraph = paragraphs.length;
-        //each paragraph
-        for (int i = 0; i < numParagraph; i++) {
+		String[] paragraphs = line.split("\r");
+		numParagraph = paragraphs.length;
+		//each paragraph
+		for (int i = 0; i < numParagraph; i++) {
 			//Split into words every paragraph
 			String[] worksParagraph = line.split("\\s+");
 			int countSP = 0;			
 			//Count number of sentence per paragraph
 			for (int j = 0; j < worksParagraph.length; j++) {
-			  // find all sentences per paragraph
-			  if (worksParagraph[j].endsWith("."))++countSP;
+				// find all sentences per paragraph
+				if (worksParagraph[j].endsWith("."))++countSP;
 			}
 			int x = SentencesParagraph.get(countSP);
 			x++;
@@ -119,11 +118,11 @@ class WAnalyzerS {
 		}
 	}	
 	double[] prob = new double [SentencesParagraph.size()];
-	  for(int j = 0; j < prob.length; j++){
+	for(int j = 0; j < prob.length; j++){
 		prob[j] = SentencesParagraph.get(j)/numParagraph;
-	  }
-	  return prob;
-  }
+	}
+	return prob;
+    }
 
   /**
    * Get the probabilities for ratios (answer length / question length).
