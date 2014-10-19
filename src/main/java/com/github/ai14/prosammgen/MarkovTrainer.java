@@ -22,7 +22,7 @@ public class MarkovTrainer {
 
   public MarkovTrainer() {
     nextWordCounter = new HashMap<>();
-    sentenceStarts = new LinkedList<>();
+    sentenceStarts = new ArrayList<>();
     sentenceEnds = new HashSet<>();
   }
 
