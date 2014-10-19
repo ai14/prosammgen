@@ -67,11 +67,13 @@ class WAnalyzerS {
    */
   public double[] getWordLengthProbabilities(Path text){
     //probs from the text
+    int textSize = 0;
     List<Integer>wordSize = new ArrayList<>();
     //Read the text
     for (String line : Files.readAllLines(text)) {
         String[] words = line.split("\\s+");
-        for (int i = 0; i < words.length; i++) {
+        textSize = words.length
+        for (int i = 0; i < textSize; i++) {
           //word size        
 		  int x = wordSize.get(words[i].length());
 		  x++;
@@ -81,7 +83,7 @@ class WAnalyzerS {
       //calculate probs
       double[] prob = new double[wordSize.size()];
       for(int j = 0; j < prob.length ;j++){
-        prob[j] = wordSize.get(j)/words.length;
+        prob[j] = wordSize.get(j)/textSize;
       }
       return prob;
   }
