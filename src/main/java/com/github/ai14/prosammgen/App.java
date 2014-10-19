@@ -72,7 +72,8 @@ public class App {
     // Create and train a markov chain for the grammar.
     MarkovTrainer trainer = new MarkovTrainer();
     trainer.train(readingMaterial);
-    TextSource wa = new WikipediaArticles(10, "philosophy", "science"); //TODO Add keywords from the keyword identifier as well.
+    //TODO Add keywords from the keyword identifier as well.
+    TextSource wa = new WikipediaArticles(10, "philosophy", "science");
     trainer.train(wa.getTexts());
 
     // Create a synonyms database for the grammar.
@@ -80,23 +81,25 @@ public class App {
 
     ImmutableSet<String> stopWords =
             ImmutableSet.copyOf(Files.readAllLines(Paths.get("res/stopwords")));
+
+    NLPModel nlpModel =
+        NLPModel.loadFromDBs(Paths.get("res/en-sent.bin"), Paths.get("res/en-token.bin"),
+                             Paths.get("res/en-pos-maxent.bin"));
+
     KeywordGenerator keywordGenerator =
-            KeywordGenerator.withPOSParsing(Paths.get("res/en-sent.bin"), Paths.get("res/en-token.bin"),
-                    Paths.get("res/en-pos-maxent.bin"), stopWords,
-                    Joiner.on('\n').join(questionList));
+        KeywordGenerator.withPOSParsing(nlpModel, stopWords, Joiner.on('\n').join(questionList));
 
     ImmutableMap<String, Function<ImmutableList<String>, TextGenerator>> macros = ImmutableMap.of(
             "MARKOV", n -> new MarkovTextGenerator(trainer, Integer.parseInt(n.get(0))),
-            "KEYWORD", x -> keywordGenerator, // TODO: add back the real keyword system
             "SYNONYM", words -> new SynonymGenerator(words, synonyms)
     );
 
-    ImmutableMap<String, TextGenerator>
-            generators =
-            TextGenerators.parseGrammar(Files.readAllLines(Paths.get("res/grammar")), macros);
+    ImmutableMap<String, TextGenerator> generators =
+            TextGenerators.parseGrammar(Files.readAllLines(Paths.get("res/grammar")));
 
     // Create and train an AI with the input.
-    ReflectionDocumentGenerator rg = new ReflectionDocumentGenerator(generators, questionList);
+    ReflectionDocumentGenerator rg = new ReflectionDocumentGenerator(generators, questionList,
+                                                                     macros, nlpModel, stopWords);
 
     // Generate a reflection document with the AI.
     String report = rg.generateReport(reflectionDocumentTitle, authorName, wordLimit);

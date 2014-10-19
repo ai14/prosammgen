@@ -13,7 +13,6 @@ import java.text.ParseException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,9 +27,7 @@ public final class TextGenerators {
     throw new IllegalAccessError("This class may not be instantiated.");
   }
 
-  public static TextGenerator parse(
-      String definition,
-      ImmutableMap<String, Function<ImmutableList<String>, TextGenerator>> macros)
+  public static TextGenerator parse(String definition)
       throws ParseException {
     ImmutableList.Builder<TextGenerator> resultBuilder = ImmutableList.builder();
 
@@ -48,11 +45,7 @@ public final class TextGenerators {
           ImmutableList<String> macroArgs = ImmutableList.copyOf(
               Splitter.on(',').omitEmptyStrings().trimResults().split(matcher.group(2)));
 
-          if (!macros.containsKey(macroName)) {
-            throw new ParseException("Unknown macro '" + macroName + "'", i);
-          }
-
-          resultBuilder.add(macros.get(macroName).apply(macroArgs));
+          resultBuilder.add(new Macro(macroName, macroArgs));
           i = definition.indexOf(')', i) + 1;
           break;
         case '#':
@@ -83,9 +76,7 @@ public final class TextGenerators {
     }
   }
 
-  public static ImmutableMap<String, TextGenerator> parseGrammar(
-      List<String> lines,
-      ImmutableMap<String, Function<ImmutableList<String>, TextGenerator>> macros)
+  public static ImmutableMap<String, TextGenerator> parseGrammar(List<String> lines)
       throws ParseException {
     Multimap<String, TextGenerator> productions = HashMultimap.create();
     for (String line : lines) {
@@ -99,7 +90,7 @@ public final class TextGenerators {
       String name = parts[0].substring(1);
       String definition = parts[1];
 
-      productions.put(name, parse(definition, macros));
+      productions.put(name, parse(definition));
     }
 
     ImmutableMap.Builder<String, TextGenerator> generatorsBuilder = ImmutableMap.builder();
