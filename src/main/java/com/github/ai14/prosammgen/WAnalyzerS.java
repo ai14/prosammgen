@@ -40,7 +40,8 @@ class WAnalyzerS {
           // find all sentences
           if (beginT == 0 || words[i].endsWith(".")) {
             beginT = 1;
-            int count = 0;
+            int count = 1;
+            ++i;
             //Check distance of the sentence
             while(!words[i].endsWith(".")){
               count ++;
@@ -59,7 +60,6 @@ class WAnalyzerS {
       }
       return prob;
   }
-
   /**
    * Get the probabilities for words of length [0..longest word in the text].
    *
@@ -93,9 +93,36 @@ class WAnalyzerS {
    *
    * @return
    */
-  public double[] getSentencesPerParagraphProbabilities(Path text){
-    double [] i= new double[2];
-    return i;
+  public double[] getSentencesPerParagraphProbabilities(Path text) throws IOException{
+	  //probs from the text
+    int numParagraph = 0;
+    int beginT = 0;
+	List<Integer>SentencesParagraph = new ArrayList<>();
+    //Read the text
+    for (String line : Files.readAllLines(text)) {
+		//Split in paragraphs
+        String[] paragraphs = line.split("\r");
+        numParagraph = paragraphs.length;
+        //each paragraph
+        for (int i = 0; i < numParagraph; i++) {
+			//Split into words every paragraph
+			String[] worksParagraph = line.split("\\s+");
+			int countSP = 0;			
+			//Count number of sentence per paragraph
+			for (int j = 0; j < worksParagraph.length; j++) {
+			  // find all sentences per paragraph
+			  if (worksParagraph[j].endsWith("."))++countSP;
+			}
+			int x = SentencesParagraph.get(countSP);
+			x++;
+			SentencesParagraph.set(countSP, x);
+		}
+	}	
+	double[] prob = new double [SentencesParagraph.size()];
+	  for(int j = 0; j < prob.length; j++){
+		prob[j] = SentencesParagraph.get(j)/numParagraph;
+	  }
+	  return prob;
   }
 
   /**
