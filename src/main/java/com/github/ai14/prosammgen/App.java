@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.Normalizer;
 import java.text.ParseException;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.function.Function;
 
@@ -96,6 +97,12 @@ public class App {
 
     ImmutableMap<String, TextGenerator> generators =
             TextGenerators.parseGrammar(Files.readAllLines(Paths.get("res/grammar")));
+
+    System.err.println("Grammar is:");
+    for (Map.Entry<String, TextGenerator> generator : generators.entrySet()) {
+      System.err.println(generator.getKey() + " :- " + generator.getValue());
+    }
+    System.err.println();
 
     // Create and train an AI with the input.
     ReflectionDocumentGenerator rg = new ReflectionDocumentGenerator(generators, questionList,

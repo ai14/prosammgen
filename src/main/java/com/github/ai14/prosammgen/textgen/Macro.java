@@ -1,5 +1,6 @@
 package com.github.ai14.prosammgen.textgen;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 public class Macro implements TextGenerator {
@@ -15,5 +16,13 @@ public class Macro implements TextGenerator {
   @Override
   public String generateText(Context context) {
     return context.getMacro(name).apply(args).generateText(context);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("args", args)
+        .add("name", name)
+        .toString();
   }
 }
