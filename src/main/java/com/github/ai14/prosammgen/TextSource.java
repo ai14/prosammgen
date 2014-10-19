@@ -1,7 +1,6 @@
 package com.github.ai14.prosammgen;
 
 import java.io.File;
-import java.util.List;
 
 public interface TextSource {
 
@@ -10,5 +9,5 @@ public interface TextSource {
    *
    * @return
    */
-  public List<File> getTexts();
+  public File[] getTexts();
 }
