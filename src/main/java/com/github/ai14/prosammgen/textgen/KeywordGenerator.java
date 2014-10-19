@@ -2,6 +2,7 @@ package com.github.ai14.prosammgen.textgen;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 
 import com.github.ai14.prosammgen.NLPModel;
 
@@ -13,6 +14,8 @@ import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.NavigableMap;
 
 public class KeywordGenerator implements TextGenerator {
 
@@ -80,7 +83,17 @@ public class KeywordGenerator implements TextGenerator {
 
   @Override
   public String generateText(Context context) {
-    return Iterables.get(words, context.getRandom().nextInt(words.size()));
+    final NavigableMap<Double, String> probabilities = Maps.newTreeMap();
+    double sumProb = 0;
+
+    for (String word : words) {
+      probabilities.put(sumProb, word);
+      final double probability = Math.log(word.length());
+      sumProb += probability;
+    }
+
+    Map.Entry<Double, String> keyword = probabilities.lowerEntry(Math.random() * sumProb);
+    return keyword.getValue();
   }
 
   public ImmutableSet<String> getWords() {
