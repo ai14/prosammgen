@@ -67,7 +67,7 @@ public class MarkovTextGenerator implements TextGenerator {
     }
 
     // remove the last space
-    sb.deleteCharAt(sb.length() - 1);
+    sb.deleteCharAt(sb.length() - 1); //TODO Fix StringIndexOutOfBoundException
 
     return sb.toString();
   }
