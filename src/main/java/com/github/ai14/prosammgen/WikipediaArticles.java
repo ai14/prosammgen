@@ -26,7 +26,7 @@ public class WikipediaArticles implements TextSource {
    */
   public WikipediaArticles(int articles, String... searchTerms) {
     this.searchTerms = searchTerms;
-    this.requestsPerSearchterm = articles / searchTerms.length;
+    this.requestsPerSearchterm = articles / (1 + searchTerms.length);
   }
 
   @Override
