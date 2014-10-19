@@ -72,7 +72,7 @@ class WAnalyzerS {
     //Read the text
     for (String line : Files.readAllLines(text)) {
         String[] words = line.split("\\s+");
-        textSize = words.length
+        textSize = words.length;
         for (int i = 0; i < textSize; i++) {
           //word size        
 		  int x = wordSize.get(words[i].length());
