@@ -28,7 +28,7 @@ class WAnalyzerS {
    *
    * @return
    */
-  public double[] getSentenceLengthProbabilities(Path text){
+  public double[] getSentenceLengthProbabilities(Path text) throws IOException {
     //probs from the text
     int numSentence = 0;
     int beginT = 0;
@@ -65,7 +65,7 @@ class WAnalyzerS {
    *
    * @return
    */
-  public double[] getWordLengthProbabilities(Path text){
+  public double[] getWordLengthProbabilities(Path text) throws IOException {
     //probs from the text
     int textSize = 0;
     List<Integer>wordSize = new ArrayList<>();
