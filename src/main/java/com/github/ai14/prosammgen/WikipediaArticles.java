@@ -1,5 +1,6 @@
 package com.github.ai14.prosammgen;
 
+import com.google.common.net.UrlEscapers;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.io.BufferedWriter;
@@ -26,7 +27,7 @@ public class WikipediaArticles implements TextSource {
    */
   public WikipediaArticles(int articles, String... searchTerms) {
     this.searchTerms = searchTerms;
-    this.requestsPerSearchterm = articles / (1 + searchTerms.length);
+    this.requestsPerSearchterm = 1 + articles / (1 + searchTerms.length);
   }
 
   @Override
@@ -46,26 +47,29 @@ public class WikipediaArticles implements TextSource {
           }
 
         // Fetch fresh Wikipedia articles.
-        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(searchTerm + ".txt")));
-        int gaplimit = requestsPerSearchterm; // “Because excerpts generation can be slow the limit is capped at one whole-page extract.” Solution: do several requests. Sorry Wikipedia!
-        for (int i = 0; i < gaplimit; i++) {
-          String url = "http://en.wikipedia.org/w/api.php";
-          String query = "?format=xml&action=query&generator=allpages&gaplimit=" + gaplimit + "&gapfrom=" + searchTerm + "&prop=extracts&exsectionformat=plain&explaintext&excontinue=" + i;
+        try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(searchTerm + ".txt")))) {
+          int gaplimit = requestsPerSearchterm; // “Because excerpts generation can be slow the limit is capped at one whole-page extract.” Solution: do several requests. Sorry Wikipedia!
+          for (int i = 0; i < gaplimit; i++) {
+            String url = "http://en.wikipedia.org/w/api.php";
+            System.out.println(UrlEscapers.urlPathSegmentEscaper().escape(searchTerm)); //TODO
+            String query = "?redirects&format=xml&action=query&generator=allpages&gaplimit=" + gaplimit + "&gapfrom=" + UrlEscapers.urlPathSegmentEscaper().escape(searchTerm) + "&prop=extracts&exsectionformat=plain&explaintext&excontinue=" + i;
 
-          // Read url into a huge string.
-          Scanner s = new Scanner(new URL(url + query).openStream());
-          s.useDelimiter("\\Z");
-          String response = s.next();
+            // Read url into a huge string.
+            Scanner s = new Scanner(new URL(url + query).openStream());
+            s.useDelimiter("\\Z");
+            String response = s.next();
 
-          // Extract article content from the response.
-          String content = response.replaceAll("\\<.*?\\>", ""); //TODO Don't strip actual text content surrounded by < and >.
-          content = StringEscapeUtils.unescapeHtml4(content); // Convert HTML entities to unicode.
-          content = content.replaceAll("&|%|\\$|#|_|\\{|\\}|~|\\^|\\\\", ""); // Strip LaTeX reserved characters.
+            // Extract article content from the response.
+            String content = response.replaceAll("\\<.*?\\>", ""); //TODO Don't strip actual text content surrounded by < and >.
+            content = StringEscapeUtils.unescapeHtml4(content); // Convert HTML entities to unicode.
+            content = content.replaceAll("&|%|\\$|#|_|\\{|\\}|~|\\^|\\\\", ""); // Strip LaTeX reserved characters.
+            content = content.replace("π", "_"); // Strip unsupported characters.
 
-          //TODO Try to filter out meta data sections such as "External links".
+            //TODO Try to filter out meta data sections such as "External links".
 
-          // Write article content to file.
-          out.print(content);
+            // Write article content to file.
+            out.print(content);
+          }
         }
         articles.add(Paths.get(searchTerm + ".txt"));
       }

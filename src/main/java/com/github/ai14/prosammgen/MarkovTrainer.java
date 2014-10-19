@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+// TODO Rename class to MarkovChain.
 public class MarkovTrainer {
 
   public static final int markovOrder = 3;

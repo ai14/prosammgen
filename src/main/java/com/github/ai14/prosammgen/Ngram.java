@@ -2,6 +2,7 @@ package com.github.ai14.prosammgen;
 
 import java.util.LinkedList;
 
+//TODO Make class a sub-class of MarkovTrainer.
 public class Ngram {
   private final int order;
   private LinkedList<String> ngram;

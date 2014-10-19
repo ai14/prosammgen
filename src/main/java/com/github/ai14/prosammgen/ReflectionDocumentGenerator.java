@@ -1,76 +1,111 @@
 package com.github.ai14.prosammgen;
 
-import com.github.ai14.prosammgen.textgen.KeywordGenerator;
-import com.github.ai14.prosammgen.textgen.TextGenerator;
+import com.github.ai14.prosammgen.textgen.*;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.ParseException;
 import java.util.Random;
 import java.util.function.Function;
 
-public class ReflectionDocumentGenerator {
-
-  private final ImmutableMap<String, TextGenerator> generators;
-  private final ImmutableList<String> questions;
-  private final ImmutableMap<String, Function<ImmutableList<String>, TextGenerator>> baseMacros;
-  private final NLPModel nlpModel;
+public final class ReflectionDocumentGenerator {
   private final ImmutableSet<String> stopWords;
+  private final NLPModel nlp;
+  private ImmutableMap<String, TextGenerator> generators;
+  private Synonyms synonyms;
 
-  public ReflectionDocumentGenerator(ImmutableMap<String, TextGenerator> generators,
-                                     ImmutableList<String> questions,
-                                     ImmutableMap<String, Function<ImmutableList<String>, TextGenerator>> baseMacros,
-                                     NLPModel nlpModel, ImmutableSet<String> stopWords) {
-    this.generators = generators;
-    this.questions = questions;
-    this.baseMacros = baseMacros;
-    this.nlpModel = nlpModel;
-    this.stopWords = stopWords;
+  public ReflectionDocumentGenerator() throws IOException, ParseException {
+
+    // Load stop words.
+    stopWords = ImmutableSet.copyOf(Files.readAllLines(Paths.get("res/stopwords")));
+
+    // Load NLP.
+    nlp = NLPModel.loadFromDBs(Paths.get("res/en-sent.bin"), Paths.get("res/en-token.bin"), Paths.get("res/en-pos-maxent.bin"));
+
+    // Load synonyms database.
+    synonyms = new WordNetSynonyms();
+
+    // Load grammar.
+    generators = TextGenerators.parseGrammar(Files.readAllLines(Paths.get("res/grammar")));
   }
 
-  public String generateReport(String title, String author, int wordLimit) throws IOException {
-    StringBuilder sb = new StringBuilder();
-    Random random = new Random();
-    sb.append("\\documentclass{article}\\usepackage[utf8]{inputenc}\\begin{document}\\title{")
+  public String generateReport(String title, String author, ImmutableList<String> questions, Path readingMaterial, int wordCount) throws IOException {
+    StringBuilder report = new StringBuilder();
+    report.append("\\documentclass{article}\\usepackage[utf8]{inputenc}\\begin{document}\\title{")
             .append(title)
-            .append("}").append("\\author{").append(author).append("}").append("\\maketitle");
+            .append("}\\author{")
+            .append(author)
+            .append("}\\maketitle");
 
-    int answerWordCount = wordLimit / questions.size();
+    // Go through each question and try to answer it.
     for (String question : questions) {
-      sb.append("\\section{").append(question).append("}");
 
-      KeywordGenerator keywordGenerator = KeywordGenerator.withPOSParsing(nlpModel, stopWords, question);
+      // Append the question to the report as a headline.
+      report.append("\\section{").append(question).append("}");
 
-      ImmutableMap.Builder<String, Function<ImmutableList<String>, TextGenerator>> macroBuilder =
-              ImmutableMap.builder();
+      // Determine keywords for the question.
+      KeywordGenerator keywordGenerator = KeywordGenerator.withPOSParsing(nlp, stopWords, question);
 
-      macroBuilder.putAll(baseMacros);
+      // Generate a Markov chain for the current question.
+      MarkovTrainer markovChain = generateMarkovChain(question, readingMaterial);
+
+      // Define grammar macros for the current question.
+      ImmutableMap.Builder<String, Function<ImmutableList<String>, TextGenerator>> macroBuilder = ImmutableMap.builder();
+      macroBuilder.put("MARKOV", n -> new MarkovTextGenerator(markovChain, Integer.parseInt(n.get(0))));
+      macroBuilder.put("SYNONYM", words -> new SynonymGenerator(words, synonyms));
       macroBuilder.put("KEYWORD", x -> keywordGenerator);
-      int remaining = answerWordCount;
 
+      int remaining = wordCount / questions.size();
       while (remaining > 0) {
-        String paragraph = generators.get("PARAGRAPH").generateText(new SimpleContext(random, generators, macroBuilder.build()));
-        sb.append(paragraph);
-        sb.append("\n\n");
+        String paragraph = generators.get("PARAGRAPH").generateText(new SimpleContext(generators, macroBuilder.build()));
+        report.append(paragraph);
+        report.append("\n\n");
         remaining -= paragraph.split("\\s+").length;
       }
     }
 
-    sb.append("\\end{document}");
+    report.append("\\end{document}");
 
-    return sb.toString();
+    return report.toString();
+  }
+
+  private MarkovTrainer generateMarkovChain(String question, Path readingMaterial) {
+    MarkovTrainer markovChain = new MarkovTrainer();
+
+    try {
+      // Get additional training data for the question from text sources (Wikipedia articles).
+      KeywordGenerator keywordGenerator = KeywordGenerator.withPOSParsing(nlp, stopWords, question);
+      ImmutableSet<String> searchTerms = keywordGenerator.getWords();
+      TextSource wa = new WikipediaArticles(100, searchTerms.toArray(new String[searchTerms.size()]));
+      Path[] trainingTexts = wa.getTexts();
+
+      // Calculate the ratio of amount of reading material per additional training text.
+      long waSize = 0, rmSize = Files.size(readingMaterial);
+      for (Path p : trainingTexts) waSize += Files.size(p);
+      int weight = (int) (0.5 / (rmSize / ((double) waSize)));
+
+      // Train the Markov chain.
+      markovChain.train(weight, readingMaterial); // aim for reading material to be 50% of wiki articles TODO Document properly.
+      markovChain.train(trainingTexts);
+    } catch (IOException e) {
+      System.err.println("Could not train a Markov chain.");
+      System.exit(-1);
+    }
+
+    return markovChain;
   }
 
   private static class SimpleContext implements TextGenerator.Context {
-
-    private final Random random;
+    private static final Random random = new Random();
     private final ImmutableMap<String, TextGenerator> generators;
     private final ImmutableMap<String, Function<ImmutableList<String>, TextGenerator>> macros;
 
-    private SimpleContext(Random random, ImmutableMap<String, TextGenerator> generators,
-                          ImmutableMap<String, Function<ImmutableList<String>, TextGenerator>> macros) {
-      this.random = random;
+    private SimpleContext(ImmutableMap<String, TextGenerator> generators, ImmutableMap<String, Function<ImmutableList<String>, TextGenerator>> macros) {
       this.generators = generators;
       this.macros = macros;
     }

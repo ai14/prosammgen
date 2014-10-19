@@ -9,7 +9,6 @@ public class WordProbability implements Comparable<WordProbability> {
     this.probability = probability;
   }
 
-
   @Override
   public int compareTo(WordProbability wordProbability) {
     return Double.compare(this.probability, wordProbability.probability);
