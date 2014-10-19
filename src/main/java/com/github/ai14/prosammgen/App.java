@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 
 import com.github.ai14.prosammgen.textgen.Constant;
 import com.github.ai14.prosammgen.textgen.MarkovTextGenerator;
+import com.github.ai14.prosammgen.textgen.SynonymGenerator;
 import com.github.ai14.prosammgen.textgen.TextGenerator;
 import com.github.ai14.prosammgen.textgen.TextGenerators;
 
@@ -14,7 +15,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
-import java.util.Random;
 import java.util.Scanner;
 import java.util.function.Function;
 
@@ -77,7 +77,7 @@ public class App {
     MarkovTrainer trainer = new MarkovTrainer();
     trainer.train(readingMaterial);
 
-    Random random = new Random();
+    Synonyms synonyms = new WordNetSynonyms();
 
     ImmutableMap<String, Function<ImmutableList<String>, TextGenerator>> macros =
         ImmutableMap
@@ -85,7 +85,7 @@ public class App {
                 // TODO: add back the real keyword system
                 "KEYWORD", x -> new Constant("cars"),
                 // TODO: add back the real synonym system
-                "SYNONYM", alts -> new Constant(alts.get(random.nextInt(alts.size()))));
+                "SYNONYM", words -> new SynonymGenerator(words, synonyms));
 
     ImmutableMap<String, TextGenerator> generators = TextGenerators.parseGrammar(
         Files.readAllLines(Paths.get("res/grammar")), macros);
