@@ -84,6 +84,7 @@ public class ReflectionDocumentGenerator {
       s.close();
     } catch (IOException e) {
       System.err.println("Could not generate report. Questions could not be parsed. Make sure that every question is written on a single line each.");
+      System.exit(-1);
     }
     sb.append("\\end{document}");
 
