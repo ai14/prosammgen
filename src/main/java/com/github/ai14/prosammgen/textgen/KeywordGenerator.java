@@ -8,6 +8,13 @@ import com.google.common.collect.Iterables;
 public class KeywordGenerator implements TextGenerator {
 
   private static final CharMatcher LETTER_MATCHER = CharMatcher.JAVA_LETTER;
+  private static final Splitter STOPWORD_SPLITTER =
+      Splitter.on("#STOPWORD#").omitEmptyStrings().trimResults(
+          LETTER_MATCHER.negate());
+  private static final Splitter CLEAN_SPLITTER =
+      Splitter
+          .on(CharMatcher.JAVA_LETTER_OR_DIGIT.or(CharMatcher.INVISIBLE).negate()).trimResults()
+          .omitEmptyStrings();
 
   private final ImmutableSet<String> words;
 
@@ -29,8 +36,12 @@ public class KeywordGenerator implements TextGenerator {
       text = text.replaceAll("(?i)\\b" + stopWord + "\\b", "#STOPWORD#");
     }
 
-    return ImmutableSet
-        .copyOf(Splitter.on("#STOPWORD#").omitEmptyStrings().trimResults(
-            LETTER_MATCHER.negate()).split(text));
+    Iterable<String> splits = STOPWORD_SPLITTER.split(text);
+
+    Iterable<String> realWords =
+        Iterables.concat(Iterables.transform(splits, CLEAN_SPLITTER::split));
+    ImmutableSet<String> keywords = ImmutableSet.copyOf(realWords);
+    System.out.println("Keywords are: " + keywords);
+    return keywords;
   }
 }
