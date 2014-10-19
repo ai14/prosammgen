@@ -27,6 +27,10 @@ public class KeywordGenerator implements TextGenerator {
     return Iterables.get(words, context.getRandom().nextInt(words.size()));
   }
 
+  public ImmutableSet<String> getWords() {
+    return words;
+  }
+
   public static KeywordGenerator fromText(ImmutableSet<String> stopWords, String text) {
     return new KeywordGenerator(extractKeywords(stopWords, text));
   }
