@@ -21,7 +21,7 @@ public class ReflectionDocumentGenerator {
   public String generateReport(String title, String author, int wordLimit) {
     StringBuilder sb = new StringBuilder();
     Random random = new Random();
-    sb.append("\\documentclass{article}\\begin{document}\\title{").append(title)
+    sb.append("\\documentclass{article}\\usepackage[utf8]{inputenc}\\begin{document}\\title{").append(title)
         .append("}").append("\\author{").append(author).append("}").append("\\maketitle");
 
     for (String question : questions) {
