@@ -32,7 +32,7 @@ class WAnalyzerS implements WritingStyleAnalyzer {
     //probs from the text
     int numSentence = 0;
     int beginT = 0;
-    list<int>sentenceSize;
+    list<int>sentenceSize = new ArrayList<>();
     //Read the text
     for (String line : Files.readAllLines(file)) {
         String[] words = line.split("\\s+");
@@ -65,7 +65,7 @@ class WAnalyzerS implements WritingStyleAnalyzer {
    */
   public double[] getWordLengthProbabilities(Path text){
     //probs from the text
-    list<int>wordSize;
+    list<int>wordSize = new ArrayList<>();
     //Read the text
     for (String line : Files.readAllLines(file)) {
         String[] words = line.split("\\s+");
