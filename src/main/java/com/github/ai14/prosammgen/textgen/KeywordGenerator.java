@@ -22,21 +22,21 @@ public class KeywordGenerator implements TextGenerator {
     this.words = words;
   }
 
-  public static KeywordGenerator withPOSParsing(NLPModel NLPModel,
+  public static KeywordGenerator withPOSParsing(NLPModel nlpModel,
                                                 ImmutableSet<String> stopWords,
                                                 String body)
       throws IOException {
 
-    SentenceDetector sentenceDetector = new SentenceDetectorME(NLPModel.getSentenceModel());
+    SentenceDetector sentenceDetector = new SentenceDetectorME(nlpModel.getSentenceModel());
     String[] sentences = sentenceDetector.sentDetect(body);
 
     ImmutableSet.Builder<String> resultBuilder = ImmutableSet.builder();
 
     for (String sentence : sentences) {
-      Tokenizer tokenizer = new TokenizerME(NLPModel.getTokenizerModel());
+      Tokenizer tokenizer = new TokenizerME(nlpModel.getTokenizerModel());
       String[] tokens = tokenizer.tokenize(sentence);
 
-      POSTagger posTagger = new POSTaggerME(NLPModel.getPosModel());
+      POSTagger posTagger = new POSTaggerME(nlpModel.getPosModel());
       String[] tags = posTagger.tag(tokens);
 
       StringBuilder wordBuilder = null;
