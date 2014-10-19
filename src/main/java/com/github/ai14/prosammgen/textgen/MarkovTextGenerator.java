@@ -50,7 +50,7 @@ public class MarkovTextGenerator implements TextGenerator {
 
     int avgSentenceLength = 10; // TODO: later get this from statistics
     int currentLength = 0;
-    boolean sentenceEnded = ngram.toString().endsWith(".");
+    boolean sentenceEnded = false;
     while (!sentenceEnded) {
       sb.append(ngram.getFirst() + " ");
       currentLength++;
@@ -67,7 +67,10 @@ public class MarkovTextGenerator implements TextGenerator {
     }
 
     // remove the last space
-    sb.deleteCharAt(sb.length() - 1); //TODO Fix StringIndexOutOfBoundException
+    if (sb.charAt(sb.length() - 1) == ' ') {
+      sb.deleteCharAt(sb.length() - 1);
+    }
+
 
     return sb.toString();
   }

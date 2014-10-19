@@ -1,5 +1,7 @@
 package com.github.ai14.prosammgen;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -57,6 +59,9 @@ public class WikipediaArticles implements TextSource {
 
           // Extract article content from the response.
           String content = response.replaceAll("\\<.*?\\>", ""); //TODO Don't strip actual text content surrounded by < and >.
+          content = StringEscapeUtils.unescapeHtml4(content);
+
+          //TODO Try to filter out meta data sections such as "External links".
 
           // Write article content to file.
           out.print(content);
