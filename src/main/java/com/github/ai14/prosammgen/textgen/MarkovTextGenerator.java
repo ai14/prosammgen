@@ -45,13 +45,13 @@ public class MarkovTextGenerator implements TextGenerator {
                                     List<Ngram> startNgrams,
                                     Ngram ngram) {
 
-    StringBuilder sb = new StringBuilder();
+    StringJoiner sentence = new StringJoiner(" ");
 
     int avgSentenceLength = 10; // TODO: later get this from statistics
     int currentLength = 0;
     boolean sentenceEnded = false;
     while (!sentenceEnded) {
-      sb.append(ngram.getFirst() + " ");
+      sentence.add(ngram.getFirst());
       currentLength++;
 
       // TODO: less arbitrary maybe and also not as strict, maybe write it as some kind of prob function
@@ -64,13 +64,8 @@ public class MarkovTextGenerator implements TextGenerator {
 
       chooseNextWord(rand, markovChain, startNgrams, ngram, tryToEndSentence);
     }
-
-    // remove the last space
-    if (sb.charAt(sb.length() - 1) == ' ') {
-      sb.deleteCharAt(sb.length() - 1);
-    }
-
-    return sb.toString();
+    
+    return sentence.toString();
   }
 
   private static void chooseNextWord(
