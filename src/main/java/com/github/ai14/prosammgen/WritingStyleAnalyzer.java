@@ -1,6 +1,6 @@
 package com.github.ai14.prosammgen;
 
-import java.io.File;
+import java.nio.file.Path;
 
 interface WritingStyleAnalyzer {
 
@@ -9,7 +9,7 @@ interface WritingStyleAnalyzer {
    *
    * @param text
    */
-  public void analyze(File text);
+  public void analyze(Path text);
 
   /**
    * Get the probabilities for sentences of length [0..longest sentence in the text].

@@ -1,6 +1,6 @@
 package com.github.ai14.prosammgen;
 
-import java.io.File;
+import java.nio.file.Path;
 
 public interface TextSource {
 
@@ -9,5 +9,5 @@ public interface TextSource {
    *
    * @return
    */
-  public File[] getTexts();
+  public Path[] getTexts();
 }
