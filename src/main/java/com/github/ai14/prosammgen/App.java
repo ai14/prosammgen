@@ -54,21 +54,15 @@ public class App {
     // Require input.
     if (reflectionDocumentTitle == null || authorName == null || wordLimit == -1
         || previousReflectionDocument == null | readingMaterial == null | questions == null) {
-      System.err.println(
-          "prosammgen [-t REFLECTION_DOCUMENT_TITLE | -a AUTHOR_NAME | -w WORD_LIMIT | -p PREVIOUS_REFLECTION_DOCUMENT | -r READING_MATERIAL | -q QUESTIONS]");
-      System.err.println(
-          "In order to generate a reflection document, start the program with the above arguments.");
+      System.err.println("prosammgen [-t REFLECTION_DOCUMENT_TITLE | -a AUTHOR_NAME | -w WORD_LIMIT | -p PREVIOUS_REFLECTION_DOCUMENT | -r READING_MATERIAL | -q QUESTIONS]");
+      System.err.println("In order to generate a reflection document, start the program with the above arguments.");
       System.err.println("Make sure: ");
-      System.err.println(
-          "  REFLECTION_DOCUMENT_TITLE is the title of the current reflection seminar surrounded by quotes.");
+      System.err.println("  REFLECTION_DOCUMENT_TITLE is the title of the current reflection seminar surrounded by quotes.");
       System.err.println("  AUTHOR_NAME is the author's name surrounded by quotes.");
       System.err.println("  WORD_LIMIT is a positive integer larger than zero.");
-      System.err.println(
-          "  PREVIOUS_REFLECTION_DOCUMENT is the path to a plaintext file with the author's previous reflection document.");
-      System.err.println(
-          "  READING_MATERIAL is the path to a plaintext file with all the reading material for the current reflection seminar.");
-      System.err.println(
-          "  QUESTIONS is the path to a plaintext file with the current seminar questions, with every question placed on its own line.");
+      System.err.println("  PREVIOUS_REFLECTION_DOCUMENT is the path to a plaintext file with the author's previous reflection document.");
+      System.err.println("  READING_MATERIAL is the path to a plaintext file with all the reading material for the current reflection seminar.");
+      System.err.println("  QUESTIONS is the path to a plaintext file with the current seminar questions, with every question placed on its own line.");
       System.exit(-1);
     }
 
