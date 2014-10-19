@@ -68,13 +68,21 @@ public class App {
     //TODO Sanitize input.
 
     ImmutableList<String> questionList = ImmutableList.copyOf(Files.readAllLines(questions));
-    //TODO Create a keyword identifier for the grammar.
-    //KeywordIdentifier keywordIdentifier = new ...
+
+    // Create a keyword identifier.
+    ImmutableSet<String> stopWords =
+            ImmutableSet.copyOf(Files.readAllLines(Paths.get("res/stopwords")));
+    NLPModel nlpModel =
+            NLPModel.loadFromDBs(Paths.get("res/en-sent.bin"), Paths.get("res/en-token.bin"),
+                    Paths.get("res/en-pos-maxent.bin"));
+    KeywordGenerator keywordGenerator =
+            KeywordGenerator.withPOSParsing(nlpModel, stopWords, Joiner.on('\n').join(questionList));
 
     // Create and train a markov chain for the grammar.
     MarkovTrainer trainer = new MarkovTrainer();
     //TODO Add keywords from the keyword identifier as well.
-    TextSource wa = new WikipediaArticles(10, "philosophy", "science");
+    ImmutableSet<String> searchTerms = keywordGenerator.getWords();
+    TextSource wa = new WikipediaArticles(10, searchTerms.toArray(new String[searchTerms.size()])); //TODO Change signature to ImmutableSet.
 
     // temp
     long rmSize = Files.size(readingMaterial);
@@ -91,16 +99,6 @@ public class App {
     // Create a synonyms database for the grammar.
     Synonyms synonyms = new WordNetSynonyms();
 
-    ImmutableSet<String> stopWords =
-            ImmutableSet.copyOf(Files.readAllLines(Paths.get("res/stopwords")));
-
-    NLPModel nlpModel =
-            NLPModel.loadFromDBs(Paths.get("res/en-sent.bin"), Paths.get("res/en-token.bin"),
-                    Paths.get("res/en-pos-maxent.bin"));
-
-    KeywordGenerator keywordGenerator =
-            KeywordGenerator.withPOSParsing(nlpModel, stopWords, Joiner.on('\n').join(questionList));
-
     ImmutableMap<String, Function<ImmutableList<String>, TextGenerator>> macros = ImmutableMap.of(
             "MARKOV", n -> new MarkovTextGenerator(trainer, Integer.parseInt(n.get(0))),
             "SYNONYM", words -> new SynonymGenerator(words, synonyms)
@@ -116,8 +114,7 @@ public class App {
     System.err.println();
 
     // Create and train an AI with the input.
-    ReflectionDocumentGenerator rg = new ReflectionDocumentGenerator(generators, questionList,
-            macros, nlpModel, stopWords);
+    ReflectionDocumentGenerator rg = new ReflectionDocumentGenerator(generators, questionList, macros, nlpModel, stopWords);
 
     // Generate a reflection document with the AI.
     String report = rg.generateReport(reflectionDocumentTitle, authorName, wordLimit);
