@@ -11,8 +11,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-class WAnalyzerS implements WritingStyleAnalyzer {
+import java.util.Vector;
+class WAnalyzerS {
 
   /**
    * Given a text this calculates the probabilities for different metrics that describes the writing style of the text author.
@@ -32,9 +32,9 @@ class WAnalyzerS implements WritingStyleAnalyzer {
     //probs from the text
     int numSentence = 0;
     int beginT = 0;
-    list<int>sentenceSize = new ArrayList<>();
+	List<Integer>sentenceSize = new ArrayList<>();
     //Read the text
-    for (String line : Files.readAllLines(file)) {
+    for (String line : Files.readAllLines(text)) {
         String[] words = line.split("\\s+");
         for (int i = 0; i < words.length; i++) {
           // find all sentences
@@ -43,17 +43,19 @@ class WAnalyzerS implements WritingStyleAnalyzer {
             int count = 0;
             //Check distance of the sentence
             while(!words[i].endsWith(".")){
-              cout ++;
+              count ++;
               ++i;
             }
-            sentenceSize[count]++;
+            int x = sentenceSize.get(count);
+            x++;
+            sentenceSize.set(count, x);
             ++numSentence;
           }
         }
       }
-      double[] prob = new double[sentenceSize.length];
+      double[] prob = new double [sentenceSize.size()];
       for(int j = 0; j < prob.length; j++){
-        prob[j] = sentenceSize[j]/numSentence;
+        prob[j] = sentenceSize.get(j)/numSentence;
       }
       return prob;
   }
@@ -65,19 +67,21 @@ class WAnalyzerS implements WritingStyleAnalyzer {
    */
   public double[] getWordLengthProbabilities(Path text){
     //probs from the text
-    list<int>wordSize = new ArrayList<>();
+    List<Integer>wordSize = new ArrayList<>();
     //Read the text
-    for (String line : Files.readAllLines(file)) {
+    for (String line : Files.readAllLines(text)) {
         String[] words = line.split("\\s+");
         for (int i = 0; i < words.length; i++) {
-          //word size
-          wordSize[words[i].length]++;
+          //word size        
+		  int x = wordSize.get(words[i].length());
+		  x++;
+		  wordSize.set(words[i].length(), x);
         }
       }
       //calculate probs
-      double[] prob = new double[wordSize.length];
+      double[] prob = new double[wordSize.size()];
       for(int j = 0; j < prob.length ;j++){
-        prob[j] = wordSize[j]/words.length;
+        prob[j] = wordSize.get(j)/words.length;
       }
       return prob;
   }
@@ -88,7 +92,8 @@ class WAnalyzerS implements WritingStyleAnalyzer {
    * @return
    */
   public double[] getSentencesPerParagraphProbabilities(Path text){
-    return 1.0;
+    double [] i= new double[2];
+    return i;
   }
 
   /**
@@ -97,6 +102,7 @@ class WAnalyzerS implements WritingStyleAnalyzer {
    * @return
    */
   public double[] getQuestionLengthToAnswerLengthRatioProbabilities(Path text){
-    return 1.0;
+	  double [] i= new double[2];
+    return i;
   }
 }
