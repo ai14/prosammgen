@@ -64,6 +64,7 @@ public class WikipediaArticles implements TextSource {
       }
     } catch (IOException e) {
       System.err.println("Wikipedia could not be retrieved.");
+      System.exit(-1);
     }
 
     return articles.toArray(new Path[0]);
