@@ -8,3 +8,4 @@ target/
 *.aux
 *.pdf
 *.txt
+*.iml
