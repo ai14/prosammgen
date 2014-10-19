@@ -35,12 +35,13 @@ public class WikipediaArticles implements TextSource {
 
         // Use cached file instead, if fresh enough.
         Path p = Paths.get(searchTerm + ".txt");
-        if (Files.exists(p) && System.currentTimeMillis() - Files.getLastModifiedTime(p).toMillis() < 2592000000l) {
-          articles.add(p);
-          continue;
-        } else {
-          Files.delete(p);
-        }
+        if (Files.exists(p))
+          if (System.currentTimeMillis() - Files.getLastModifiedTime(p).toMillis() < 2592000000l) {
+            articles.add(p);
+            continue;
+          } else {
+            Files.delete(p);
+          }
 
         // Fetch fresh Wikipedia articles.
         PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(searchTerm + ".txt")));
