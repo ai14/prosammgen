@@ -17,9 +17,6 @@ public class MarkovTrainer {
   }
 
   public void train(File[] files) {
-    System.out.println("Starting training");
-    long trainStart = System.currentTimeMillis();
-
     for (File file : files) {
       try {
         BufferedReader br = new BufferedReader(new FileReader(file));
@@ -67,11 +64,6 @@ public class MarkovTrainer {
       } catch (IOException e) {
       }
     }
-
-    long trainEnd = System.currentTimeMillis();
-    System.out.println("Finished training in " + (trainEnd - trainStart) + " ms.");
-    System.out.println(nextWordCounter.size() + " ngrams created.");
-    System.out.println();
   }
 
   public Ngram getNewNgram() {
