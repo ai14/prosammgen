@@ -71,7 +71,6 @@ public class MarkovTextGenerator implements TextGenerator {
       sb.deleteCharAt(sb.length() - 1);
     }
 
-
     return sb.toString();
   }
 

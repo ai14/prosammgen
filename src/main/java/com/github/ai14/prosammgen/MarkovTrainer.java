@@ -26,6 +26,10 @@ public class MarkovTrainer {
   }
 
   public void train(Path... files) throws IOException {
+    train(1, files);
+  }
+
+  public void train(int weight, Path... files) throws IOException {
     for (Path file : files) {
       Ngram ngram = new Ngram(markovOrder);
       String wordBeforeNgram = "";
@@ -57,7 +61,7 @@ public class MarkovTrainer {
           }
 
           int c = nextWordCounter.get(ns).get(nw);
-          nextWordCounter.get(ns).put(nw, c + 1);
+          nextWordCounter.get(ns).put(nw, c + weight);
 
           wordBeforeNgram = ngram.getFirst();
           ngram.pushWord(nw);
