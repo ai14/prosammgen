@@ -1,11 +1,9 @@
 package com.github.ai14.prosammgen.textgen;
 
+import com.github.ai14.prosammgen.NLPModel;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-
-import com.github.ai14.prosammgen.NLPModel;
-
+import com.google.common.collect.Ordering;
 import opennlp.tools.postag.POSTagger;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.sentdetect.SentenceDetector;
@@ -14,8 +12,6 @@ import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.NavigableMap;
 
 public class KeywordGenerator implements TextGenerator {
 
@@ -28,7 +24,7 @@ public class KeywordGenerator implements TextGenerator {
   public static KeywordGenerator withPOSParsing(NLPModel nlpModel,
                                                 ImmutableSet<String> stopWords,
                                                 String body)
-      throws IOException {
+          throws IOException {
 
     SentenceDetector sentenceDetector = new SentenceDetectorME(nlpModel.getSentenceModel());
     String[] sentences = sentenceDetector.sentDetect(body);
@@ -74,26 +70,16 @@ public class KeywordGenerator implements TextGenerator {
     System.err.println("Keywords are: " + keywords);
 
     ImmutableSet<String> filteredKeywords =
-        ImmutableSet.copyOf(Iterables.filter(keywords,
-                                             (String word) ->
-                                                 Iterables.any(stopWords, word::contains)));
+            ImmutableSet.copyOf(Iterables.filter(keywords,
+                    (String word) ->
+                            Iterables.any(stopWords, word::contains)));
 
     return new KeywordGenerator(filteredKeywords);
   }
 
   @Override
   public String generateText(Context context) {
-    final NavigableMap<Double, String> probabilities = Maps.newTreeMap();
-    double sumProb = 0;
-
-    for (String word : words) {
-      probabilities.put(sumProb, word);
-      final double probability = Math.log(word.length());
-      sumProb += probability;
-    }
-
-    Map.Entry<Double, String> keyword = probabilities.lowerEntry(Math.random() * sumProb);
-    return keyword.getValue();
+    return "\\emph{" + Ordering.natural().onResultOf(String::length).max(words) + "}";
   }
 
   public ImmutableSet<String> getWords() {

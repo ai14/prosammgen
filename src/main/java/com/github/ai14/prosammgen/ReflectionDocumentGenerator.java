@@ -1,11 +1,10 @@
 package com.github.ai14.prosammgen;
 
+import com.github.ai14.prosammgen.textgen.KeywordGenerator;
+import com.github.ai14.prosammgen.textgen.TextGenerator;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
-import com.github.ai14.prosammgen.textgen.KeywordGenerator;
-import com.github.ai14.prosammgen.textgen.TextGenerator;
 
 import java.io.IOException;
 import java.util.Random;
@@ -34,28 +33,31 @@ public class ReflectionDocumentGenerator {
     StringBuilder sb = new StringBuilder();
     Random random = new Random();
     sb.append("\\documentclass{article}\\usepackage[utf8]{inputenc}\\begin{document}\\title{")
-        .append(title)
-        .append("}").append("\\author{").append(author).append("}").append("\\maketitle");
+            .append(title)
+            .append("}").append("\\author{").append(author).append("}").append("\\maketitle");
 
+    int answerWordCount = wordLimit / questions.size();
     for (String question : questions) {
       sb.append("\\section{").append(question).append("}");
 
-      KeywordGenerator keywordGenerator =
-          KeywordGenerator.withPOSParsing(nlpModel, stopWords, question);
+      KeywordGenerator keywordGenerator = KeywordGenerator.withPOSParsing(nlpModel, stopWords, question);
 
       ImmutableMap.Builder<String, Function<ImmutableList<String>, TextGenerator>> macroBuilder =
-          ImmutableMap.builder();
+              ImmutableMap.builder();
 
       macroBuilder.putAll(baseMacros);
       macroBuilder.put("KEYWORD", x -> keywordGenerator);
+      int remaining = answerWordCount;
 
-      sb.append(generators.get("PARAGRAPH")
-                    .generateText(new SimpleContext(random, generators, macroBuilder.build())));
+      while (remaining > 0) {
+        String paragraph = generators.get("PARAGRAPH").generateText(new SimpleContext(random, generators, macroBuilder.build()));
+        sb.append(paragraph);
+        sb.append("\n\n");
+        remaining -= paragraph.split("\\s+").length;
+      }
     }
 
     sb.append("\\end{document}");
-
-    //TODO Replace weird characters with LaTeX formatting. Use a Java library.
 
     return sb.toString();
   }

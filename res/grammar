@@ -26,7 +26,7 @@
 #FILLER I can finally talk about this!
 #FILLER Is this really a serious assignment? I wouldn't consider this even worth talking about.
 
-#CONTEXT #CPRELUDE #CCONCLUSION %MARKOV(2)
+#CONTEXT #CPRELUDE #CCONCLUSION %MARKOV(1)
 #CONTEXT Society today shows some disregard towards subjects that interest academia.
 #CONTEXT It is well known that the %KEYWORD() affects everybody in this course.
 #CONTEXT I don't know how the others will feel about %KEYWORD().
@@ -67,7 +67,7 @@
 #OOP far too many are trying to solve the problem.
 #OOP there are too many unknowns for there to be an easy solution.
 
-#ARGUMENT #ARGCTX #FACT %MARKOV(3)
+#ARGUMENT #ARGCTX #FACT %MARKOV(2)
 
 #ARGCTX The best indication for this is
 #ARGCTX What everybody probably notices is
