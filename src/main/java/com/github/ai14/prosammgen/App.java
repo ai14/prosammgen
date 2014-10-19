@@ -1,13 +1,8 @@
 package com.github.ai14.prosammgen;
 
+import com.github.ai14.prosammgen.textgen.*;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
-import com.github.ai14.prosammgen.textgen.Constant;
-import com.github.ai14.prosammgen.textgen.MarkovTextGenerator;
-import com.github.ai14.prosammgen.textgen.SynonymGenerator;
-import com.github.ai14.prosammgen.textgen.TextGenerator;
-import com.github.ai14.prosammgen.textgen.TextGenerators;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -74,28 +69,28 @@ public class App {
 
     //TODO Sanitize input.
 
+    //TODO Create a keyword identifier for the grammar.
+    //KeywordIdentifier keywordIdentifier = new ...
+
+    // Create and train a markov chain for the grammar.
     MarkovTrainer trainer = new MarkovTrainer();
     trainer.train(readingMaterial);
+    TextSource wa = new WikipediaArticles(10, "philosophy", "science"); //TODO Add keywords from the keyword identifier as well.
+    trainer.train(wa.getTexts());
 
+    // Create a synonyms database for the grammar.
     Synonyms synonyms = new WordNetSynonyms();
 
-    ImmutableMap<String, Function<ImmutableList<String>, TextGenerator>> macros =
-            ImmutableMap
-                    .of("MARKOV", n -> new MarkovTextGenerator(trainer, Integer.parseInt(n.get(0))),
-                            // TODO: add back the real keyword system
-                            "KEYWORD", x -> new Constant("cars"),
-                            // TODO: add back the real synonym system
-                            "SYNONYM", words -> new SynonymGenerator(words, synonyms));
+    ImmutableMap<String, Function<ImmutableList<String>, TextGenerator>> macros = ImmutableMap.of(
+            "MARKOV", n -> new MarkovTextGenerator(trainer, Integer.parseInt(n.get(0))),
+            "KEYWORD", x -> new Constant("cars"), // TODO: add back the real keyword system
+            "SYNONYM", words -> new SynonymGenerator(words, synonyms)
+    );
 
-    ImmutableMap<String, TextGenerator> generators = TextGenerators.parseGrammar(
-            Files.readAllLines(Paths.get("res/grammar")), macros);
-
-    Files.readAllLines(questions);
+    ImmutableMap<String, TextGenerator> generators = TextGenerators.parseGrammar(Files.readAllLines(Paths.get("res/grammar")), macros);
 
     // Create and train an AI with the input.
-    ReflectionDocumentGenerator rg =
-            new ReflectionDocumentGenerator(generators,
-                    ImmutableList.copyOf(Files.readAllLines(questions)));
+    ReflectionDocumentGenerator rg = new ReflectionDocumentGenerator(generators, ImmutableList.copyOf(Files.readAllLines(questions)));
 
     // Generate a reflection document with the AI.
     String report = rg.generateReport(reflectionDocumentTitle, authorName, wordLimit);
@@ -108,10 +103,7 @@ public class App {
       out.write(report);
       out.close();
       //TODO Prosammgen has to be run twice to output a PDF with cygwin pdftex.
-      String[]
-              cmd =
-              {"pdftex", "&pdflatex", filename
-                      + ".tex"}; //TODO This command doesn't start properly on unix, even though the same command works directly in a terminal.
+      String[] cmd = {"pdftex", "&pdflatex", filename + ".tex"}; //TODO This command doesn't start properly on unix, even though the same command works directly in an unix terminal and on Windows.
       Process p = Runtime.getRuntime().exec(cmd);
       if (p.getErrorStream().available() == 0) {
         System.out.println("Successfully generated a reflection document as PDF.");
