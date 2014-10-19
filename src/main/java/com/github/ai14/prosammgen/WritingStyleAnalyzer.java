@@ -18,13 +18,13 @@ interface WritingStyleAnalyzer {
    * @return
    */
   public double[] getSentenceLengthProbabilities(Path text){
-	  //probs from the text
-	  int numSentence = 0;
+    //probs from the text
+    int numSentence = 0;
     int beginT = 0;
     list<int>sentenceSize;
-	  for (String line : Files.readAllLines(file)) {
+    //Read the text
+    for (String line : Files.readAllLines(file)) {
         String[] words = line.split("\\s+");
-
         for (int i = 0; i < words.length; i++) {
           // find all sentences
           if (beginT == 0 || words[i].endsWith(".")) {
