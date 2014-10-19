@@ -1,7 +1,6 @@
 package com.github.ai14.prosammgen;
 
 import com.github.ai14.prosammgen.textgen.*;
-
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -12,6 +11,7 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.Normalizer;
 import java.text.ParseException;
 import java.util.Scanner;
 import java.util.function.Function;
@@ -89,9 +89,9 @@ public class App {
     KeywordGenerator keywordGenerator = KeywordGenerator.fromText(stopWords, Joiner.on('\n').join(questionList));
 
     ImmutableMap<String, Function<ImmutableList<String>, TextGenerator>> macros = ImmutableMap.of(
-        "MARKOV", n -> new MarkovTextGenerator(trainer, Integer.parseInt(n.get(0))),
-        "KEYWORD", x -> keywordGenerator, // TODO: add back the real keyword system
-        "SYNONYM", words -> new SynonymGenerator(words, synonyms)
+            "MARKOV", n -> new MarkovTextGenerator(trainer, Integer.parseInt(n.get(0))),
+            "KEYWORD", x -> keywordGenerator, // TODO: add back the real keyword system
+            "SYNONYM", words -> new SynonymGenerator(words, synonyms)
     );
 
     ImmutableMap<String, TextGenerator> generators = TextGenerators.parseGrammar(Files.readAllLines(Paths.get("res/grammar")), macros);
@@ -104,13 +104,13 @@ public class App {
 
     // Generate PDF report if pdftex exists on the current system. Otherwise output the LaTeX source on stdout.
     try {
-      //TODO Replace characters in accordance with the prosamm instructions. å -> a, é -> e, etc.
-      String filename = authorName.replaceAll("[^A-Za-z0-9]", "_");
+      // Replace characters in accordance with the prosamm instructions. å -> a, é -> e, etc.
+      String filename = Normalizer.normalize(authorName, Normalizer.Form.NFD).replaceAll(" ", "_").replaceAll("[^A-Za-z_]", "");
       PrintWriter out = new PrintWriter(filename + ".tex");
       out.write(report);
       out.close();
       //TODO Prosammgen has to be run twice to output a PDF with cygwin pdftex.
-      String[] cmd = {"pdftex", "&pdflatex", filename + ".tex"}; //TODO This command doesn't start properly on unix, even though the same command works directly in an unix terminal and on Windows.
+      String[] cmd = {"pdftex", "&pdflatex", "-halt-on-error", filename + ".tex"};
       Process p = Runtime.getRuntime().exec(cmd);
       if (p.getErrorStream().available() == 0) {
         System.out.println("Successfully generated a reflection document as PDF.");
