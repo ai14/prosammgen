@@ -14,7 +14,7 @@ import java.util.Set;
 
 public class MarkovTrainer {
 
-  public static final int markovOrder = 2;
+  public static final int markovOrder = 3;
   private Map<String, Map<String, Integer>> nextWordCounter;
   private List<Ngram> sentenceStarts;
   private Set<Ngram> sentenceEnds;
