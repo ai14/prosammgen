@@ -129,15 +129,12 @@ public class App {
       out.write(report);
       out.close();
       //TODO Prosammgen has to be run twice to output a PDF with cygwin pdftex.
-      String[] cmd = {"pdftex", "&pdflatex", "-halt-on-error", filename + ".tex"};
-      Process p = Runtime.getRuntime().exec(cmd);
+      Process p = Runtime.getRuntime().exec("pdftex -file-line-error -halt-on-error &pdflatex " + filename + ".tex");
       if (p.getErrorStream().available() == 0) {
         System.out.println("Successfully generated a reflection document as PDF.");
-      } else {
+      } else { //TODO Should output the errors from pdflatex.
         Scanner s = new Scanner(p.getErrorStream());
-        while (s.hasNext()) {
-          System.err.println(s.next());
-        }
+        while (s.hasNextLine()) System.err.println(s.nextLine());
       }
     } catch (IOException e) {
       System.err.println("Install pdflatex to generate reflection documents as PDF.");
