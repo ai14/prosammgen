@@ -76,12 +76,16 @@ class WAnalyzerS implements WritingStyleAnalyzer {
    *
    * @return
    */
-  public double[] getSentencesPerParagraphProbabilities(Path text);
+  public double[] getSentencesPerParagraphProbabilities(Path text){
+    return 1.0;
+  }
 
   /**
    * Get the probabilities for ratios (answer length / question length).
    *
    * @return
    */
-  public double[] getQuestionLengthToAnswerLengthRatioProbabilities(Path text);
+  public double[] getQuestionLengthToAnswerLengthRatioProbabilities(Path text){
+    return 1.0;
+  }
 }
