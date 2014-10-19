@@ -4,6 +4,8 @@ import com.github.ai14.prosammgen.MarkovTrainer;
 import com.github.ai14.prosammgen.Ngram;
 import com.github.ai14.prosammgen.WordProbability;
 import com.github.ai14.prosammgen.textgen.TextGenerator;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import java.util.*;
 
@@ -82,7 +84,7 @@ public class MarkovTextGenerator implements TextGenerator {
 
     if (wordProbabilities == null) {
       Ngram newNgram = startNgrams.get(rand.nextInt(startNgrams.size()));
-      for (String word : newNgram.getAll()) {
+      for (String word : ImmutableSet.copyOf(newNgram.getAll())) {
         ngram.pushWord(word);
       }
 
