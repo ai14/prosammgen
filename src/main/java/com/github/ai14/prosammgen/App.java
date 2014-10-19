@@ -72,9 +72,19 @@ public class App {
 
     // Create and train a markov chain for the grammar.
     MarkovTrainer trainer = new MarkovTrainer();
-    trainer.train(readingMaterial);
     //TODO Add keywords from the keyword identifier as well.
     TextSource wa = new WikipediaArticles(10, "philosophy", "science");
+
+    // temp
+    long rmSize = Files.size(readingMaterial);
+    long waSize = 0;
+    for (Path p : wa.getTexts()) {
+      waSize += Files.size(p);
+    }
+    // aim for reading material to be 50% of wiki articles
+    int weight = (int) (0.5 / (rmSize / ((double) waSize)));
+    // TODO: use a weight when training on reading material
+    trainer.train(weight, readingMaterial);
     trainer.train(wa.getTexts());
 
     // Create a synonyms database for the grammar.
