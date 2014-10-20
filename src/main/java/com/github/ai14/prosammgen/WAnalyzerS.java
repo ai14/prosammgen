@@ -196,7 +196,7 @@ private Path text;
 					ImmutableList<String>Synonyms = synonyms.getSynonyms(SynWord);
 					//Check for misspelling words
 					if(Synonyms.size() == 1 && (Synonyms.get(0)) == words[j]) ++misPellingWords;
-					SynWord.remove(0)
+					SynWord.remove(0);
 				}
 	        }
 	    }
