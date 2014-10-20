@@ -41,37 +41,42 @@ private final Path text;
    * @return
    */
 @Override  
-  public double[] getSentenceLengthProbabilities() throws java.io.IOException {
-    //probs from the text
-    int numSentence = 0;
-    int beginT = 0;
-	List<Integer>sentenceSize = new ArrayList<>();
-    //Read the text
-    for (String line : Files.readAllLines(text)) {
-        String[] words = line.split("\\s+");
-        for (int i = 0; i < words.length; i++) {
-          // find all sentences
-          if (beginT == 0 || words[i].endsWith(".")) {
-            beginT = 1;
-            int count = 1;
-            ++i;
-            //Check distance of the sentence
-            while(!words[i].endsWith(".")){
-              count ++;
-              ++i;
-            }
-            int x = sentenceSize.get(count);
-            x++;
-            sentenceSize.set(count, x);
-            ++numSentence;
-          }
-        }
-      }
-      double[] prob = new double [sentenceSize.size()];
-      for(int j = 0; j < prob.length; j++){
-        prob[j] = sentenceSize.get(j)/numSentence;
-      }
-      return prob;
+  public double[] getSentenceLengthProbabilities() {
+  	try{
+  		 //probs from the text
+	    int numSentence = 0;
+	    int beginT = 0;
+		List<Integer>sentenceSize = new ArrayList<>();
+	    //Read the text
+	    for (String line : Files.readAllLines(text)) {
+	        String[] words = line.split("\\s+");
+	        for (int i = 0; i < words.length; i++) {
+	          // find all sentences
+	          if (beginT == 0 || words[i].endsWith(".")) {
+	            beginT = 1;
+	            int count = 1;
+	            ++i;
+	            //Check distance of the sentence
+	            while(!words[i].endsWith(".")){
+	              count ++;
+	              ++i;
+	            }
+	            int x = sentenceSize.get(count);
+	            x++;
+	            sentenceSize.set(count, x);
+	            ++numSentence;
+	          }
+	        }
+	      }
+	      double[] prob = new double [sentenceSize.size()];
+	      for(int j = 0; j < prob.length; j++){
+	        prob[j] = sentenceSize.get(j)/numSentence;
+	      }
+	      return prob;
+  	}catch (IOException e) {
+	      System.err.println("Couldn't read the text");
+    	}
+   
   }
   /**
    * Get the probabilities for words of length [0..longest word in the text].
