@@ -162,13 +162,16 @@ public class WAnalyzerS{ //TODO: change the name for WritingStyleAnalyzer.java
         //each sentence
         for (int i = 0; i < numSentences; i++) {
         	ImmutableList<String>Synonyms;
+        	ImmutableList<String>Swords;
 	    	//split the sentence in words
 			String[] words = sentences[i].split("\\s+");
 			for(int j = 0;j < words.length; ++j){
+				Swords.add(words[j])
 				//check for synonyms
-				Synonyms = WordNet.getSynonyms(words[j]);
+				Synonyms = WordNet.getSynonyms(Swords);
 				//Check for misspelling words
 				if(Synonyms.size() == 1 && (Synonyms.get(0)) == words[j]) ++misPellingWords;
+				Swords.remove(0);
 			}
         }
     }
