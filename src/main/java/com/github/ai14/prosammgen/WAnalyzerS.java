@@ -175,6 +175,7 @@ private Path text;
    @Override
   public double getMispellingWordsProbabilities(){ //TODO: take it off this class
   try{
+  	WordNetSynonyms WordSynonym = new WordNetSynonyms();
   	//probs from the text
 	    int numSentences = 0;
 	    int misPellingWords = 0;
@@ -194,7 +195,7 @@ private Path text;
 				for(int j = 0;j < words.length; ++j){
 					SynWord.add(0,words[j]);
 					//check for synonyms
-					Synonym = WordNetSynonyms.getSynonyms(SynWord); //TODO: not real name in master
+					Synonym = WordSynonym.getSynonyms(SynWord); //TODO: not real name in master
 					//Check for misspelling words
 					if(Synonym.size() == 1 && (Synonym.get(0)) == words[j]) ++misPellingWords;
 					SynWord.remove(0);
