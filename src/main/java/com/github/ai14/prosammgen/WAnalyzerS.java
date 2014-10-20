@@ -190,12 +190,12 @@ private Path text;
 		    	//split the sentence in words
 				String[] words = sentences[i].split("\\s+");
 				ImmutableList<String>SynWord;
+				ImmutableList<String>Synonyms
 				for(int j = 0;j < words.length; ++j){
 					//Swords.add(words[j]);
 					SynWord.add(0,words[j]);
-					
 					//check for synonyms
-					ImmutableList<String>Synonyms = WordNetSynonyms.getSynonyms(SynWord); //TODO: not real name in master
+					Synonyms = WordNetSynonyms.getSynonyms(SynWord); //TODO: not real name in master
 					//Check for misspelling words
 					if(Synonyms.size() == 1 && (Synonyms.get(0)) == words[j]) ++misPellingWords;
 					SynWord.remove(0);
