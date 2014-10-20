@@ -17,26 +17,33 @@ interface WritingStyleAnalyzer {
    *
    * @return
    */
-  public double[] getSentenceLengthProbabilities(Path text);
+  public double[] getSentenceLengthProbabilities();
 
   /**
    * Get the probabilities for words of length [0..longest word in the text].
    *
    * @return
    */
-  public double[] getWordLengthProbabilities(Path text);
+  public double[] getWordLengthProbabilities();
 
   /**
    * Get the probabilities for number of sentences per paragraph from [0..most number of sentences in a paragraph in the text].
    *
    * @return
    */
-  public double[] getSentencesPerParagraphProbabilities(Path text);
+  public double[] getSentencesPerParagraphProbabilities();
 
   /**
    * Get the probabilities for ratios (answer length / question length).
    *
    * @return
    */
-  public double[] getQuestionLengthToAnswerLengthRatioProbabilities(Path text);
+  public double[] getQuestionLengthToAnswerLengthRatioProbabilities();
+  
+  /**
+   * Get the probabilities of mispelling words per sentence
+   *
+   * @return
+   */
+  public double getMispellingWordsProbabilities(); //TODO: take it off this class
 }
