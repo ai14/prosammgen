@@ -22,7 +22,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 
-public class WAnalyzerS{ //TODO: change the name for WritingStyleAnalyzer.java 
+public class WAnalyzerS implements WritingStyleAnalyzer{ 
 
   /**
    * Given a text this calculates the probabilities for different metrics that describes the writing style of the text author.
@@ -38,6 +38,7 @@ public class WAnalyzerS{ //TODO: change the name for WritingStyleAnalyzer.java
    *
    * @return
    */
+@Override  
   public double[] getSentenceLengthProbabilities(Path text) throws java.io.IOException {
     //probs from the text
     int numSentence = 0;
@@ -75,6 +76,7 @@ public class WAnalyzerS{ //TODO: change the name for WritingStyleAnalyzer.java
    *
    * @return
    */
+   @Override
   public double[] getWordLengthProbabilities(Path text) throws java.io.IOException {
     //probs from the text
     int textSize = 0;
@@ -103,6 +105,7 @@ public class WAnalyzerS{ //TODO: change the name for WritingStyleAnalyzer.java
    *
    * @return
    */
+   @Override
   public double[] getSentencesPerParagraphProbabilities(Path text) throws java.io.IOException{
 	//probs from the text
 	int numParagraph = 0;
@@ -139,6 +142,7 @@ public class WAnalyzerS{ //TODO: change the name for WritingStyleAnalyzer.java
    *
    * @return
    */
+   @Override
   public double[] getQuestionLengthToAnswerLengthRatioProbabilities(Path text) throws java.io.IOException{
 	  double [] i= new double[2];
     return i;
@@ -149,6 +153,7 @@ public class WAnalyzerS{ //TODO: change the name for WritingStyleAnalyzer.java
    *
    * @return
    */
+   @Override
   public double getMispellingWordsProbabilities(Path text) throws java.io.IOException{
     //probs from the text
     int numSentences = 0;
