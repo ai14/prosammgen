@@ -185,16 +185,13 @@ private Path text;
 	        numSentences = sentences.length;
 	        //each sentence
 	        for (int i = 0; i < numSentences; i++) {
-	        	ImmutableList<String>SynWord = new ImmutableList<String>() ;
 	        	List<String>Swords = new ArrayList<>();
 		    	//split the sentence in words
 				String[] words = sentences[i].split("\\s+");
 				for(int j = 0;j < words.length; ++j){
-					
 					Swords.add(words[j]);
-	
 					//check for synonyms
-					ImmutableList<String>Synonyms = synonyms.getSynonyms(SynWord.copyOf(Sword));
+					ImmutableList<String>Synonyms = synonyms.getSynonyms(ImmutableList<String>SynWord.copyOf(Sword));
 					//Check for misspelling words
 					if(Synonyms.size() == 1 && (Synonyms.get(0)) == words[j]) ++misPellingWords;
 					Swords.remove(0);
