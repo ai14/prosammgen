@@ -193,9 +193,9 @@ private Path text;
 				ImmutableList<String>Synonym;
 				for(int j = 0;j < words.length; ++j){
 					//Swords.add(words[j]);
-					SynWord.add(0,words[j]);
+					//SynWord.add(0,words[j]);
 					//check for synonyms
-					Synonym = WordNetSynonyms.getSynonyms(SynWord); //TODO: not real name in master
+					Synonym = WordNetSynonyms.getSynonyms(SynWord.add(0,words[j])); //TODO: not real name in master
 					//Check for misspelling words
 					if(Synonym.size() == 1 && (Synonym.get(0)) == words[j]) ++misPellingWords;
 					SynWord.remove(0);
