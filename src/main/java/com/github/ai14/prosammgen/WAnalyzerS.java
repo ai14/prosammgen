@@ -188,9 +188,10 @@ private Path text;
 	        	List<String>Swords = new ArrayList<>();
 		    	//split the sentence in words
 				String[] words = sentences[i].split("\\s+");
+				ImmutableList<String>SynWord;
 				for(int j = 0;j < words.length; ++j){
 					//Swords.add(words[j]);
-					ImmutableList<String>SynWord.add(0,words[j]);
+					SynWord.add(0,words[j]);
 					
 					//check for synonyms
 					ImmutableList<String>Synonyms = synonyms.getSynonyms(SynWord);
