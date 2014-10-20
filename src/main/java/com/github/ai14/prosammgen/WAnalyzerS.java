@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import com.google.common.collect.ImmutableList;
-import com.github.ai14.prosammgen.WordNetSynonyms;
+import com.github.ai14.prosammgen.*;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -190,14 +190,16 @@ private Path text;
 		    	//split the sentence in words
 				String[] words = sentences[i].split("\\s+");
 				ImmutableList<String>SynWord;
-				ImmutableList<String>Synonyms;
+				ImmutableList<String>synonym;
 				for(int j = 0;j < words.length; ++j){
 					//Swords.add(words[j]);
 					SynWord.add(0,words[j]);
 					//check for synonyms
-					Synonyms = WordNetSynonyms.getSynonyms(SynWord); //TODO: not real name in master
+					Synonym = WordNetSynonyms.getSynonyms(SynWord); //TODO: not real name in master
+					Synonym = WordNet.getSynonyms(SynWord); //TODO: not real name in master
+					Synonym = Synonyms.getSynonyms(SynWord);
 					//Check for misspelling words
-					if(Synonyms.size() == 1 && (Synonyms.get(0)) == words[j]) ++misPellingWords;
+					if(Synonym.size() == 1 && (Synonym.get(0)) == words[j]) ++misPellingWords;
 					SynWord.remove(0);
 				}
 	        }
