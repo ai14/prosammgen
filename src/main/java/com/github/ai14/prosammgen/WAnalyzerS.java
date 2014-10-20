@@ -24,13 +24,15 @@ import java.util.stream.Collectors;
 
 public class WAnalyzerS implements WritingStyleAnalyzer{ 
 
+private final Path text;
+ 
   /**
    * Given a text this calculates the probabilities for different metrics that describes the writing style of the text author.
    *
    * @param text
    */
   public void analyze(Path text){
-    int i = 0;
+    this.text = text;
   }
 
   /**
@@ -39,7 +41,7 @@ public class WAnalyzerS implements WritingStyleAnalyzer{
    * @return
    */
 @Override  
-  public double[] getSentenceLengthProbabilities(Path text) throws java.io.IOException {
+  public double[] getSentenceLengthProbabilities() throws java.io.IOException {
     //probs from the text
     int numSentence = 0;
     int beginT = 0;
@@ -77,7 +79,7 @@ public class WAnalyzerS implements WritingStyleAnalyzer{
    * @return
    */
    @Override
-  public double[] getWordLengthProbabilities(Path text) throws java.io.IOException {
+  public double[] getWordLengthProbabilities() throws java.io.IOException {
     //probs from the text
     int textSize = 0;
     List<Integer>wordSize = new ArrayList<>();
@@ -106,7 +108,7 @@ public class WAnalyzerS implements WritingStyleAnalyzer{
    * @return
    */
    @Override
-  public double[] getSentencesPerParagraphProbabilities(Path text) throws java.io.IOException{
+  public double[] getSentencesPerParagraphProbabilities() throws java.io.IOException{
 	//probs from the text
 	int numParagraph = 0;
 	List<Integer>SentencesParagraph = new ArrayList<>();
@@ -143,7 +145,7 @@ public class WAnalyzerS implements WritingStyleAnalyzer{
    * @return
    */
    @Override
-  public double[] getQuestionLengthToAnswerLengthRatioProbabilities(Path text) throws java.io.IOException{
+  public double[] getQuestionLengthToAnswerLengthRatioProbabilities() throws java.io.IOException{
 	  double [] i= new double[2];
     return i;
   }
@@ -154,7 +156,7 @@ public class WAnalyzerS implements WritingStyleAnalyzer{
    * @return
    */
    @Override
-  public double getMispellingWordsProbabilities(Path text) throws java.io.IOException{
+  public double getMispellingWordsProbabilities() throws java.io.IOException{ //TODO: take it off this class
     //probs from the text
     int numSentences = 0;
     int misPellingWords = 0;
@@ -166,7 +168,6 @@ public class WAnalyzerS implements WritingStyleAnalyzer{
         numSentences = sentences.length;
         //each sentence
         for (int i = 0; i < numSentences; i++) {
-        	ImmutableList<String>Synonyms = new ImmutableList<String>() ;
         	ImmutableList<String>SynWord = new ImmutableList<String>() ;
         	List<String>Swords = new ArrayList<>();
 	    	//split the sentence in words
@@ -174,9 +175,9 @@ public class WAnalyzerS implements WritingStyleAnalyzer{
 			for(int j = 0;j < words.length; ++j){
 				
 				Swords.add(words[j]);
-				
+
 				//check for synonyms
-				Synonyms = WordNetSynonyms.getSynonyms(SynWord.copyOf(Sword)); //TODO: change to WordNet when merging to Master
+				ImmutableList<String>Synonyms = synonyms.getSynonyms(SynWord.copyOf(Sword));
 				//Check for misspelling words
 				if(Synonyms.size() == 1 && (Synonyms.get(0)) == words[j]) ++misPellingWords;
 				Swords.remove(0);
