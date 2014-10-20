@@ -153,7 +153,6 @@ public class WAnalyzerS{ //TODO: change the name for WritingStyleAnalyzer.java
     //probs from the text
     int numSentences = 0;
     int misPellingWords = 0;
-    ImmutableList<String>Synonyms;
     List<Integer>wordSize = new ArrayList<>();
     //Read the text
     for (String line : Files.readAllLines(text)) {
