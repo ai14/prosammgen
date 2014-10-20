@@ -190,7 +190,7 @@ private Path text;
 				String[] words = sentences[i].split("\\s+");
 				for(int j = 0;j < words.length; ++j){
 					//Swords.add(words[j]);
-					ImmutableList<String>SynWord.add(0,words[j])
+					ImmutableList<String>SynWord.add(0,words[j]);
 					
 					//check for synonyms
 					ImmutableList<String>Synonyms = synonyms.getSynonyms(SynWord);
