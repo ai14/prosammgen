@@ -180,7 +180,7 @@ private Path text;
    */
    @Override
   public double getMispellingWordsProbabilities(){ //TODO: take it off this class
-  double[] prob;
+  double prob;
   try{
   	WordNetSynonyms WordSynonym = new WordNetSynonyms();
   	//probs from the text
