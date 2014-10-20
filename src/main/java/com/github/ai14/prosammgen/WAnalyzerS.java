@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import com.google.common.collect.ImmutableList;
-import com.github.ai14.prosammgen.*;
+import com.github.ai14.prosammgen.WordNetSynonyms.java;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -182,7 +182,7 @@ private Path text;
   public double getMispellingWordsProbabilities(){ //TODO: take it off this class
   double prob;
   try{
-  	WordNet WordSynonym = new WordNet();
+  	WordNetSynonyms WordSynonym = new WordNetSynonyms();
   	//probs from the text
 	    int numSentences = 0;
 	    int misPellingWords = 0;
