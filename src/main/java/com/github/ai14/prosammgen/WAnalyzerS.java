@@ -91,6 +91,7 @@ private Path text;
   	try{
   		//probs from the text
 	    int textSize = 0;
+	    double[] prob;
 	    List<Integer>wordSize = new ArrayList<>();
 	    //Read the text
 	    for (String line : Files.readAllLines(text)) {
@@ -104,7 +105,7 @@ private Path text;
 	        }
 	    }
 	    //calculate probs
-	    double[] prob = new double[wordSize.size()];
+	    prob = new double[wordSize.size()];
 	    for(int j = 0; j < prob.length ;j++){
 	        prob[j] = wordSize.get(j)/textSize;
 	    }
@@ -124,6 +125,7 @@ private Path text;
   public double[] getSentencesPerParagraphProbabilities(){
   	try{
 	  			//probs from the text
+	  			double[] prob;
 		int numParagraph = 0;
 		List<Integer>SentencesParagraph = new ArrayList<>();
 		//Read the text
@@ -146,7 +148,7 @@ private Path text;
 				SentencesParagraph.set(countSP, x);
 			}
 		}	
-		double[] prob = new double [SentencesParagraph.size()];
+		prob = new double [SentencesParagraph.size()];
 		for(int j = 0; j < prob.length; j++){
 			prob[j] = SentencesParagraph.get(j)/numParagraph;
 		}
@@ -178,6 +180,7 @@ private Path text;
    @Override
   public double getMispellingWordsProbabilities(){ //TODO: take it off this class
   try{
+  	double[] prob;
   	WordNetSynonyms WordSynonym = new WordNetSynonyms();
   	//probs from the text
 	    int numSentences = 0;
@@ -206,7 +209,6 @@ private Path text;
 	        }
 	    }
 	    //calculate probs
-	    double prob;
 	    prob = misPellingWords/numSentences;
 	  }catch (IOException e) {
 		      System.err.println("Couldn't read the text");
