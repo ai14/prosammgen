@@ -22,7 +22,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 
-public class WAnalyzerS{
+public class WAnalyzerS{ //TODO: change the name for WritingStyleAnalyzer.java 
 
   /**
    * Given a text this calculates the probabilities for different metrics that describes the writing style of the text author.
@@ -153,17 +153,24 @@ public class WAnalyzerS{
 	//probs from the text
     int numSentences = 0;
     int misPellingWords = 0;
-
+    ImmutableList<String>Synonyms;
     List<Integer>wordSize = new ArrayList<>();
     //Read the text
     for (String line : Files.readAllLines(text)) {
     	//split text in sentences
         String[] sentences = line.split("(?i)(?<=[.?!])\\S+(?=[a-z])");
         numSentences = sentences.length;
+        //each sentence
         for (int i = 0; i < numSentences; i++) {
-          	//check for mispelling words       
-		//if(mispelled) ++misPellingWords; TODO: Add function to know if its misspelled
-		
+        	ImmutableList<String>Synonyms;
+	    	//split the sentence in words
+		String[] words = sentences.split("\\s+");
+		for(int j = 0;j < words.length; ++j){
+			//check for synonyms
+			Synonyms = WordNet.getSynonyms(word[j]);
+			//Check for misspelling words
+			if(Synonyms.size () == 1 and Synonyms[0] == words[j]) ++misPellingWords;
+		}
         }
     }
     //calculate probs
