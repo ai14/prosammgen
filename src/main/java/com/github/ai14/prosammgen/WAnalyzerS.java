@@ -43,7 +43,7 @@ private Path text;
    */
 @Override  
   public double[] getSentenceLengthProbabilities() {
-  	double[] prob;
+  	double[] prob = new double[0];
   	try{
   		 //probs from the text
 	    int numSentence = 0;
@@ -89,7 +89,7 @@ private Path text;
    */
    @Override
   public double[] getWordLengthProbabilities(){
-  	double[] prob;
+  	double[] prob = new double[0];
   	try{
   		//probs from the text
 	    int textSize = 0;
@@ -124,7 +124,7 @@ private Path text;
    */
    @Override
   public double[] getSentencesPerParagraphProbabilities(){
-  	double[] prob;
+  	double[] prob = new double[0];
   	try{
 	  			//probs from the text
 		int numParagraph = 0;
@@ -180,7 +180,7 @@ private Path text;
    */
    @Override
   public double getMispellingWordsProbabilities(){ //TODO: take it off this class
-  double prob;
+  double prob = 0;
   try{
   	WordNetSynonyms WordSynonym = new WordNetSynonyms();
   	//probs from the text
@@ -197,10 +197,10 @@ private Path text;
 	        	List<String>Swords = new ArrayList<>();
 		    	//split the sentence in words
 				String[] words = sentences[i].split("\\s+");
-				ImmutableList<String>SynWord;
+				ImmutableList<String>SynWord = null;
 				ImmutableList<String>Synonym;
 				for(int j = 0;j < words.length; ++j){
-					SynWord.add(0,words[j]);
+                    SynWord.add(0, words[j]);
 					//check for synonyms
 					Synonym = WordSynonym.getSynonyms(SynWord); //TODO: not real name in master
 					//Check for misspelling words
