@@ -161,8 +161,8 @@ public class WAnalyzerS{ //TODO: change the name for WritingStyleAnalyzer.java
         numSentences = sentences.length;
         //each sentence
         for (int i = 0; i < numSentences; i++) {
-        	ImmutableList<String>Synonyms;
-        	ImmutableList<String>Swords;
+        	ImmutableList<String>Synonyms = new ImmutableList<String> ;
+        	ImmutableList<String>Swords = new ImmutableList<String> ;
 	    	//split the sentence in words
 			String[] words = sentences[i].split("\\s+");
 			for(int j = 0;j < words.length; ++j){
