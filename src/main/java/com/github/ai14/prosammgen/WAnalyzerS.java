@@ -168,7 +168,7 @@ public class WAnalyzerS{
     }
     //calculate probs
     double prob;
-    prob = misPellingWords/sentenceSize;
+    prob = misPellingWords/numSentences;
     return prob;
   }
   
