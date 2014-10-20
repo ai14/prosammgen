@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 public class WAnalyzerS implements WritingStyleAnalyzer{ 
 
-private final Path text;
+private Path text;
  
   /**
    * Given a text this calculates the probabilities for different metrics that describes the writing style of the text author.
