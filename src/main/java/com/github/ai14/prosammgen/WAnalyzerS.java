@@ -163,7 +163,7 @@ public class WAnalyzerS{ //TODO: change the name for WritingStyleAnalyzer.java
         for (int i = 0; i < numSentences; i++) {
         	ImmutableList<String>Synonyms;
 	    	//split the sentence in words
-			String[] words = sentences.split("\\s+");
+			String[] words = sentences[i].split("\\s+");
 			for(int j = 0;j < words.length; ++j){
 				//check for synonyms
 				Synonyms = WordNet.getSynonyms(word[j]);
