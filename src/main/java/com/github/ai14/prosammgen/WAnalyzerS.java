@@ -190,8 +190,9 @@ private Path text;
 				String[] words = sentences[i].split("\\s+");
 				for(int j = 0;j < words.length; ++j){
 					Swords.add(words[j]);
+					ImmutableList<String>SynWord = ImmutableList.copyOf(words[j]);
 					//check for synonyms
-					ImmutableList<String>Synonyms = synonyms.getSynonyms(ImmutableList<String>SynWord.copyOf(Sword));
+					ImmutableList<String>Synonyms = synonyms.getSynonyms(SynWord);
 					//Check for misspelling words
 					if(Synonyms.size() == 1 && (Synonyms.get(0)) == words[j]) ++misPellingWords;
 					Swords.remove(0);
