@@ -161,7 +161,7 @@ private final Path text;
    * @return
    */
    @Override
-  public double[] getQuestionLengthToAnswerLengthRatioProbabilities() throws java.io.IOException{
+  public double[] getQuestionLengthToAnswerLengthRatioProbabilities(){
 	  double [] i= new double[2];
     return i;
   }
@@ -172,7 +172,7 @@ private final Path text;
    * @return
    */
    @Override
-  public double getMispellingWordsProbabilities() throws java.io.IOException{ //TODO: take it off this class
+  public double getMispellingWordsProbabilities(){ //TODO: take it off this class
   try{
   	//probs from the text
 	    int numSentences = 0;
