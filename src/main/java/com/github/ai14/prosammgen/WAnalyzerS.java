@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import com.google.common.collect.ImmutableList;
+import com.github.ai14.prosammgen.WordNetSynonyms;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
