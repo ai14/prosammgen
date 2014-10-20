@@ -139,7 +139,7 @@ public class WAnalyzerS{
    *
    * @return
    */
-  public double[] getQuestionLengthToAnswerLengthRatioProbabilities(Path text){
+  public double[] getQuestionLengthToAnswerLengthRatioProbabilities(Path text) throws java.io.IOException{
 	  double [] i= new double[2];
     return i;
   }
@@ -149,7 +149,7 @@ public class WAnalyzerS{
    *
    * @return
    */
-  public double getMispellingWordsProbabilities(Path text){
+  public double getMispellingWordsProbabilities(Path text) throws java.io.IOException{
 	//probs from the text
     int numSentences = 0;
     int misPellingWords = 0;
@@ -167,7 +167,7 @@ public class WAnalyzerS{
         }
     }
     //calculate probs
-    double prob = new double;
+    double prob;
     prob = misPellingWords/sentenceSize;
     return prob;
   }
