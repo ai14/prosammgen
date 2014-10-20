@@ -12,6 +12,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import com.google.common.collect.ImmutableList;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.*;
+import java.util.stream.Collectors;
+
 
 public class WAnalyzerS{
 
@@ -134,4 +143,33 @@ public class WAnalyzerS{
 	  double [] i= new double[2];
     return i;
   }
+  
+   /**
+   * Get the probabilities of mispelling words per sentence
+   *
+   * @return
+   */
+  public double getMispellingWordsProbabilities(Path text){
+	//probs from the text
+    int numSentences = 0;
+    int misPellingWords = 0;
+
+    List<Integer>wordSize = new ArrayList<>();
+    //Read the text
+    for (String line : Files.readAllLines(text)) {
+    	//split text in sentences
+        String[] sentences = line.split("(?i)(?<=[.?!])\\S+(?=[a-z])");
+        numSentences = sentences.length;
+        for (int i = 0; i < numSentences; i++) {
+          	//check for mispelling words       
+		//if(mispelled) ++misPellingWords; TODO: Add function to know if its misspelled
+		
+        }
+    }
+    //calculate probs
+    double prob = new double;
+    prob = misPellingWords/sentenceSize;
+    return prob;
+  }
+  
 }
