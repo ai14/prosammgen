@@ -166,7 +166,7 @@ public class WAnalyzerS{ //TODO: change the name for WritingStyleAnalyzer.java
 	    	//split the sentence in words
 			String[] words = sentences[i].split("\\s+");
 			for(int j = 0;j < words.length; ++j){
-				Swords.add(words[j])
+				Swords.add(words[j]);
 				//check for synonyms
 				Synonyms = WordNet.getSynonyms(Swords);
 				//Check for misspelling words
