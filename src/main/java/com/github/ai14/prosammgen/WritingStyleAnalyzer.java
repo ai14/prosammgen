@@ -45,5 +45,5 @@ interface WritingStyleAnalyzer {
    *
    * @return
    */
-  public double getMispellingWordsProbabilities(); //TODO: take it off this class
+  public double getMisspellingWordsProbabilities(); //TODO: take it off this class
 }
