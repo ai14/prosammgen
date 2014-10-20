@@ -73,9 +73,10 @@ private Path text;
 	      for(int j = 0; j < prob.length; j++){
 	        prob[j] = sentenceSize.get(j)/numSentence;
 	      }
-	      return prob;
   	}catch (IOException e) {
 	      System.err.println("Couldn't read the text");
+    	} finally {
+      		return prob;
     	}
    
   }
@@ -106,10 +107,10 @@ private Path text;
 	    for(int j = 0; j < prob.length ;j++){
 	        prob[j] = wordSize.get(j)/textSize;
 	    }
-	    return prob;
-  		
   	}catch (IOException e) {
 	      System.err.println("Couldn't read the text");
+    	} finally {
+      		return prob;
     	}
   }
 
@@ -148,9 +149,10 @@ private Path text;
 		for(int j = 0; j < prob.length; j++){
 			prob[j] = SentencesParagraph.get(j)/numParagraph;
 		}
-		return prob;
   	}catch (IOException e) {
 	      System.err.println("Couldn't read the text");
+    	} finally {
+      		return prob;
     	}
   	
 
@@ -205,9 +207,10 @@ private Path text;
 	    //calculate probs
 	    double prob;
 	    prob = misPellingWords/numSentences;
-	    return prob;
 	  }catch (IOException e) {
-	      System.err.println("Couldn't read the text");
+		      System.err.println("Couldn't read the text");
+    	} finally {
+      		return prob;
     	}
   }
     
