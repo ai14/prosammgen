@@ -189,13 +189,14 @@ private Path text;
 		    	//split the sentence in words
 				String[] words = sentences[i].split("\\s+");
 				for(int j = 0;j < words.length; ++j){
-					Swords.add(words[j]);
-					ImmutableList<String>SynWord = ImmutableList.copyOf(words[j]);
+					//Swords.add(words[j]);
+					ImmutableList<String>SynWord.add(0,words[j])
+					
 					//check for synonyms
 					ImmutableList<String>Synonyms = synonyms.getSynonyms(SynWord);
 					//Check for misspelling words
 					if(Synonyms.size() == 1 && (Synonyms.get(0)) == words[j]) ++misPellingWords;
-					Swords.remove(0);
+					SynWord.remove(0)
 				}
 	        }
 	    }
