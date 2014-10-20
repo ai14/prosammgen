@@ -150,7 +150,7 @@ public class WAnalyzerS{ //TODO: change the name for WritingStyleAnalyzer.java
    * @return
    */
   public double getMispellingWordsProbabilities(Path text) throws java.io.IOException{
-	//probs from the text
+    //probs from the text
     int numSentences = 0;
     int misPellingWords = 0;
     ImmutableList<String>Synonyms;
@@ -164,13 +164,13 @@ public class WAnalyzerS{ //TODO: change the name for WritingStyleAnalyzer.java
         for (int i = 0; i < numSentences; i++) {
         	ImmutableList<String>Synonyms;
 	    	//split the sentence in words
-		String[] words = sentences.split("\\s+");
-		for(int j = 0;j < words.length; ++j){
-			//check for synonyms
-			Synonyms = WordNet.getSynonyms(word[j]);
-			//Check for misspelling words
-			if(Synonyms.size () == 1 and Synonyms[0] == words[j]) ++misPellingWords;
-		}
+			String[] words = sentences.split("\\s+");
+			for(int j = 0;j < words.length; ++j){
+				//check for synonyms
+				Synonyms = WordNet.getSynonyms(word[j]);
+				//Check for misspelling words
+				if(Synonyms.size() == 1 && (Synonyms.get(0)) == words[j]) ++misPellingWords;
+			}
         }
     }
     //calculate probs
@@ -178,5 +178,4 @@ public class WAnalyzerS{ //TODO: change the name for WritingStyleAnalyzer.java
     prob = misPellingWords/numSentences;
     return prob;
   }
-  
 }
