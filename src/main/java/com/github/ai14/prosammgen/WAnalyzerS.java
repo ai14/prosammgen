@@ -196,8 +196,6 @@ private Path text;
 					SynWord.add(0,words[j]);
 					//check for synonyms
 					Synonym = WordNetSynonyms.getSynonyms(SynWord); //TODO: not real name in master
-					Synonym = WordNet.getSynonyms(SynWord); //TODO: not real name in master
-					Synonym = Synonyms.getSynonyms(SynWord);
 					//Check for misspelling words
 					if(Synonym.size() == 1 && (Synonym.get(0)) == words[j]) ++misPellingWords;
 					SynWord.remove(0);
