@@ -182,8 +182,8 @@ private Path text;
   public double getMispellingWordsProbabilities(){ //TODO: take it off this class
   double prob;
   try{
-  	 WordNetSynonyms WordSynonym = new WordNetSynonyms;
-  	 WordNetSynonyms WordSynonym1;
+  	// WordNetSynonyms WordSynonym = new WordNetSynonyms;
+  	 WordNetSynonyms WordSynonym;
   	//probs from the text
 	    int numSentences = 0;
 	    int misPellingWords = 0;
