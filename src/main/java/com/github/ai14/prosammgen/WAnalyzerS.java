@@ -43,11 +43,12 @@ private Path text;
    */
 @Override  
   public double[] getSentenceLengthProbabilities() {
+  	double[] prob;
   	try{
   		 //probs from the text
 	    int numSentence = 0;
 	    int beginT = 0;
-	    double[] prob;
+	    
 		List<Integer>sentenceSize = new ArrayList<>();
 	    //Read the text
 	    for (String line : Files.readAllLines(text)) {
@@ -88,10 +89,10 @@ private Path text;
    */
    @Override
   public double[] getWordLengthProbabilities(){
+  	double[] prob;
   	try{
   		//probs from the text
 	    int textSize = 0;
-	    double[] prob;
 	    List<Integer>wordSize = new ArrayList<>();
 	    //Read the text
 	    for (String line : Files.readAllLines(text)) {
@@ -123,9 +124,9 @@ private Path text;
    */
    @Override
   public double[] getSentencesPerParagraphProbabilities(){
+  	double[] prob;
   	try{
 	  			//probs from the text
-	  			double[] prob;
 		int numParagraph = 0;
 		List<Integer>SentencesParagraph = new ArrayList<>();
 		//Read the text
@@ -179,8 +180,8 @@ private Path text;
    */
    @Override
   public double getMispellingWordsProbabilities(){ //TODO: take it off this class
+  double[] prob;
   try{
-  	double[] prob;
   	WordNetSynonyms WordSynonym = new WordNetSynonyms();
   	//probs from the text
 	    int numSentences = 0;
