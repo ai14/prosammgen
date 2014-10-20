@@ -47,6 +47,7 @@ private Path text;
   		 //probs from the text
 	    int numSentence = 0;
 	    int beginT = 0;
+	    double[] prob;
 		List<Integer>sentenceSize = new ArrayList<>();
 	    //Read the text
 	    for (String line : Files.readAllLines(text)) {
@@ -69,7 +70,7 @@ private Path text;
 	          }
 	        }
 	      }
-	      double[] prob = new double [sentenceSize.size()];
+	      prob = new double [sentenceSize.size()];
 	      for(int j = 0; j < prob.length; j++){
 	        prob[j] = sentenceSize.get(j)/numSentence;
 	      }
