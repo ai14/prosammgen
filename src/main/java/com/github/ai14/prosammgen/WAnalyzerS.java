@@ -168,7 +168,7 @@ public class WAnalyzerS{ //TODO: change the name for WritingStyleAnalyzer.java
 			for(int j = 0;j < words.length; ++j){
 				Swords.add(words[j]);
 				//check for synonyms
-				Synonyms = WordNet.getSynonyms(Swords);
+				Synonyms = WordNetSynonyms.getSynonyms(Swords); //TODO: change to WordNet when merging to Master
 				//Check for misspelling words
 				if(Synonyms.size() == 1 && (Synonyms.get(0)) == words[j]) ++misPellingWords;
 				Swords.remove(0);
