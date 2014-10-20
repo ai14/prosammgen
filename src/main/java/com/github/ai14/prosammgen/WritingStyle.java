@@ -42,5 +42,8 @@ public class WritingStyle {
     wordLengthProbabilities = probabilities.apply("\\s+");
     sentenceLengthProbabilities = probabilities.apply("\\p{P}+");
     paragraphLengthProbabilities = probabilities.apply("[\\n\\r]+");
+
+    // TODO Calculate probabilities for sentences per paragraph.
+    // TODO Calculate WritingStyle question length / answer length.
   }
 }
