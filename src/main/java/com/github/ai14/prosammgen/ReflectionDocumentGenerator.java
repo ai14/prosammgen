@@ -60,14 +60,14 @@ public final class ReflectionDocumentGenerator {
       double ratio = Files.size(readingMaterial) / (double) s;
 
       // Generate and train a Markov chain for the current question.
-      MarkovChain markovChain = new MarkovChain();
+      MarkovTrainer markovTrainer = new MarkovTrainer();
       int weight = (int) (0.5 / ratio); // aim for reading material to be 50% of wiki articles TODO Document properly.
-      markovChain.train(weight, readingMaterial);
-      markovChain.train(wikipediaArticles.toArray(new Path[wikipediaArticles.size()]));
+      markovTrainer.train(weight, readingMaterial);
+      markovTrainer.train(wikipediaArticles.toArray(new Path[wikipediaArticles.size()]));
 
       // Define grammar macros for the current question.
       ImmutableMap.Builder<String, Function<ImmutableList<String>, TextGenerator>> macroBuilder = ImmutableMap.builder();
-      macroBuilder.put("MARKOV", n -> new MarkovTextGenerator(markovChain, Integer.parseInt(n.get(0))));
+      macroBuilder.put("MARKOV", n -> new MarkovTextGenerator(markovTrainer, Integer.parseInt(n.get(0))));
       macroBuilder.put("SYNONYM", words -> new SynonymGenerator(words));
       macroBuilder.put("KEYWORD", x -> keywordGenerator);
 

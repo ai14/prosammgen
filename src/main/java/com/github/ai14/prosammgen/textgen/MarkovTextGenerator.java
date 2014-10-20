@@ -1,6 +1,6 @@
 package com.github.ai14.prosammgen.textgen;
 
-import com.github.ai14.prosammgen.MarkovChain;
+import com.github.ai14.prosammgen.MarkovTrainer;
 import com.github.ai14.prosammgen.Ngram;
 import com.github.ai14.prosammgen.WordProbability;
 import com.google.common.collect.ImmutableSet;
@@ -9,10 +9,10 @@ import java.util.*;
 
 public class MarkovTextGenerator implements TextGenerator {
 
-  private final MarkovChain trainer;
+  private final MarkovTrainer trainer;
   private final int numSentences;
 
-  public MarkovTextGenerator(MarkovChain trainer, int numSentences) {
+  public MarkovTextGenerator(MarkovTrainer trainer, int numSentences) {
     this.trainer = trainer;
     this.numSentences = numSentences;
   }
@@ -24,7 +24,7 @@ public class MarkovTextGenerator implements TextGenerator {
 
   // TODO: remove averageSentenceLength from this method?
   // use calculated statistics instead
-  private static String getText(Random rand, int numberSentences, MarkovChain trainer) {
+  private static String getText(Random rand, int numberSentences, MarkovTrainer trainer) {
     Map<String, ArrayList<WordProbability>> markovChain = trainer.getMarkovChain();
 
     List<Ngram> startNgrams = trainer.getSentenceStarts();
