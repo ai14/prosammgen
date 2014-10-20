@@ -12,6 +12,12 @@ import java.util.stream.Collectors;
 public class WordNetSynonyms implements Synonyms {
 
   private static final String index = "res/wordnet.idx", data = "res/wordnet.dat";
+  
+    /**
+   * Constructor
+   */
+   public WordNetSynonyms() {
+  }
 
   @Override
   public ImmutableList<String> getSynonyms(ImmutableList<String> words) {
