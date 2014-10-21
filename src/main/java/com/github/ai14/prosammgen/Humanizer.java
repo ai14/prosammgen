@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Ordering;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.print.DocFlavor;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,18 +43,21 @@ public class Humanizer {
         //TODO: Change frequency of misspelling a word
         int numberOfParagraphs = 0;
 
-        String[] paragraph = text.split("\"(?m)(?=^\\\\s{4})\"");
+        String[] paragraph = text.split("[\\n\\r]+");
 
         numberOfParagraphs = paragraph.length;
         StringBuilder HumanizedText = new StringBuilder();
         //each paragraph
         for (int i = 0; i < numberOfParagraphs;++i){
+
             int numberOfWords = 0;
             String[] wordsPerParagraph = text.split("\\s+");
             numberOfWords = wordsPerParagraph.length;
             //each word
             for (int j =0; j < numberOfWords; ++j) {
-                int misspellingRate = (int) (misspellingProbability*numberOfWords);
+System.err.println("1: "+misspellingProbability);
+System.err.println("2: "+numberOfWords);
+                double misspellingRate = (misspellingProbability*numberOfWords);
                 boolean QuestionmarksEndOfSentence = false;
                 boolean PointmarksEndOfSentence = false;
                 boolean ExclamationmarksEndOfSentence = false;
@@ -74,15 +78,17 @@ public class Humanizer {
                 }
                 String misspelledWord = wordsPerParagraph[j];
 
-                String[] possibleMisspellingWords = null;
+                List<String> possibleMisspellingWords = new ArrayList<>();
                 //Find misspelling words according to a given probability
                 //TODO: Check the case that doesn't found a misspelled word when it should (probability will change)
-                if(j%misspellingRate == 0)possibleMisspellingWords = checkForPossibleMisspellingWords(wordsPerParagraph[j]);
-                if (possibleMisspellingWords != null) {
-                    misspelledWord = possibleMisspellingWords[0] + " ";
+//System.err.println(misspellingRate);
+//System.err.println(j);
+                if(j%misspellingRate == 0) possibleMisspellingWords = checkForPossibleMisspellingWords(wordsPerParagraph[j]);
+                if (!possibleMisspellingWords.isEmpty()) {
+                    misspelledWord = possibleMisspellingWords.get(0) + " ";
                     //if several options
-                    if (possibleMisspellingWords.length > 1) {
-                        double[] SimilarityRate = new double[possibleMisspellingWords.length];
+                    if (possibleMisspellingWords.size() > 1) {
+                        double[] SimilarityRate = new double[possibleMisspellingWords.size()];
                         SimilarityRate = getSimilaritudesBetweenWords(possibleMisspellingWords, wordsPerParagraph[j]);
                         misspelledWord = chooseWord(possibleMisspellingWords, SimilarityRate);
                     }
@@ -99,7 +105,7 @@ public class Humanizer {
                 HumanizedText.append(misspelledWord);
                 HumanizedText.append("\\s+");
             }
-            HumanizedText.append("/n/n");
+            HumanizedText.append("\n\n");
         }
         HumanizedText.append("\\end{document}");
 
@@ -113,15 +119,15 @@ public class Humanizer {
      * @param SimilarityRate
      * @return
      */
-    private String chooseWord(String[] WordsToCompare, double[] SimilarityRate) {
+    private String chooseWord(List<String> WordsToCompare, double[] SimilarityRate) {
         //TODO: implement algorithm to choose depending the probability
         double max = -1;
-        String ChoosenOne = WordsToCompare[0];
+        String ChoosenOne = WordsToCompare.get(0);
         //So far take the most similar one.
-        for(int i = 0; i < WordsToCompare.length; ++i){
+        for(int i = 0; i < WordsToCompare.size(); ++i){
             if(SimilarityRate[i] > max){
                 max = SimilarityRate[i];
-                ChoosenOne = WordsToCompare[i];
+                ChoosenOne = WordsToCompare.get(i);
             }
         }
         return ChoosenOne;
@@ -134,25 +140,28 @@ public class Humanizer {
      * @param OriginalWord
      * @return
      */
-    private double[] getSimilaritudesBetweenWords(String[] WordsToCompare, String OriginalWord) {
-        double []ratingMisspeled = new double [WordsToCompare.length];
+    private double[] getSimilaritudesBetweenWords(List<String> WordsToCompare, String OriginalWord) {
+        double []ratingMisspeled = new double [WordsToCompare.size()];
         //Check
-        for(int i = 0; i < WordsToCompare.length; ++i){
-            ratingMisspeled[i] = StringUtils.getJaroWinklerDistance(WordsToCompare[i], OriginalWord);
+        for(int i = 0; i < WordsToCompare.size(); ++i){
+            ratingMisspeled[i] = StringUtils.getJaroWinklerDistance(WordsToCompare.get(i), OriginalWord);
         }
         return ratingMisspeled;
     }
 
-    public  String[] checkForPossibleMisspellingWords(String correctWord){
-        String[] possibleMisspellingWords = null;
-        int numberPossibilities = 0;
+    public   List<String> checkForPossibleMisspellingWords(String correctWord){
+        List<String> possibleMisspellingWords = new ArrayList<>();
+        int numberPossibilities = 1;
         for(int i = 0; i < Words.size(); ++i){
             //found the word (correct words have $ at the beginning of it)
             if((Words.get(i)).equals("$"+correctWord)){
                 ++i;
                 //get the list of possible misspelling options
-                while(!(Words.get(i)).contains("$")){//while there is still possible misspelling words
-                    possibleMisspellingWords[numberPossibilities] = (Words.get(i));
+                String misspelledWord;
+                while(!(Words.get(i)).contains("$") && i < Words.size()){//while there is still possible misspelling words
+                    misspelledWord = Words.get(i);
+System.err.println("CHEEEEEEEECK " +correctWord+"     "+misspelledWord);
+                    possibleMisspellingWords.add(misspelledWord);
                     numberPossibilities++;
                     ++i;
                 }
@@ -160,6 +169,7 @@ public class Humanizer {
                 break;
             }
         }
+       // String[] result = new String[numberPossibilities];
         return possibleMisspellingWords;
     }
 
