@@ -10,7 +10,7 @@ import com.github.ai14.prosammgen.*;
 
 
 
-public class WAnalyzerS implements WritingStyleAnalyzer{ 
+public class WAnalyzerS{
 
     private Path text;
     private String[] TotalWords;
@@ -40,7 +40,7 @@ public class WAnalyzerS implements WritingStyleAnalyzer{
    *
    * @return
    */
-@Override  
+
   public double[] getSentenceLengthProbabilities() {
 	    int NumberOfSentences = TotalSentences.length;
 		List<Integer>sentenceSize = new ArrayList<>();
@@ -63,7 +63,7 @@ public class WAnalyzerS implements WritingStyleAnalyzer{
    *
    * @return
    */
-   @Override
+
   public double[] getWordLengthProbabilities(){
 	    int textSize = 0;
 	    List<Integer>wordSize = new ArrayList<>();
@@ -87,7 +87,7 @@ public class WAnalyzerS implements WritingStyleAnalyzer{
    *
    * @return
    */
-   @Override
+
   public double[] getSentencesPerParagraphProbabilities(){
 
         int NumberOfParagraph = TotalParagraphs.length;
@@ -115,7 +115,7 @@ public class WAnalyzerS implements WritingStyleAnalyzer{
    *
    * @return
    */
-   @Override
+
   public double[] getQuestionLengthToAnswerLengthRatioProbabilities(){
        //TODO: Implement function
 	  double [] i= new double[2];
@@ -127,11 +127,11 @@ public class WAnalyzerS implements WritingStyleAnalyzer{
    *
    * @return
    */
-   @Override
+
   public double getMisspellingWordsProbabilities(){
         int NumberOfParagraphs = TotalParagraphs.length;
         int NumberOfWords = TotalWords.length;
-        WordNetSynonyms CheckSynonym = new WordNetSynonyms();
+        WordNet CheckSynonym = new WordNet();
 	    int misspellingWords = 0;
 	    List<Integer>MisspellWords = new ArrayList<>();
         ImmutableList<String>WordToCheck = null;
@@ -144,7 +144,7 @@ public class WAnalyzerS implements WritingStyleAnalyzer{
             }
             WordToCheck.add(0, TotalWords[j]);
             //get synonyms
-            Synonyms = CheckSynonym.getSynonyms(WordToCheck); //TODO: Put the same name as the master branch
+            Synonyms = CheckSynonym.getSynonyms(WordToCheck); 
             //if there is no synonym (only get the same word as output of the function means that the word is misspelled
             if (Synonyms.size() == 1 && (Synonyms.get(0)) == TotalWords[j]) ++misspellingWords;
             //check one word at a time, after checking we remove it from the list
