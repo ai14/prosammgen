@@ -32,7 +32,7 @@ public final class ReflectionDocumentGenerator {
     generators = TextGenerators.parseGrammar(Files.readAllLines(Paths.get("res/grammar")));
   }
 
-  public String generateReport(String title, String author, ImmutableList<String> questions, Path readingMaterial, int wordCount) throws IOException {
+  public String generateReport(String title, String author, ImmutableList<String> questions, Path readingMaterial, int wordCount, int maxWebRequests) throws IOException {
     StringBuilder report = new StringBuilder();
     report.append("\\documentclass{article}\\usepackage[utf8]{inputenc}\\begin{document}\\title{")
             .append(title)
@@ -52,7 +52,7 @@ public final class ReflectionDocumentGenerator {
       // Get additional training data for the question from text sources (Wikipedia articles).
       ImmutableSet<String> searchTerms = keywordGenerator.getWords();
       String longestSearchTerm = Ordering.natural().onResultOf(String::length).max(searchTerms);
-      List<Path> wikipediaArticles = Wikipedia.getArticles(100, longestSearchTerm);
+      List<Path> wikipediaArticles = Wikipedia.getArticles(maxWebRequests, longestSearchTerm);
 
       // Calculate the ratio of amount of reading material per additional training text.
       long s = 0;

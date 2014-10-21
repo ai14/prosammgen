@@ -26,6 +26,15 @@ public class Wikipedia {
    * @return
    */
   public static List<Path> getArticles(int articles, String... searchTerms) {
+
+    // Create cache directory.
+    Path cache = Paths.get("cache");
+    if (!Files.exists(cache)) try {
+      Files.createDirectory(cache);
+    } catch (IOException e) {
+    }
+
+    //TODO Limit by program argument.
     int requestsPerSearchterm = 1 + articles / (1 + searchTerms.length);
     if (requestsPerSearchterm > 500) {
       throw new IllegalArgumentException("Searching for too many articles. Disallowed by the MediaWiki API.");
@@ -37,7 +46,7 @@ public class Wikipedia {
         String searchTerm = searchTerms[i];
 
         // Use cached file for search term instead, if fresh enough.
-        Path p = Paths.get(searchTerm + ".txt");
+        Path p = Paths.get("cache/" + searchTerm);
         if (Files.exists(p))
           if (System.currentTimeMillis() - Files.getLastModifiedTime(p).toMillis() < 2592000000l) {
             searchResults.add(p);
@@ -47,7 +56,7 @@ public class Wikipedia {
           }
 
         // Fetch fresh Wikipedia articles.
-        try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(searchTerm + ".txt")))) {
+        try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(p.toString())))) {
           int gaplimit = requestsPerSearchterm; // “Because excerpts generation can be slow the limit is capped at one whole-page extract.” Solution: do several requests. Sorry Wikipedia!
           for (int j = 0; j < gaplimit; j++) {
 
@@ -65,7 +74,10 @@ public class Wikipedia {
               String content = response.replaceAll("\\<.*?\\>", ""); //TODO Don't strip actual text content surrounded by < and >.
               content = StringEscapeUtils.unescapeHtml4(content); // Convert HTML entities to unicode.
               content = content.replaceAll("&|%|\\$|#|_|\\{|\\}|~|\\^|\\\\", ""); // Strip LaTeX reserved characters.
+
               // TODO: most likely easier to maintain a whitelist of allowed latex characters instead
+              //content = content.replaceAll("[^A-Za-z0-9_\\.!;:,\\t\\r\\n]", "_");
+
               //TODO Try to filter out meta data sections such as "External links".
 
               // Write article content to file.
@@ -74,7 +86,7 @@ public class Wikipedia {
           }
         }
         // Store resulting articles in a file for the search term.
-        searchResults.add(Paths.get(searchTerm + ".txt"));
+        searchResults.add(p);
       }
     } catch (IOException e) {
       System.err.println("Wikipedia articles could not be retrieved.");
