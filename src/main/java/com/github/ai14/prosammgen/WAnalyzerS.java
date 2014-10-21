@@ -113,18 +113,7 @@ public class WAnalyzerS{
 
     }
 
-  /**
-   * Get the probabilities for ratios (answer length / question length).
-   *
-   * @return
-   */
 
-  public double[] getQuestionLengthToAnswerLengthRatioProbabilities(){
-       //TODO: Implement function
-	  double [] i= new double[2];
-    return i;
-  }
-  
    /**
    * Get the probabilities of mispelling words per text
    *
@@ -136,7 +125,6 @@ public class WAnalyzerS{
         WordNet CheckSynonym = new WordNet();
 	    int misspellingWords = 0;
 	    List<Integer>MisspellWords = new ArrayList<>();;
- //System.err.println(TotalParagraphs.length);
       //each word
         for (int j = 0; j < NumberOfWords; j++) {
             //If it's end of sentence, remove the last character to check the synonyms.
@@ -150,7 +138,6 @@ public class WAnalyzerS{
             if(TotalWords[j].contains("’")) TotalWords[j] = TotalWords[j].replace("’","'");
             boolean correct = false;
             //Search for the correct word
-//System.err.println(TotalWords[j]);
             for(int i = 0; i < Words.size(); ++i){
                 //The checking part distinguish between capital letters, switching to LowerCase letters except "I"
                 if(TotalWords[j].length() > 1 || (TotalWords[j].length() == 1 && !TotalWords[j].equals("I"))) TotalWords[j] =TotalWords[j].toLowerCase();
@@ -166,11 +153,8 @@ public class WAnalyzerS{
                 ++misspellingWords;
 
             }
-            //check one word at a time, after checking we remove it from the list
-            //WordToCheck.remove(0);
         }
 	    //calculate probability
-
       double probability = (double)misspellingWords/TotalWords.length;
       return probability;
   }
