@@ -69,6 +69,7 @@ public class Humanizer {
                         SimilarityRate = getSimilaritudesBetweenWords(possibleMisspellingWords, WordsParagraph[j]);
                         newWord = chooseWord(possibleMisspellingWords, SimilarityRate);
                     }
+                    //TODO: take of the print
                     System.err.println(WordsParagraph[j]+"   "+newWord);
                 }
                 HumanizedText.append(newWord+" ");
