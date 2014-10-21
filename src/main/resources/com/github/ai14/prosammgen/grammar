@@ -39,10 +39,10 @@
 #CPRELUDE I don't know about others; but to me,
 
 #CCONCLUSION %KEYWORD() is an issue that is not getting %SYNONYM(enough) %SYNONYM(attention).
-#CCONCLUSION one might say that %KEYWORD() has gotten a %SYNONYM(bad,good) rap recently.
+#CCONCLUSION one might say that %KEYWORD() has gotten a %SYNONYM(bad) rap recently.
 #CCONCLUSION %KEYWORD() is not all that interesting.
 #CCONCLUSION it feels like %KEYWORD() is being taken way too seriously.
-#CCONCLUSION a lot is still %SYNONYM(unknown,unclear,controversial) about %KEYWORD().
+#CCONCLUSION a lot is still %SYNONYM(unclear) about %KEYWORD().
 #CCONCLUSION I would need to gather more information about %KEYWORD() to form a clear opinion.
 #CCONCLUSION %KEYWORD() is something that everybody should talk more about.
 
@@ -51,7 +51,7 @@
 #OQUAL I feel like
 #OQUAL One could say that
 #OQUAL There is no doubt, then, that
-#OQUAL I suspect everybody %SYNONYM(thinks,believes) that
+#OQUAL I suspect everybody %SYNONYM(thinks) that
 #OQUAL I know that
 #OQUAL I don't know about others, but to me it is clear that
 #OQUAL What I want to say, then, is that
@@ -89,7 +89,7 @@
 #FACT someone like #FAMOUSPERSON might be the only person who previously #ACTION.
 #FACT we can't put our trust in #FAMOUSPERSON, as has been shown before.
 #FACT things get confusing, really quickly.
-#FACT if #FAMOUSPERSON were present, the discussion would be much more %SYNONYM(clear,interesting,informed).
+#FACT if #FAMOUSPERSON were present, the discussion would be much more %SYNONYM(clear).
 #FACT nothing more can be said about it.
 
 #ACTION #APREFIX #REALACTION

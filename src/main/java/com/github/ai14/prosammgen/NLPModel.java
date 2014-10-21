@@ -6,8 +6,7 @@ import opennlp.tools.tokenize.TokenizerModel;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.net.URL;
 
 public class NLPModel {
 
@@ -34,21 +33,21 @@ public class NLPModel {
     return posModel;
   }
 
-  public static NLPModel loadFromDBs(Path sentDb, Path tokenDb, Path posDb)
+  public static NLPModel loadFromDBs(URL sentDb, URL tokenDb, URL posDb)
       throws IOException {
     final SentenceModel sent;
     final TokenizerModel tok;
     final POSModel pos;
 
-    try (InputStream is = Files.newInputStream(sentDb)) {
+    try (InputStream is = sentDb.openStream()) {
       sent = new SentenceModel(is);
     }
 
-    try (InputStream is = Files.newInputStream(tokenDb)) {
+    try (InputStream is = tokenDb.openStream()) {
       tok = new TokenizerModel(is);
     }
 
-    try (InputStream is = Files.newInputStream(posDb)) {
+    try (InputStream is = posDb.openStream()) {
       pos = new POSModel(is);
     }
     return new NLPModel(sent, tok, pos);
