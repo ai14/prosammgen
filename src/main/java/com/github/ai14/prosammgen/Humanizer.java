@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Ordering;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -28,29 +29,69 @@ public class Humanizer {
     }
 
     /**
-     * * This "humanize" the text by making some misspelled words given a text, a misspellingRate (as higher the rate
+     * * This "humanize" the text by making some misspelled words given a text, a misspellingProb (as higher the probability
      * less similarity between words).
      * @param text Text to humanize
-     * @param misspellingRate Ratio of the mistakes we want
+     * @param misspellingProb Probability of mistakes
      * @return
      */
-    public Path TextHumanizer(Path text, double misspellingRate)throws IOException, ParseException {
+    public Path TextHumanizer(Path text, double misspellingProb)throws IOException, ParseException {
         Path TextResult = null;
         for (String line : Files.readAllLines(text)){
             String [] possibleMisspellingWords = null;
             //Find misspelling words for that word
             possibleMisspellingWords = checkForPossibleMisspellingWords(line);
-            //if there is several option, choose one
             if(possibleMisspellingWords != null) {
                 String misspelledWord = possibleMisspellingWords[0];
+                //if several options
                 if (possibleMisspellingWords.length > 1) {
-                    //TODO: check for the more suitable word
+                    double []SimilarityRate = new double [possibleMisspellingWords.length];
+                    SimilarityRate = getSimilaritudesBetweenWords(possibleMisspellingWords, line);
+                    misspelledWord = chooseWord(possibleMisspellingWords,SimilarityRate,misspellingProb);
                 }
                 //TODO: write into the text the word
             }
 
         }
         return TextResult;
+    }
+
+
+    /**
+     * Take the most suitable misspelling word
+     * @param WordsToCompare
+     * @param SimilarityRate
+     * @param misspellingProb
+     * @return
+     */
+    private String chooseWord(String[] WordsToCompare, double[] SimilarityRate, double misspellingProb) {
+        //TODO: implement algorithm to choose depending the probability
+        double max = -1;
+        String ChoosenOne = WordsToCompare[0];
+        //So far take the most similar one.
+        for(int i = 0; i < WordsToCompare.length; ++i){
+            if(SimilarityRate[i] > max){
+                max = SimilarityRate[i];
+                ChoosenOne = WordsToCompare[i];
+            }
+        }
+        return ChoosenOne;
+    }
+
+
+    /**
+     * Calculates similarities between two words (the possible misspelling word and the original one)
+     * @param WordsToCompare
+     * @param OriginalWord
+     * @return
+     */
+    private double[] getSimilaritudesBetweenWords(String[] WordsToCompare, String OriginalWord) {
+        double []ratingMisspeled = new double [WordsToCompare.length];
+        //Check
+        for(int i = 0; i < WordsToCompare.length; ++i){
+            ratingMisspeled[i] = StringUtils.getJaroWinklerDistance(WordsToCompare[i], OriginalWord);
+        }
+        return ratingMisspeled;
     }
 
     public  String[] checkForPossibleMisspellingWords(String correctWord){
