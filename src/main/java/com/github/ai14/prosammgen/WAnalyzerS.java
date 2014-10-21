@@ -123,13 +123,13 @@ public class WAnalyzerS implements WritingStyleAnalyzer{
   }
   
    /**
-   * Get the probabilities of mispelling words per sentence
+   * Get the probabilities of mispelling words per paragraph
    *
    * @return
    */
    @Override
   public double getMisspellingWordsProbabilities(){
-        int NumberOfSentences = TotalSentences.length;
+        int NumberOfParagraphs = TotalParagraphs.length;
         int NumberOfWords = TotalWords.length;
         WordNetSynonyms CheckSynonym = new WordNetSynonyms();
 	    int misspellingWords = 0;
@@ -151,7 +151,7 @@ public class WAnalyzerS implements WritingStyleAnalyzer{
             WordToCheck.remove(0);
         }
 	    //calculate probability
-      double probability = misspellingWords/NumberOfSentences;
+      double probability = misspellingWords/NumberOfParagraphs;
       return probability;
   }
     
