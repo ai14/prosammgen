@@ -3,10 +3,9 @@
 !.travis.yml
 target/
 *.log
-*.tex
 *.bak
+*.tex
 *.aux
 *.pdf
 *.txt
-*.iml
 *.iml
