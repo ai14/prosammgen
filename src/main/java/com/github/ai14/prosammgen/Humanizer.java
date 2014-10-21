@@ -32,62 +32,72 @@ public class Humanizer {
      * * This "humanize" the text by making some misspelled words given a text, a misspellingProb (as higher the probability
      * less similarity between words).
      * @param text Text to humanize
-     * @param misspellingProb Probability of mistakes
      * @return
      */
-    public Path TextHumanizer(Path text, double misspellingProb)throws IOException, ParseException {
-        List<String> allText = Files.readAllLines(text);
-        int numberOfWords = 0;
-        for (String line : allText){
-            String[] words = line.split("\\s+");
-            boolean QuestionmarksEndOfSentence = false;
-            boolean PointmarksEndOfSentence = false;
-            boolean ExclamationmarksEndOfSentence = false;
-            for(int j = 0; j < words.length; ++j) {
+    public String TextHumanizer(String text)throws IOException, ParseException {
 
+        int numberOfParagraphs = 0;
+
+        String[] paragraph = text.split("\"(?m)(?=^\\\\s{4})\"");
+
+        numberOfParagraphs = paragraph.length;
+        StringBuilder HumanizedText = new StringBuilder();
+        //each paragraph
+        for (int i = 0; i < numberOfParagraphs;++i){
+            int numberOfWords = 0;
+            String[] wordsPerParagraph = text.split("\\s+");
+            numberOfWords = wordsPerParagraph.length;
+            //each word
+            for (int j =0; j < numberOfWords; ++j) {
+
+                boolean QuestionmarksEndOfSentence = false;
+                boolean PointmarksEndOfSentence = false;
+                boolean ExclamationmarksEndOfSentence = false;
+                //keep the same word (just in case we don't switch it to a misspelled one)
 
                 //Delete ".", "?" or "!" for the misspelling search
-                if (words[j].endsWith(".")  && words[j].length() > 0 && words[j] != null) {
-                    words[j] = words[j].substring(0, words[j].length() - 1);
+                if (wordsPerParagraph[j].endsWith(".") && wordsPerParagraph[j].length() > 0 && wordsPerParagraph[j] != null) {
+                    wordsPerParagraph[j] = wordsPerParagraph[j].substring(0, wordsPerParagraph[j].length() - 1);
                     PointmarksEndOfSentence = true;
                 }
-                if (words[j].endsWith("?")  && words[j].length() > 0 && words[j] != null) {
-                    words[j] = words[j].substring(0, words[j].length() - 1);
+                if (wordsPerParagraph[j].endsWith("?") && wordsPerParagraph[j].length() > 0 && wordsPerParagraph[j] != null) {
+                    wordsPerParagraph[j] = wordsPerParagraph[j].substring(0, wordsPerParagraph[j].length() - 1);
                     QuestionmarksEndOfSentence = true;
                 }
-                if (words[j].endsWith("!") && words[j].length() > 0 && words[j] != null) {
-                    words[j] = words[j].substring(0, words[j].length() - 1);
+                if (wordsPerParagraph[j].endsWith("!") && wordsPerParagraph[j].length() > 0 && wordsPerParagraph[j] != null) {
+                    wordsPerParagraph[j] = wordsPerParagraph[j].substring(0, wordsPerParagraph[j].length() - 1);
                     ExclamationmarksEndOfSentence = true;
                 }
-
+                String misspelledWord = wordsPerParagraph[j];
 
                 String[] possibleMisspellingWords = null;
                 //Find misspelling words for that word
-                possibleMisspellingWords = checkForPossibleMisspellingWords(words[j]);
+                possibleMisspellingWords = checkForPossibleMisspellingWords(wordsPerParagraph[j]);
                 if (possibleMisspellingWords != null) {
-                    String misspelledWord = possibleMisspellingWords[0];
+                    misspelledWord = possibleMisspellingWords[0] + " ";
                     //if several options
                     if (possibleMisspellingWords.length > 1) {
                         double[] SimilarityRate = new double[possibleMisspellingWords.length];
-                        SimilarityRate = getSimilaritudesBetweenWords(possibleMisspellingWords, line);
-                        misspelledWord = chooseWord(possibleMisspellingWords, SimilarityRate, misspellingProb);
+                        SimilarityRate = getSimilaritudesBetweenWords(possibleMisspellingWords, wordsPerParagraph[j]);
+                        misspelledWord = chooseWord(possibleMisspellingWords, SimilarityRate);
                     }
-                    //If it had ".", "?" or "!" marks add them again
-                    if(QuestionmarksEndOfSentence){
-                        misspelledWord = (misspelledWord + "?");
-                    }
-                    else if(PointmarksEndOfSentence){
-                        misspelledWord = (misspelledWord + ".");
-                    }
-                    else if(ExclamationmarksEndOfSentence){
-                        misspelledWord = (misspelledWord + "!");
-                    }
-                    //TODO: write into the text the misspelled word
                 }
-            }
 
+                //If it had ".", "?" or "!" marks add them again
+                if (QuestionmarksEndOfSentence) {
+                    misspelledWord = (misspelledWord + "?");
+                } else if (PointmarksEndOfSentence) {
+                    misspelledWord = (misspelledWord + ".");
+                } else if (ExclamationmarksEndOfSentence) {
+                    misspelledWord = (misspelledWord + "!");
+                }
+                HumanizedText.append(misspelledWord);
+            }
+            HumanizedText.append("/n/n");
         }
-        return text;
+        HumanizedText.append("\\end{document}");
+
+        return HumanizedText.toString();
     }
 
 
@@ -95,10 +105,9 @@ public class Humanizer {
      * Take the most suitable misspelling word
      * @param WordsToCompare
      * @param SimilarityRate
-     * @param misspellingProb
      * @return
      */
-    private String chooseWord(String[] WordsToCompare, double[] SimilarityRate, double misspellingProb) {
+    private String chooseWord(String[] WordsToCompare, double[] SimilarityRate) {
         //TODO: implement algorithm to choose depending the probability
         double max = -1;
         String ChoosenOne = WordsToCompare[0];
