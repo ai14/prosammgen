@@ -1,18 +1,19 @@
 package com.github.ai14.prosammgen.textgen;
 
-import com.github.ai14.prosammgen.MarkovChain;
+import com.github.ai14.prosammgen.MarkovTrainer;
 import com.github.ai14.prosammgen.Ngram;
 import com.github.ai14.prosammgen.WordProbability;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import java.util.*;
 
 public class MarkovTextGenerator implements TextGenerator {
 
-  private final MarkovChain trainer;
+  private final MarkovTrainer trainer;
   private final int numSentences;
 
-  public MarkovTextGenerator(MarkovChain trainer, int numSentences) {
+  public MarkovTextGenerator(MarkovTrainer trainer, int numSentences) {
     this.trainer = trainer;
     this.numSentences = numSentences;
   }
@@ -24,7 +25,7 @@ public class MarkovTextGenerator implements TextGenerator {
 
   // TODO: remove averageSentenceLength from this method?
   // use calculated statistics instead
-  private static String getText(Random rand, int numberSentences, MarkovChain trainer) {
+  private static String getText(Random rand, int numberSentences, MarkovTrainer trainer) {
     Map<String, ArrayList<WordProbability>> markovChain = trainer.getMarkovChain();
 
     List<Ngram> startNgrams = trainer.getSentenceStarts();
@@ -60,6 +61,13 @@ public class MarkovTextGenerator implements TextGenerator {
         tryToEndSentence = false;
       }
 
+      // TODO: find a better solution to this, or fix the input so that this will not be possible
+      if (currentLength >= 80) {
+        System.err.println("FINISHED SENTENCE WITHOUT FINDING PERIOD");
+        sentenceEnded = true;
+        tryToEndSentence = false;
+      }
+
       chooseNextWord(rand, markovChain, startNgrams, ngram, tryToEndSentence);
     }
 
@@ -77,7 +85,7 @@ public class MarkovTextGenerator implements TextGenerator {
 
     if (wordProbabilities == null) {
       Ngram newNgram = startNgrams.get(rand.nextInt(startNgrams.size()));
-      for (String word : ImmutableSet.copyOf(newNgram.getAll())) {
+      for (String word : newNgram.getAll()) {
         ngram.pushWord(word);
       }
 
