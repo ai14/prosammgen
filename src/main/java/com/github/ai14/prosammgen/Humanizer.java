@@ -36,24 +36,58 @@ public class Humanizer {
      * @return
      */
     public Path TextHumanizer(Path text, double misspellingProb)throws IOException, ParseException {
-        Path TextResult = null;
-        for (String line : Files.readAllLines(text)){
-            String [] possibleMisspellingWords = null;
-            //Find misspelling words for that word
-            possibleMisspellingWords = checkForPossibleMisspellingWords(line);
-            if(possibleMisspellingWords != null) {
-                String misspelledWord = possibleMisspellingWords[0];
-                //if several options
-                if (possibleMisspellingWords.length > 1) {
-                    double []SimilarityRate = new double [possibleMisspellingWords.length];
-                    SimilarityRate = getSimilaritudesBetweenWords(possibleMisspellingWords, line);
-                    misspelledWord = chooseWord(possibleMisspellingWords,SimilarityRate,misspellingProb);
+        List<String> allText = Files.readAllLines(text);
+        int numberOfWords = 0;
+        for (String line : allText){
+            String[] words = line.split("\\s+");
+            boolean QuestionmarksEndOfSentence = false;
+            boolean PointmarksEndOfSentence = false;
+            boolean ExclamationmarksEndOfSentence = false;
+            for(int j = 0; j < words.length; ++j) {
+
+
+                //Delete ".", "?" or "!" for the misspelling search
+                if (words[j].endsWith(".")  && words[j].length() > 0 && words[j] != null) {
+                    words[j] = words[j].substring(0, words[j].length() - 1);
+                    PointmarksEndOfSentence = true;
                 }
-                //TODO: write into the text the word
+                if (words[j].endsWith("?")  && words[j].length() > 0 && words[j] != null) {
+                    words[j] = words[j].substring(0, words[j].length() - 1);
+                    QuestionmarksEndOfSentence = true;
+                }
+                if (words[j].endsWith("!") && words[j].length() > 0 && words[j] != null) {
+                    words[j] = words[j].substring(0, words[j].length() - 1);
+                    ExclamationmarksEndOfSentence = true;
+                }
+
+
+                String[] possibleMisspellingWords = null;
+                //Find misspelling words for that word
+                possibleMisspellingWords = checkForPossibleMisspellingWords(words[j]);
+                if (possibleMisspellingWords != null) {
+                    String misspelledWord = possibleMisspellingWords[0];
+                    //if several options
+                    if (possibleMisspellingWords.length > 1) {
+                        double[] SimilarityRate = new double[possibleMisspellingWords.length];
+                        SimilarityRate = getSimilaritudesBetweenWords(possibleMisspellingWords, line);
+                        misspelledWord = chooseWord(possibleMisspellingWords, SimilarityRate, misspellingProb);
+                    }
+                    //If it had ".", "?" or "!" marks add them again
+                    if(QuestionmarksEndOfSentence){
+                        misspelledWord = (misspelledWord + "?");
+                    }
+                    else if(PointmarksEndOfSentence){
+                        misspelledWord = (misspelledWord + ".");
+                    }
+                    else if(ExclamationmarksEndOfSentence){
+                        misspelledWord = (misspelledWord + "!");
+                    }
+                    //TODO: write into the text the misspelled word
+                }
             }
 
         }
-        return TextResult;
+        return text;
     }
 
 
