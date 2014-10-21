@@ -5,14 +5,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-public class MarkovChain {
+public class MarkovTrainer {
 
   public static final int markovOrder = 3;
   private Map<String, Map<String, Integer>> nextWordCounter;
   private List<Ngram> sentenceStarts;
   private Set<Ngram> sentenceEnds;
 
-  public MarkovChain() {
+  public MarkovTrainer() {
     nextWordCounter = new HashMap<>();
     sentenceStarts = new ArrayList<>();
     sentenceEnds = new HashSet<>();
