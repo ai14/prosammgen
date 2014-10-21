@@ -161,8 +161,6 @@ public class WAnalyzerS{
                     break;
                 }
             }
-//System.err.println(Synonyms.size());
-
             //if we don't find the word, means is misspelled
             if (!correct){
                 ++misspellingWords;
@@ -172,7 +170,8 @@ public class WAnalyzerS{
             //WordToCheck.remove(0);
         }
 	    //calculate probability
-      double probability = misspellingWords/TotalWords.length;
+
+      double probability = (double)misspellingWords/TotalWords.length;
       return probability;
   }
     
