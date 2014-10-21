@@ -35,7 +35,7 @@ public class Humanizer {
      * @return
      */
     public String TextHumanizer(String text)throws IOException, ParseException {
-
+        //TODO: Change frequency of misspelling a word
         int numberOfParagraphs = 0;
 
         String[] paragraph = text.split("\"(?m)(?=^\\\\s{4})\"");
