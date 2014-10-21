@@ -42,68 +42,36 @@ public class Humanizer {
     public String TextHumanizer(String text)throws IOException, ParseException {
         //TODO: Change frequency of misspelling a word
         int numberOfParagraphs = 0;
-
-        String[] paragraph = text.split("[\\n\\r]+");
-
+        String[] paragraph = text.split("[\\n\\n]+");
         numberOfParagraphs = paragraph.length;
+        System.err.println(numberOfParagraphs);
         StringBuilder HumanizedText = new StringBuilder();
         //each paragraph
         for (int i = 0; i < numberOfParagraphs;++i){
-
             int numberOfWords = 0;
-            String[] wordsPerParagraph = text.split("\\s+");
-            numberOfWords = wordsPerParagraph.length;
+            String[] WordsParagraph = paragraph[i].split("\\s+");
+            numberOfWords = WordsParagraph.length;
             //each word
             for (int j =0; j < numberOfWords; ++j) {
-System.err.println("1: "+misspellingProbability);
-System.err.println("2: "+numberOfWords);
                 double misspellingRate = (misspellingProbability*numberOfWords);
-                boolean QuestionmarksEndOfSentence = false;
-                boolean PointmarksEndOfSentence = false;
-                boolean ExclamationmarksEndOfSentence = false;
-                //keep the same word (just in case we don't switch it to a misspelled one)
-
-                //Delete ".", "?" or "!" for the misspelling search
-                if (wordsPerParagraph[j].endsWith(".") && wordsPerParagraph[j].length() > 0 && wordsPerParagraph[j] != null) {
-                    wordsPerParagraph[j] = wordsPerParagraph[j].substring(0, wordsPerParagraph[j].length() - 1);
-                    PointmarksEndOfSentence = true;
-                }
-                if (wordsPerParagraph[j].endsWith("?") && wordsPerParagraph[j].length() > 0 && wordsPerParagraph[j] != null) {
-                    wordsPerParagraph[j] = wordsPerParagraph[j].substring(0, wordsPerParagraph[j].length() - 1);
-                    QuestionmarksEndOfSentence = true;
-                }
-                if (wordsPerParagraph[j].endsWith("!") && wordsPerParagraph[j].length() > 0 && wordsPerParagraph[j] != null) {
-                    wordsPerParagraph[j] = wordsPerParagraph[j].substring(0, wordsPerParagraph[j].length() - 1);
-                    ExclamationmarksEndOfSentence = true;
-                }
-                String misspelledWord = wordsPerParagraph[j];
-
+                String newWord = WordsParagraph[j];
                 List<String> possibleMisspellingWords = new ArrayList<>();
                 //Find misspelling words according to a given probability
-                //TODO: Check the case that doesn't found a misspelled word when it should (probability will change)
-//System.err.println(misspellingRate);
-//System.err.println(j);
-                if(j%misspellingRate == 0) possibleMisspellingWords = checkForPossibleMisspellingWords(wordsPerParagraph[j]);
+                //TODO: Improve when to look for a word
+                if((int)(misspellingRate%j) == 0){
+                    possibleMisspellingWords = checkForPossibleMisspellingWords(WordsParagraph[j]);
+                }
                 if (!possibleMisspellingWords.isEmpty()) {
-                    misspelledWord = possibleMisspellingWords.get(0) + " ";
+                    newWord = possibleMisspellingWords.get(0) + " ";
                     //if several options
                     if (possibleMisspellingWords.size() > 1) {
                         double[] SimilarityRate = new double[possibleMisspellingWords.size()];
-                        SimilarityRate = getSimilaritudesBetweenWords(possibleMisspellingWords, wordsPerParagraph[j]);
-                        misspelledWord = chooseWord(possibleMisspellingWords, SimilarityRate);
+                        SimilarityRate = getSimilaritudesBetweenWords(possibleMisspellingWords, WordsParagraph[j]);
+                        newWord = chooseWord(possibleMisspellingWords, SimilarityRate);
                     }
+                    System.err.println(WordsParagraph[j]+"   "+newWord);
                 }
-
-                //If it had ".", "?" or "!" marks add them again
-                if (QuestionmarksEndOfSentence) {
-                    misspelledWord = (misspelledWord + "?");
-                } else if (PointmarksEndOfSentence) {
-                    misspelledWord = (misspelledWord + ".");
-                } else if (ExclamationmarksEndOfSentence) {
-                    misspelledWord = (misspelledWord + "!");
-                }
-                HumanizedText.append(misspelledWord);
-                HumanizedText.append("\\s+");
+                HumanizedText.append(newWord+" ");
             }
             HumanizedText.append("\n\n");
         }
@@ -149,9 +117,23 @@ System.err.println("2: "+numberOfWords);
         return ratingMisspeled;
     }
 
+
+
     public   List<String> checkForPossibleMisspellingWords(String correctWord){
+        boolean ChapitalLetter = false;
+        char cEnd = ' ';
+        char cStart = ' ';
+        if ((correctWord.endsWith(".") || correctWord.endsWith("?") || correctWord.endsWith("!")|| correctWord.endsWith(",")|| correctWord.endsWith(":") || correctWord.endsWith(")")|| correctWord.endsWith("”")||correctWord.endsWith(" \" ")) &&correctWord.length() > 0 && correctWord != null) {
+            cEnd = correctWord.charAt(correctWord.length() - 1);
+            correctWord = correctWord.substring(0, correctWord.length() - 1);
+        }
+        if ((correctWord.startsWith("(")|correctWord.startsWith("“")||correctWord.startsWith("\""))  && correctWord.length() > 0 && correctWord != null) {
+            cStart = correctWord.charAt(0);
+            correctWord = correctWord.substring(1);
+        }
+        //Diferent characters ’ and ' that are used for the same
+        if(correctWord.contains("’")) correctWord = correctWord.replace("’","'");
         List<String> possibleMisspellingWords = new ArrayList<>();
-        int numberPossibilities = 1;
         for(int i = 0; i < Words.size(); ++i){
             //found the word (correct words have $ at the beginning of it)
             if((Words.get(i)).equals("$"+correctWord)){
@@ -160,16 +142,15 @@ System.err.println("2: "+numberOfWords);
                 String misspelledWord;
                 while(!(Words.get(i)).contains("$") && i < Words.size()){//while there is still possible misspelling words
                     misspelledWord = Words.get(i);
-System.err.println("CHEEEEEEEECK " +correctWord+"     "+misspelledWord);
+                    if(cEnd != ' ')misspelledWord = misspelledWord +cEnd;
+                    if(cStart != ' ')misspelledWord = cStart + misspelledWord;
                     possibleMisspellingWords.add(misspelledWord);
-                    numberPossibilities++;
                     ++i;
                 }
                 //Found the word no need to keep looking
                 break;
             }
         }
-       // String[] result = new String[numberPossibilities];
         return possibleMisspellingWords;
     }
 
