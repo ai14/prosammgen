@@ -21,11 +21,15 @@ import java.util.function.Function;
 public class Humanizer {
 
     private List<String> Words;
+    private double misspellingProbability;
 
 
     public Humanizer()throws IOException, ParseException {
         //Load words (both correct and misspelled ones)
-        Words = Files.readAllLines(Paths.get("res/words"));
+        this.Words = Files.readAllLines(Paths.get("res/words"));
+        WAnalyzerS Analyze = new WAnalyzerS();
+        Analyze.analyze(Paths.get("example/previousreflectiondocument.in"));
+        this.misspellingProbability = Analyze.getMisspellingWordsProbabilities();
     }
 
     /**
@@ -49,7 +53,7 @@ public class Humanizer {
             numberOfWords = wordsPerParagraph.length;
             //each word
             for (int j =0; j < numberOfWords; ++j) {
-
+                int misspellingRate = (int) (misspellingProbability*numberOfWords);
                 boolean QuestionmarksEndOfSentence = false;
                 boolean PointmarksEndOfSentence = false;
                 boolean ExclamationmarksEndOfSentence = false;
@@ -71,8 +75,9 @@ public class Humanizer {
                 String misspelledWord = wordsPerParagraph[j];
 
                 String[] possibleMisspellingWords = null;
-                //Find misspelling words for that word
-                possibleMisspellingWords = checkForPossibleMisspellingWords(wordsPerParagraph[j]);
+                //Find misspelling words according to a given probability
+                //TODO: Check the case that doesn't found a misspelled word when it should (probability will change)
+                if(j%misspellingRate == 0)possibleMisspellingWords = checkForPossibleMisspellingWords(wordsPerParagraph[j]);
                 if (possibleMisspellingWords != null) {
                     misspelledWord = possibleMisspellingWords[0] + " ";
                     //if several options
