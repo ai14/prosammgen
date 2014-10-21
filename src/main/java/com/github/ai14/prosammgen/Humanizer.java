@@ -92,6 +92,7 @@ public class Humanizer {
                     misspelledWord = (misspelledWord + "!");
                 }
                 HumanizedText.append(misspelledWord);
+                HumanizedText.append("\\s+");
             }
             HumanizedText.append("/n/n");
         }
