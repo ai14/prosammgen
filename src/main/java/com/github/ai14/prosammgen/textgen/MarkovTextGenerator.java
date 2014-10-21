@@ -61,6 +61,13 @@ public class MarkovTextGenerator implements TextGenerator {
         tryToEndSentence = false;
       }
 
+      // TODO: find a better solution to this, or fix the input so that this will not be possible
+      if (currentLength >= 80) {
+        System.err.println("FINISHED SENTENCE WITHOUT FINDING PERIOD");
+        sentenceEnded = true;
+        tryToEndSentence = false;
+      }
+
       chooseNextWord(rand, markovChain, startNgrams, ngram, tryToEndSentence);
     }
 
