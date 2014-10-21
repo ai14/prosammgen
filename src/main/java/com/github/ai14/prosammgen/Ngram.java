@@ -1,5 +1,8 @@
 package com.github.ai14.prosammgen;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
 import java.util.LinkedList;
 import java.util.StringJoiner;
 
@@ -37,8 +40,8 @@ public class Ngram {
     return ngram.getFirst();
   }
 
-  public LinkedList<String> getAll() {
-    return ngram;
+  public ImmutableList<String> getAll() {
+    return ImmutableList.copyOf(ngram);
   }
 
   public int order() {

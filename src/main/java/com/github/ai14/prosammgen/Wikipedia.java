@@ -65,7 +65,7 @@ public class Wikipedia {
               String content = response.replaceAll("\\<.*?\\>", ""); //TODO Don't strip actual text content surrounded by < and >.
               content = StringEscapeUtils.unescapeHtml4(content); // Convert HTML entities to unicode.
               content = content.replaceAll("&|%|\\$|#|_|\\{|\\}|~|\\^|\\\\", ""); // Strip LaTeX reserved characters.
-
+              // TODO: most likely easier to maintain a whitelist of allowed latex characters instead
               //TODO Try to filter out meta data sections such as "External links".
 
               // Write article content to file.
