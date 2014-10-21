@@ -3,6 +3,7 @@ package com.github.ai14.prosammgen;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import com.google.common.collect.ImmutableList;
@@ -16,6 +17,7 @@ public class WAnalyzerS{
     private String[] TotalWords;
     private String[] TotalSentences;
     private String[] TotalParagraphs;
+    private List<String> Words;
  
   /**
    * Given a text this calculates the probabilities for different metrics that describes the writing style of the text author.
@@ -24,14 +26,15 @@ public class WAnalyzerS{
    */
   public void analyze(Path text){
     try {
+        this.Words = Files.readAllLines(Paths.get("res/words"));
         this.text = text;
-        for (String line : Files.readAllLines(text)) {
-            this.TotalWords = line.split("\\s+"); //splitting into words
-            this.TotalSentences = line.split("(?i)(?<=[.?!])\\S+(?=[a-z])");//splitting into sentences
-            this.TotalParagraphs = line.split("(?m)(?=^\\s{4})");//splitting into Paragraphs
-        }
+        String allText = new String(Files.readAllBytes(text));
+        this.TotalWords = allText.split("\\s+"); //splitting into words
+        this.TotalSentences = allText.split("(?i)(?<=[.?!])\\S+(?=[a-z])");//splitting into sentences
+        this.TotalParagraphs = allText.split("\\n\\n");//splitting into Paragraphs
+
     }catch (IOException e) {
-          System.err.println("Couldn't read the text");
+        System.err.println("Couldn't read the text");
       }
   }
 
@@ -123,35 +126,53 @@ public class WAnalyzerS{
   }
   
    /**
-   * Get the probabilities of mispelling words per paragraph
+   * Get the probabilities of mispelling words per text
    *
    * @return
    */
 
   public double getMisspellingWordsProbabilities(){
-        int NumberOfParagraphs = TotalParagraphs.length;
         int NumberOfWords = TotalWords.length;
         WordNet CheckSynonym = new WordNet();
 	    int misspellingWords = 0;
-	    List<Integer>MisspellWords = new ArrayList<>();
-        ImmutableList<String>WordToCheck = null;
-        ImmutableList<String>Synonyms;
-        //each word
+	    List<Integer>MisspellWords = new ArrayList<>();;
+ //System.err.println(TotalParagraphs.length);
+      //each word
         for (int j = 0; j < NumberOfWords; j++) {
             //If it's end of sentence, remove the last character to check the synonyms.
-            if ((TotalWords[j].endsWith(".") || TotalWords[j].endsWith("?") || TotalWords[j].endsWith("!")) && TotalWords[j].length() > 0 && TotalWords[j] != null) {
+            if ((TotalWords[j].endsWith(".") || TotalWords[j].endsWith("?") || TotalWords[j].endsWith("!")|| TotalWords[j].endsWith(",")|| TotalWords[j].endsWith(":") || TotalWords[j].endsWith(")")|| TotalWords[j].endsWith("”")|| TotalWords[j].endsWith(" \" ")) && TotalWords[j].length() > 0 && TotalWords[j] != null) {
                 TotalWords[j] = TotalWords[j].substring(0, TotalWords[j].length() - 1);
             }
-            WordToCheck.add(0, TotalWords[j]);
-            //get synonyms
-            Synonyms = CheckSynonym.getSynonyms(WordToCheck); 
-            //if there is no synonym (only get the same word as output of the function means that the word is misspelled
-            if (Synonyms.size() == 1 && (Synonyms.get(0)) == TotalWords[j]) ++misspellingWords;
+            if ((TotalWords[j].startsWith("(")||TotalWords[j].startsWith("“")||TotalWords[j].startsWith("\""))  && TotalWords[j].length() > 0 && TotalWords[j] != null) {
+                TotalWords[j] = TotalWords[j].substring(1);
+            }
+            //Diferent characters ’ and ' that are used for the same
+            if(TotalWords[j].contains("’")) TotalWords[j] = TotalWords[j].replace("’","'");
+            boolean correct = false;
+            //Search for the correct word
+//System.err.println(TotalWords[j]);
+            for(int i = 0; i < Words.size(); ++i){
+                //The checking part distinguish between capital letters, switching to LowerCase letters except "I"
+                if(TotalWords[j].length() > 1 || (TotalWords[j].length() == 1 && !TotalWords[j].equals("I"))) TotalWords[j] =TotalWords[j].toLowerCase();
+                //found the word (correct words have $ at the beginning of it) or is a number
+                if((Words.get(i)).equals("$"+TotalWords[j]) ||TotalWords[j].matches("\\d+") ){
+                    //Found the word no need to keep looking
+                    correct = true;
+                    break;
+                }
+            }
+//System.err.println(Synonyms.size());
+
+            //if we don't find the word, means is misspelled
+            if (!correct){
+                ++misspellingWords;
+
+            }
             //check one word at a time, after checking we remove it from the list
-            WordToCheck.remove(0);
+            //WordToCheck.remove(0);
         }
 	    //calculate probability
-      double probability = misspellingWords/NumberOfParagraphs;
+      double probability = misspellingWords/TotalWords.length;
       return probability;
   }
     
