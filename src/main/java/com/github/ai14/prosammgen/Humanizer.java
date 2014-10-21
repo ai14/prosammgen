@@ -19,14 +19,12 @@ import java.util.function.Function;
 
 public class Humanizer {
 
-    private ImmutableSet<String> Words;
-    Path TextResult;
+    private List<String> Words;
+
 
     public Humanizer()throws IOException, ParseException {
         //Load words (both correct and misspelled ones)
-        Words = ImmutableSet.copyOf(Files.readAllLines(Paths.get("res/words")));
-
-        TextResult = null;
+        Words = Files.readAllLines(Paths.get("res/words"));
     }
 
     /**
@@ -37,6 +35,7 @@ public class Humanizer {
      * @return
      */
     public Path TextHumanizer(Path text, double misspellingRate)throws IOException, ParseException {
+        Path TextResult = null;
         for (String line : Files.readAllLines(text)){
             String [] possibleMisspellingWords = null;
             //Find misspelling words for that word
@@ -51,6 +50,7 @@ public class Humanizer {
             }
 
         }
+        return TextResult;
     }
 
     public  String[] checkForPossibleMisspellingWords(String correctWord){
@@ -58,7 +58,7 @@ public class Humanizer {
         int numberPossibilities = 0;
         for(int i = 0; i < Words.size(); ++i){
             //found the word (correct words have $ at the beginning of it)
-            if((Words.get(i)).equals("$"+line)){
+            if((Words.get(i)).equals("$"+correctWord)){
                 ++i;
                 //get the list of possible misspelling options
                 while(!(Words.get(i)).contains("$")){//while there is still possible misspelling words
