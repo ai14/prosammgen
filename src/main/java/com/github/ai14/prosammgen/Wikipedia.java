@@ -2,7 +2,6 @@ package com.github.ai14.prosammgen;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.net.UrlEscapers;
-import opennlp.tools.sentdetect.SentenceDetectorME;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.io.BufferedWriter;
@@ -20,16 +19,12 @@ import java.util.regex.Pattern;
 
 public class Wikipedia extends TextSource {
 
-  private final Pattern searchResultsPattern, articleContentPattern, runningTextPattern;
-  private final SentenceDetectorME sentenceDetector;
+  private final Pattern contentPattern;
   private static final Path localCache = CACHE.resolve("wikipedia");
 
   public Wikipedia(NLPModel nlp) throws IOException {
-    super(localCache);
-    searchResultsPattern = Pattern.compile("<searchinfo totalhits=\"([0-9]+)\" \\/>");
-    articleContentPattern = Pattern.compile("<extract xml:space=\"preserve\">(.*?)<\\/extract>", Pattern.DOTALL);
-    runningTextPattern = Pattern.compile("^([A-Z]\\w* ([\\w(),:'‘’\\-%/]* ){2,}([\\w(),:'‘’-]*[.,!?]) ){2,}", Pattern.MULTILINE);
-    sentenceDetector = new SentenceDetectorME(nlp.getSentenceModel());
+    super(nlp, localCache);
+    contentPattern = Pattern.compile("<extract xml:space=\"preserve\">(.*?)<\\/extract>", Pattern.DOTALL);
   }
 
   @Override
@@ -68,7 +63,7 @@ public class Wikipedia extends TextSource {
             String response = s.next();
 
             // Extract article content from the response.
-            Matcher m1 = articleContentPattern.matcher(response);
+            Matcher m1 = contentPattern.matcher(response);
             if (!m1.find()) continue;
             String content = m1.group(1);
 
@@ -90,7 +85,7 @@ public class Wikipedia extends TextSource {
         }
       }
 
-      // Store resulting resultsLimit in a file for the search term.
+      // Store resulting article in a file for the search term.
       searchResults.add(p);
     }
 
