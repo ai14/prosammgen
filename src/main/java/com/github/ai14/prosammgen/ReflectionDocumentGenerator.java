@@ -82,7 +82,7 @@ public final class ReflectionDocumentGenerator {
 
     report.append("\\end{document}");
 
-    return report.toString().replace("π|℃", "_"); // TODO Support these characters.
+    return report.toString();
   }
 
   private static class SimpleContext implements TextGenerator.Context {
