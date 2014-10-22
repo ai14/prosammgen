@@ -11,7 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
-import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
 
@@ -50,9 +49,10 @@ public final class ReflectionDocumentGenerator {
       KeywordGenerator keywordGenerator = KeywordGenerator.withPOSParsing(nlp, stopWords, question);
 
       // Get additional training data for the question from text sources (Wikipedia articles).
+      Wikipedia w = new Wikipedia(nlp);
       ImmutableSet<String> searchTerms = keywordGenerator.getWords();
       String longestSearchTerm = Ordering.natural().onResultOf(String::length).max(searchTerms);
-      ImmutableSet<Path> wikipediaArticles = Wikipedia.getArticles(maxWebRequests, searchTerms);
+      ImmutableSet<Path> wikipediaArticles = w.getArticles(maxWebRequests, searchTerms);
 
       // Calculate the ratio of amount of reading material per additional training text.
       long s = 0;
@@ -71,6 +71,7 @@ public final class ReflectionDocumentGenerator {
       macroBuilder.put("SYNONYM", words -> new SynonymGenerator(words));
       macroBuilder.put("KEYWORD", x -> keywordGenerator);
 
+      // Expand grammar and generate some text.
       int remaining = wordCount / questions.size();
       while (remaining > 0) {
         String paragraph = escapeLaTeXSpecialChars(generators.get("PARAGRAPH").generateText(new SimpleContext(generators, macroBuilder.build()))).replaceAll(longestSearchTerm, "\\\\emph{" + longestSearchTerm + "}");
@@ -89,27 +90,17 @@ public final class ReflectionDocumentGenerator {
     StringBuilder sb = new StringBuilder(s.length());
 
     for (int i = 0; i < s.length(); ++i) {
-      switch (s.charAt(i)) {
+      char c = s.charAt(i);
+      switch (c) {
         case '{':
-          sb.append("\\{");
-          break;
         case '}':
-          sb.append("\\}");
-          break;
         case '#':
-          sb.append("\\#");
-          break;
         case '$':
-          sb.append("\\$");
-          break;
         case '%':
-          sb.append("\\%");
-          break;
         case '&':
-          sb.append("\\&");
-          break;
         case '_':
-          sb.append("\\_");
+          sb.append("\\");
+          sb.append(c);
           break;
         case '^':
           sb.append("\\textasciicircum{}");
@@ -121,8 +112,7 @@ public final class ReflectionDocumentGenerator {
           sb.append("\\textbackslash{}");
           break;
         default:
-          sb.append(s.charAt(i));
-          break;
+          sb.append(c);
       }
     }
 
