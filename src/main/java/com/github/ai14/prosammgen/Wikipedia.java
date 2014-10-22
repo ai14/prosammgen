@@ -2,6 +2,7 @@ package com.github.ai14.prosammgen;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.net.UrlEscapers;
+import opennlp.tools.sentdetect.SentenceDetectorME;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.io.BufferedWriter;
@@ -21,25 +22,27 @@ import java.util.regex.Pattern;
 
 public class Wikipedia {
 
-  private static final Pattern searchResultsPattern = Pattern.compile("<searchinfo totalhits=\"([0-9]+)\" \\/>");
-  private static final Pattern articleContentPattern = Pattern.compile("<extract xml:space=\"preserve\">(.*?)<\\/extract>", Pattern.DOTALL);
-  private static final Pattern scrollingTextPattern = Pattern.compile("(.*)[!.?](.*)[!.?]");
+  private final Pattern searchResultsPattern, articleContentPattern, runningTextPattern;
+  private final SentenceDetectorME sentenceDetector;
 
-  /**
-   * Download Wikipedia articles with the MediaWiki API and parse out article content as plaintext.
-   *
-   * @param articles
-   * @param searchTerms
-   * @return
-   */
-  public static ImmutableSet<Path> getArticles(int articles, ImmutableSet<String> searchTerms) throws IOException {
-    List<Path> searchResults = new ArrayList<>();
+  public Wikipedia(NLPModel nlp) throws IOException {
+    searchResultsPattern = Pattern.compile("<searchinfo totalhits=\"([0-9]+)\" \\/>");
+    articleContentPattern = Pattern.compile("<extract xml:space=\"preserve\">(.*?)<\\/extract>", Pattern.DOTALL);
+    runningTextPattern = Pattern.compile("^([A-Z]\\w* ([\\w(),:'‘’\\-%/]* ){2,}([\\w(),:'‘’-]*[.,!?]) ){2,}", Pattern.MULTILINE);
+    sentenceDetector = new SentenceDetectorME(nlp.getSentenceModel());
 
     // Create cache directory.
     Path cache = Paths.get("cache");
     if (!Files.exists(cache)) {
       Files.createDirectory(cache);
     }
+  }
+
+  /**
+   * Download Wikipedia articles with the MediaWiki API and parse out article content as plaintext.
+   */
+  public ImmutableSet<Path> getArticles(int articles, ImmutableSet<String> searchTerms) throws IOException {
+    List<Path> searchResults = new ArrayList<Path>();
 
     // Limit requests per search term to the maximum defined by the MediaWiki API Search extension.
     int requestsPerSearchterm = 1 + articles / (1 + searchTerms.size());
@@ -80,11 +83,16 @@ public class Wikipedia {
             // Convert HTML entities to unicode.
             content = StringEscapeUtils.unescapeHtml4(content);
 
-            // Only keep paragraphs of at least two sentences (in order to filter out meta data sections such as "External links").
-            Matcher m2 = scrollingTextPattern.matcher(content);
+            // Find running text (get rid of meta data and so on).
+            Matcher m2 = runningTextPattern.matcher(content);
             while (m2.find()) {
               String paragraph = m2.group();
-              out.println(paragraph);
+
+              // Only keep grammar correct sentences (using OpenNLP).
+              for (String sentence : sentenceDetector.sentDetect(paragraph)) {
+                out.print(sentence + " ");
+              }
+              out.println();
             }
           }
         }

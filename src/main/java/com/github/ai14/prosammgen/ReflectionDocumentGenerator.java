@@ -49,9 +49,10 @@ public final class ReflectionDocumentGenerator {
       KeywordGenerator keywordGenerator = KeywordGenerator.withPOSParsing(nlp, stopWords, question);
 
       // Get additional training data for the question from text sources (Wikipedia articles).
+      Wikipedia w = new Wikipedia(nlp);
       ImmutableSet<String> searchTerms = keywordGenerator.getWords();
       String longestSearchTerm = Ordering.natural().onResultOf(String::length).max(searchTerms);
-      ImmutableSet<Path> wikipediaArticles = Wikipedia.getArticles(maxWebRequests, searchTerms);
+      ImmutableSet<Path> wikipediaArticles = w.getArticles(maxWebRequests, searchTerms);
 
       // Calculate the ratio of amount of reading material per additional training text.
       long s = 0;
