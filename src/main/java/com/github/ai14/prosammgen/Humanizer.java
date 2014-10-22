@@ -75,14 +75,10 @@ public class Humanizer {
                         possibleMisspellingWords = checkForPossibleMisspellingWords(wordsParagraph[j]);
                         //if there is no possible misspelled word (in our file "words")
                         if (possibleMisspellingWords.isEmpty()) {
-                            //TODO: remove printer
-                            System.err.println("SWITCH");
                             //Get a list of words with one of the characters
                             //(chosen randomly) switched by a close character of the (english QWERTY) keyboard.
                             possibleMisspellingWords = checkPossibleSwitcherCharacters(wordsParagraph[j]);
                         }
-                        //TODO: remove printer
-                        else System.err.println("WOOOORD");
                     }
                     //check if we could misspelled the word
                     if (!possibleMisspellingWords.isEmpty()) {
@@ -106,8 +102,6 @@ public class Humanizer {
                                 //get where the "_" is
                                 if(newWord.charAt(h) == '_'){
                                     index = h;
-                                    //TODO: Remove print
-                                    System.err.println(newWord.substring(0,index)+" ");
                                     //add first part of the new word
                                     humanizedText.append(newWord.substring(0,index)+" ");
                                     break;
@@ -116,8 +110,6 @@ public class Humanizer {
                             //get the second part
                             newWord = newWord.substring(index+1, newWord.length());
                         }
-                        //TODO: take of the print
-                        System.err.println(wordsParagraph[j]+"   "+newWord);
                     }
                     //add the new word (or the old one)
                     humanizedText.append(newWord+" ");
