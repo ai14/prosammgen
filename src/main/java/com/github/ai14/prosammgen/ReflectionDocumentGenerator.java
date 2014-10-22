@@ -18,8 +18,9 @@ public final class ReflectionDocumentGenerator {
   private final ImmutableSet<String> stopWords;
   private final NLPModel nlp;
   private ImmutableMap<String, TextGenerator> generators;
+  private ImmutableSet<TextSource> textSources;
 
-  public ReflectionDocumentGenerator() throws IOException, ParseException {
+  public ReflectionDocumentGenerator() throws IOException, InterruptedException, ParseException {
 
     // Load stop words.
     stopWords = ImmutableSet.copyOf(Files.readAllLines(Paths.get("res/stopwords")));
@@ -29,6 +30,12 @@ public final class ReflectionDocumentGenerator {
 
     // Load grammar.
     generators = TextGenerators.parseGrammar(Files.readAllLines(Paths.get("res/grammar")));
+
+    // Prepare text sources.
+    textSources = ImmutableSet.of(
+            new Wikipedia(nlp),
+            new ProjectGutenberg()
+    );
   }
 
   public String generateReport(String title, String author, ImmutableList<String> questions, Path readingMaterial, int wordCount, int maxWebRequests) throws IOException {
@@ -45,25 +52,30 @@ public final class ReflectionDocumentGenerator {
       // Append the question to the report as a headline.
       report.append("\\section{").append(question).append("}");
 
-      // Create keyword generator for the current question.
-      KeywordGenerator keywordGenerator = KeywordGenerator.withPOSParsing(nlp, stopWords, question);
+      // Setup a new Markov chain for the current question.
+      MarkovTrainer markovTrainer = new MarkovTrainer();
 
-      // Get additional training data for the question from text sources (Wikipedia articles).
-      Wikipedia w = new Wikipedia(nlp);
+      // Create keyword generator for the current question and determine keywords, including the longest.
+      KeywordGenerator keywordGenerator = KeywordGenerator.withPOSParsing(nlp, stopWords, question);
       ImmutableSet<String> searchTerms = keywordGenerator.getWords();
       String longestSearchTerm = Ordering.natural().onResultOf(String::length).max(searchTerms);
-      ImmutableSet<Path> wikipediaArticles = w.getArticles(maxWebRequests, searchTerms);
 
-      // Calculate the ratio of amount of reading material per additional training text.
+      // Get training data for the question from text sources.
       long s = 0;
-      for (Path p : wikipediaArticles) s += Files.size(p);
-      double ratio = Files.size(readingMaterial) / (double) s;
+      for (TextSource ts : textSources) {
+        ImmutableSet<Path> texts = ts.getTexts(searchTerms, maxWebRequests);
+        for (Path p : texts) {
+          s += Files.size(p);
+        }
+        markovTrainer.train(texts);
+      }
 
-      // Generate and train a Markov chain for the current question.
-      MarkovTrainer markovTrainer = new MarkovTrainer();
-      int weight = (int) (0.5 / ratio); // aim for reading material to be 50% of wiki articles TODO Document properly.
-      markovTrainer.train(weight, readingMaterial);
-      markovTrainer.train(wikipediaArticles.toArray(new Path[wikipediaArticles.size()]));
+      // Calculate the ratio between given reading material and additional training texts.
+      double ratio = Files.size(readingMaterial) / (double) s;
+      int weight = (int) (0.5 / ratio);
+
+      // aim for reading material to be 50% of wiki articles TODO Document properly.
+      markovTrainer.train(weight, ImmutableSet.of(readingMaterial));
 
       // Define grammar macros for the current question.
       ImmutableMap.Builder<String, Function<ImmutableList<String>, TextGenerator>> macroBuilder = ImmutableMap.builder();

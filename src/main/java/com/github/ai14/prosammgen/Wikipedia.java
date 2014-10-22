@@ -12,40 +12,32 @@ import java.io.PrintWriter;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
-public class Wikipedia {
+public class Wikipedia extends TextSource {
 
   private final Pattern searchResultsPattern, articleContentPattern, runningTextPattern;
   private final SentenceDetectorME sentenceDetector;
+  private final Path localCache = CACHE.resolve("wikipedia");
 
   public Wikipedia(NLPModel nlp) throws IOException {
+    super();
     searchResultsPattern = Pattern.compile("<searchinfo totalhits=\"([0-9]+)\" \\/>");
     articleContentPattern = Pattern.compile("<extract xml:space=\"preserve\">(.*?)<\\/extract>", Pattern.DOTALL);
     runningTextPattern = Pattern.compile("^([A-Z]\\w* ([\\w(),:'‘’\\-%/]* ){2,}([\\w(),:'‘’-]*[.,!?]) ){2,}", Pattern.MULTILINE);
     sentenceDetector = new SentenceDetectorME(nlp.getSentenceModel());
-
-    // Create cache directory.
-    Path cache = Paths.get("cache");
-    if (!Files.exists(cache)) {
-      Files.createDirectory(cache);
-    }
   }
 
-  /**
-   * Download Wikipedia articles with the MediaWiki API and parse out article content as plaintext.
-   */
-  public ImmutableSet<Path> getArticles(int articles, ImmutableSet<String> searchTerms) throws IOException {
+  @Override
+  public ImmutableSet<Path> getTexts(ImmutableSet<String> searchTerms, int resultsLimit) throws IOException {
     List<Path> searchResults = new ArrayList<Path>();
 
     // Limit requests per search term to the maximum defined by the MediaWiki API Search extension.
-    int requestsPerSearchterm = 1 + articles / (1 + searchTerms.size());
+    int requestsPerSearchterm = 1 + resultsLimit / (1 + searchTerms.size());
     if (requestsPerSearchterm > 50) {
       requestsPerSearchterm = 50;
     }
@@ -53,7 +45,7 @@ public class Wikipedia {
     for (String searchTerm : searchTerms) {
 
       // Use cached file for search term instead, if fresh enough.
-      Path p = Paths.get("cache/" + searchTerm);
+      Path p = localCache.resolve(searchTerm);
       if (Files.exists(p)) {
         if (System.currentTimeMillis() - Files.getLastModifiedTime(p).toMillis() < 2592000000l) {
           searchResults.add(p);
@@ -63,7 +55,7 @@ public class Wikipedia {
         }
       }
 
-      // Fetch Wikipedia articles.
+      // Fetch Wikipedia resultsLimit.
       try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(p.toString())))) {
 
         // “Because excerpts generation can be slow the limit is capped at one whole-page extract.” Solution: do several requests. Sorry Wikipedia!
@@ -98,7 +90,7 @@ public class Wikipedia {
         }
       }
 
-      // Store resulting articles in a file for the search term.
+      // Store resulting resultsLimit in a file for the search term.
       searchResults.add(p);
     }
 

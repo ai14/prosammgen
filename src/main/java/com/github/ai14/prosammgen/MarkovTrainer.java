@@ -1,5 +1,7 @@
 package com.github.ai14.prosammgen;
 
+import com.google.common.collect.ImmutableSet;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,11 +20,11 @@ public class MarkovTrainer {
     sentenceEnds = new HashSet<>();
   }
 
-  public void train(Path... files) throws IOException {
+  public void train(ImmutableSet<Path> files) throws IOException {
     train(1, files);
   }
 
-  public void train(int weight, Path... files) throws IOException {
+  public void train(int weight, ImmutableSet<Path> files) throws IOException {
     for (Path file : files) {
       Ngram ngram = new Ngram(markovOrder);
       String wordBeforeNgram = "";
