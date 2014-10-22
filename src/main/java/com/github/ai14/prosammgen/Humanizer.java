@@ -58,8 +58,7 @@ public class Humanizer {
                     newWord = wordsParagraph[j];
                     double misspellingRate = (misspellingProbability * numberOfWords);
                     List<String> possibleMisspellingWords = new ArrayList<>();
-                    //Find misspelling words according to a given probability
-                    //TODO: Improve when to look for a word
+                    //Find misspelling words according to a given probability and
                     //check if contains characters for latex
                     if ((((int) (misspellingRate % j)) == 0) && (!wordsParagraph[j].startsWith("\\")) && (!wordsParagraph[j].contains("{")) && (!wordsParagraph[j].contains("}"))) {
                         possibleMisspellingWords = checkForPossibleMisspellingWords(wordsParagraph[j]);
@@ -68,6 +67,7 @@ public class Humanizer {
                             System.err.println("SWITCH");
                             possibleMisspellingWords = checkPossibleSwitcherCharacters(wordsParagraph[j]);
                         }
+                        //TODO: remove printer
                         else System.err.println("WOOOORD");
                     }
                     if (!possibleMisspellingWords.isEmpty()) {
@@ -217,6 +217,7 @@ public class Humanizer {
         //Get probabilities on how close are the WordToCompare to the original word
         for(int i = 0; i < wordsToCompare.size(); ++i){
             ratingMisspelled[i] = StringUtils.getJaroWinklerDistance(wordsToCompare.get(i), originalWord);
+            //ratingMisspelled[i] = StringUtils.getLevenshteinDistance(wordsToCompare.get(i), originalWord);
         }
         return ratingMisspelled;
     }
