@@ -45,14 +45,13 @@ public class Humanizer {
                 if (!isAnswer(wordsParagraph[j])) {
                     int brackets = HowManyBrackets(wordsParagraph[j]);
                     humanizedText.append(newWord + " ");
+                    ++j;
                     while (brackets > 0 && j < numberOfWords) {
-                        //TODO: remove printer
-System.err.println(newWord);
-                        //TODO: Check why it doesn't create the Tex file!!
-                        ++j;
+
                         brackets += HowManyBrackets(wordsParagraph[j]);
                         newWord = wordsParagraph[j];
                         humanizedText.append(newWord + " ");
+                        ++j;
                     }
                 }
                 else {
@@ -66,24 +65,39 @@ System.err.println(newWord);
                         possibleMisspellingWords = checkForPossibleMisspellingWords(wordsParagraph[j]);
                         if (possibleMisspellingWords.isEmpty()) {
                             //TODO: remove printer
-                            //System.err.println("SWITCH");
+                            System.err.println("SWITCH");
                             possibleMisspellingWords = checkPossibleSwitcherCharacters(wordsParagraph[j]);
                         }
+                        else System.err.println("WOOOORD");
                     }
                     if (!possibleMisspellingWords.isEmpty()) {
                         newWord = possibleMisspellingWords.get(0) + " ";
                         //if several options
                         if (possibleMisspellingWords.size() > 1) {
-                            double[] similarityRate = new double[possibleMisspellingWords.size()];
+                            double[] similarityRate;
                             similarityRate = getSimilaritiesBetweenWords(possibleMisspellingWords, wordsParagraph[j]);
                             newWord = chooseWord(possibleMisspellingWords, similarityRate);
+                            System.err.println(newWord);
+
 
                         }
-                        if (newWord.contains("_")) newWord.replace("_", " ");
+
                         //TODO: take of the print
 //System.err.println(wordsParagraph[j]+"   "+newWord);
                     }
-                    humanizedText.append(newWord + " ");
+                    if (newWord.contains("_")){
+                        int index=0;
+                        for(int h = 0; i < newWord.length(); ++h){   
+                            if(newWord.charAt(h) == '_'){
+                                System.err.println(h);
+                                index = h;
+                                break;
+                            }
+                        }
+                        newWord = switchCharacters(newWord, index, ' ');
+                        System.err.println(newWord);
+                    }
+                    humanizedText.append(newWord);
                 }
             }
             humanizedText.append("\n\n");
@@ -123,7 +137,7 @@ System.err.println(newWord);
      */
     private List<String> checkPossibleSwitcherCharacters(String correctWord) {
         //Delete punctuation symbols
-        String[] punctuationMarks = new String[3];
+        String[] punctuationMarks;
         punctuationMarks = checkForPunctuationMarks(correctWord);
         correctWord = punctuationMarks[0];
         Random random = new Random();
@@ -224,7 +238,8 @@ System.err.println(newWord);
                 //get the list of possible misspelling options
                 String misspelledWord;
                 while(i < words.size() && !(words.get(i)).contains("$") ){//while there is still possible misspelling words
-                    misspelledWord = words.get(i);
+
+                    misspelledWord = words.get(i);;
                     //Reading punctuation symbols
                     if(!punctuationMarks[1].equals(" "))misspelledWord = punctuationMarks[1]+misspelledWord;
                     if(!punctuationMarks[2].equals(" "))misspelledWord = misspelledWord +punctuationMarks[2];
