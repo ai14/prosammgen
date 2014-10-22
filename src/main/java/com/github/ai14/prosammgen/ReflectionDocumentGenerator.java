@@ -34,7 +34,7 @@ public final class ReflectionDocumentGenerator {
 
   public String generateReport(String title, String author, ImmutableList<String> questions, Path readingMaterial, int wordCount, int maxWebRequests) throws IOException {
     StringBuilder report = new StringBuilder();
-    report.append("\\documentclass{article}\\usepackage[utf8]{inputenc}\\begin{document}\\title{")
+    report.append("\\documentclass{article}\\begin{document}\\title{")
             .append(title)
             .append("}\\author{")
             .append(author)
@@ -73,7 +73,7 @@ public final class ReflectionDocumentGenerator {
 
       int remaining = wordCount / questions.size();
       while (remaining > 0) {
-        String paragraph = generators.get("PARAGRAPH").generateText(new SimpleContext(generators, macroBuilder.build()));
+        String paragraph = escapeLaTeXSpecialChars(generators.get("PARAGRAPH").generateText(new SimpleContext(generators, macroBuilder.build()))).replaceAll(longestSearchTerm, "\\\\emph{" + longestSearchTerm + "}");
         report.append(paragraph);
         report.append("\n\n");
         remaining -= paragraph.split("\\s+").length;
@@ -83,6 +83,50 @@ public final class ReflectionDocumentGenerator {
     report.append("\\end{document}");
 
     return report.toString();
+  }
+
+  private String escapeLaTeXSpecialChars(String s) {
+    StringBuilder sb = new StringBuilder(s.length());
+
+    for (int i = 0; i < s.length(); ++i) {
+      switch (s.charAt(i)) {
+        case '{':
+          sb.append("\\{");
+          break;
+        case '}':
+          sb.append("\\}");
+          break;
+        case '#':
+          sb.append("\\#");
+          break;
+        case '$':
+          sb.append("\\$");
+          break;
+        case '%':
+          sb.append("\\%");
+          break;
+        case '&':
+          sb.append("\\&");
+          break;
+        case '_':
+          sb.append("\\_");
+          break;
+        case '^':
+          sb.append("\\textasciicircum{}");
+          break;
+        case '~':
+          sb.append("\\textasciitilde{}");
+          break;
+        case '\\':
+          sb.append("\\textbackslash{}");
+          break;
+        default:
+          sb.append(s.charAt(i));
+          break;
+      }
+    }
+
+    return sb.toString();
   }
 
   private static class SimpleContext implements TextGenerator.Context {

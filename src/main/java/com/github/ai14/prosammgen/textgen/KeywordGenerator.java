@@ -79,7 +79,7 @@ public class KeywordGenerator implements TextGenerator {
 
   @Override
   public String generateText(Context context) {
-    return "\\emph{" + Ordering.natural().onResultOf(String::length).max(words) + "}";
+    return Ordering.natural().onResultOf(String::length).max(words);
   }
 
   public ImmutableSet<String> getWords() {
