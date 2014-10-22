@@ -40,38 +40,77 @@ public class Humanizer {
             String[] wordsParagraph = paragraph[i].split("\\s+");
             int numberOfWords = wordsParagraph.length;
             for (int j =0; j < numberOfWords; ++j) {
-                double misspellingRate = (misspellingProbability*numberOfWords);
                 String newWord = wordsParagraph[j];
-                List<String> possibleMisspellingWords = new ArrayList<>();
-                //Find misspelling words according to a given probability
-                //TODO: Improve when to look for a word
-                //if is not a text word (like header,....)don't check for misspelledwords
-                if((((int)(misspellingRate%j))== 0) && (!wordsParagraph[j].startsWith("\\"))&& (!wordsParagraph[j].contains("{"))&& (!wordsParagraph[j].contains("}"))){
-                    possibleMisspellingWords = checkForPossibleMisspellingWords(wordsParagraph[j]);
-                    if(possibleMisspellingWords.isEmpty()){
-                    //TODO: remove printer
-System.err.println("SWITCH");
-                        possibleMisspellingWords = checkPossibleSwitcherCharacters(wordsParagraph[j]);
+                //Check if is one of our answer or not
+                if (!isAnswer(wordsParagraph[j])) {
+                    humanizedText.append(newWord + " ");
+                    int brackets = HowManyBrackets(wordsParagraph[j]);
+                    while (brackets > 0) {
+                        //TODO: Check why it doesn't create the Tex file!!
+                        if(j < numberOfWords) ++j;
+                        brackets += HowManyBrackets(wordsParagraph[j]);
+                        newWord = wordsParagraph[j];
+                        humanizedText.append(newWord + " ");
                     }
                 }
-                if (!possibleMisspellingWords.isEmpty()) {
-                    newWord = possibleMisspellingWords.get(0) + " ";
-                    //if several options
-                    if (possibleMisspellingWords.size() > 1) {
-                        double[] similarityRate = new double[possibleMisspellingWords.size()];
-                        similarityRate = getSimilaritiesBetweenWords(possibleMisspellingWords, wordsParagraph[j]);
-                        newWord = chooseWord(possibleMisspellingWords, similarityRate);
+                else {
+                    double misspellingRate = (misspellingProbability * numberOfWords);
+                    List<String> possibleMisspellingWords = new ArrayList<>();
+                    //Find misspelling words according to a given probability
+                    //TODO: Improve when to look for a word
+                    //check if contains characters for latex
+                    if ((((int) (misspellingRate % j)) == 0) && (!wordsParagraph[j].startsWith("\\")) && (!wordsParagraph[j].contains("{")) && (!wordsParagraph[j].contains("}"))) {
+                        possibleMisspellingWords = checkForPossibleMisspellingWords(wordsParagraph[j]);
+                        if (possibleMisspellingWords.isEmpty()) {
+                            //TODO: remove printer
+                            //System.err.println("SWITCH");
+                            possibleMisspellingWords = checkPossibleSwitcherCharacters(wordsParagraph[j]);
+                        }
+                    }
+                    if (!possibleMisspellingWords.isEmpty()) {
+                        newWord = possibleMisspellingWords.get(0) + " ";
+                        //if several options
+                        if (possibleMisspellingWords.size() > 1) {
+                            double[] similarityRate = new double[possibleMisspellingWords.size()];
+                            similarityRate = getSimilaritiesBetweenWords(possibleMisspellingWords, wordsParagraph[j]);
+                            newWord = chooseWord(possibleMisspellingWords, similarityRate);
 
+                        }
+                        if (newWord.contains("_")) newWord.replace("_", " ");
+                        //TODO: take of the print
+                        System.err.println(wordsParagraph[j]+"   "+newWord);
                     }
-                    if(newWord.contains("_")) newWord.replace("_", " ");
-                    //TODO: take of the print
-                    System.err.println(wordsParagraph[j]+"   "+newWord);
+                    humanizedText.append(newWord + " ");
                 }
-                humanizedText.append(newWord+" ");
             }
             humanizedText.append("\n\n");
         }
         return humanizedText.toString();
+    }
+
+    private int HowManyBrackets(String word) {
+        int brackets = 0;
+        for(int i = 0; i < word.length(); ++i){
+            if(word.charAt(i) == '{') ++brackets;
+            if(word.charAt(i) == '}') --brackets;
+        }
+        return brackets;
+    }
+
+    /**
+     * Check is the question is part of one of our answers
+     * @param word to check
+     * @return
+     */
+    private boolean isAnswer(String word) {
+        if(word.contains("\\documentclass"))return false;
+        else if(word.contains("\\begin{document}"))return false;
+        else if(word.contains("\\title"))return false;
+        else if(word.contains("\\author"))return false;
+        else if(word.contains("\\maketitle"))return false;
+        else if(word.contains("\\section")) return false;
+        else if(word.contains("\\end{document}")) return false;
+        return true;
     }
 
     /**
