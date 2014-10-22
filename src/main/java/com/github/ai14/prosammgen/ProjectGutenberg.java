@@ -8,14 +8,14 @@ import java.nio.file.Path;
 import static java.lang.ProcessBuilder.Redirect.INHERIT;
 
 public class ProjectGutenberg extends TextSource {
-  private final Path localCache = CACHE.resolve("gutenberg");
+  private static final Path localCache = CACHE.resolve("gutenberg");
 
   public ProjectGutenberg() throws IOException, InterruptedException {
-    super();
+    super(localCache);
     Process p = new ProcessBuilder()
             .redirectError(INHERIT)
             .redirectOutput(INHERIT)
-            .command("rsync", "-av", "--del", "ftp@ftp.ibiblio.org::gutenberg", localCache.toString())
+            .command("rsync", "-av", "--del", "--include=*/", "--include='*.txt'", "--exclude='*'", "ftp@ftp.ibiblio.org::gutenberg", localCache.toString())
             .start();
     p.waitFor();
   }

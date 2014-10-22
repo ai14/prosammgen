@@ -22,10 +22,10 @@ public class Wikipedia extends TextSource {
 
   private final Pattern searchResultsPattern, articleContentPattern, runningTextPattern;
   private final SentenceDetectorME sentenceDetector;
-  private final Path localCache = CACHE.resolve("wikipedia");
+  private static final Path localCache = CACHE.resolve("wikipedia");
 
   public Wikipedia(NLPModel nlp) throws IOException {
-    super();
+    super(localCache);
     searchResultsPattern = Pattern.compile("<searchinfo totalhits=\"([0-9]+)\" \\/>");
     articleContentPattern = Pattern.compile("<extract xml:space=\"preserve\">(.*?)<\\/extract>", Pattern.DOTALL);
     runningTextPattern = Pattern.compile("^([A-Z]\\w* ([\\w(),:'‘’\\-%/]* ){2,}([\\w(),:'‘’-]*[.,!?]) ){2,}", Pattern.MULTILINE);
