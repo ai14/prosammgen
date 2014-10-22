@@ -77,27 +77,25 @@ public class Humanizer {
                             double[] similarityRate;
                             similarityRate = getSimilaritiesBetweenWords(possibleMisspellingWords, wordsParagraph[j]);
                             newWord = chooseWord(possibleMisspellingWords, similarityRate);
-                            System.err.println(newWord);
-
-
                         }
-
-                        //TODO: take of the print
-//System.err.println(wordsParagraph[j]+"   "+newWord);
-                    }
-                    if (newWord.contains("_")){
-                        int index=0;
-                        for(int h = 0; i < newWord.length(); ++h){   
-                            if(newWord.charAt(h) == '_'){
-                                System.err.println(h);
-                                index = h;
-                                break;
+                        //The file "words" contains strings with "_" as a space in between to parts of the word
+                        if (newWord.contains("_")){
+                            int index=0;
+                            for(int h = 0; h < newWord.length(); ++h){
+                                if(newWord.charAt(h) == '_'){
+                                    index = h;
+                                    //TODO: Remove print
+                                    System.err.println(newWord.substring(0,index)+" ");
+                                    humanizedText.append(newWord.substring(0,index)+" ");
+                                    break;
+                                }
                             }
+                            newWord = newWord.substring(index+1, newWord.length());
                         }
-                        newWord = switchCharacters(newWord, index, ' ');
-                        System.err.println(newWord);
+                        //TODO: take of the print
+                        System.err.println(wordsParagraph[j]+"   "+newWord);
                     }
-                    humanizedText.append(newWord);
+                    humanizedText.append(newWord+" ");
                 }
             }
             humanizedText.append("\n\n");
@@ -266,16 +264,18 @@ public class Humanizer {
         punctuationMarks[0] = word;
         punctuationMarks[1] = " ";
         punctuationMarks[2] = " ";
-        if ((word.endsWith(".") || word.endsWith("?") || word.endsWith("!")|| word.endsWith(",")|| word.endsWith(":") || word.endsWith(")")|| word.endsWith("”")||word.endsWith(" \" ")) &&word.length() > 0 && word != null) {
-            punctuationMarks[2] = word.substring(word.length() - 1);
-            punctuationMarks[0] = word.substring(0, word.length() - 1);
+        while ((punctuationMarks[0].endsWith(".") || punctuationMarks[0].endsWith("?") || punctuationMarks[0].endsWith("!")|| punctuationMarks[0].endsWith(",")|| punctuationMarks[0].endsWith(":") || punctuationMarks[0].endsWith(")")|| punctuationMarks[0].endsWith("”")||punctuationMarks[0].endsWith(" \" ")) &&punctuationMarks[0].length() > 0 && punctuationMarks[0] != null) {
+            if(punctuationMarks[2].equals(" "))punctuationMarks[2] =punctuationMarks[0].substring(punctuationMarks[0].length() - 1);
+            else punctuationMarks[2] = punctuationMarks[2] + punctuationMarks[0].substring(punctuationMarks[0].length() - 1);
+            punctuationMarks[0] = punctuationMarks[0].substring(0, punctuationMarks[0].length() - 1);
         }
-        if ((word.startsWith("(")||word.startsWith("“")||word.startsWith("\""))  && word.length() > 0 && word != null) {
-            punctuationMarks[1] = word.substring(0);
-            punctuationMarks[0] = word.substring(1);
+        while((punctuationMarks[0].startsWith("(")||punctuationMarks[0].startsWith("“")||punctuationMarks[0].startsWith("\""))  && punctuationMarks[0].length() > 0 && punctuationMarks[0] != null) {
+            if(punctuationMarks[1].equals(" "))punctuationMarks[1] = punctuationMarks[0].substring(0);
+            else punctuationMarks[1] = punctuationMarks[1] + punctuationMarks[0].substring(0);
+            punctuationMarks[0] = punctuationMarks[0].substring(1);
         }
         //Different characters ’ and ' that are used for the same
-        if(word.contains("’")) punctuationMarks[0] = word.replace("’","'");
+        if(punctuationMarks[0].contains("’")) punctuationMarks[0] = punctuationMarks[0].replace("’", "'");
         return punctuationMarks;
     }
 
