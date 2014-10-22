@@ -17,16 +17,16 @@ public class App {
 
 
     // Get input.
-    int wordCount = 0, maxWebRequests = 0;
-    String reflectionDocumentTitle = null, authorName = null, outputDirectory = "";
+    int wordCount = 500, maxWebRequests = 10;
+    String title = null, author = null, outputDirectory = ".";
     Path previousReflectionDocument = null, readingMaterial = null, questions = null;
     for (int i = 0; i < args.length; i++) {
       switch (args[i]) {
         case "-t":
-          reflectionDocumentTitle = args[i + 1].replaceAll("^(\"|\')|(\"|\')$", "");
+          title = args[i + 1].replaceAll("^(\"|\')|(\"|\')$", "");
           break;
         case "-a":
-          authorName = args[i + 1].replaceAll("^(\"|\')|(\"|\')$", "");
+          author = args[i + 1].replaceAll("^(\"|\')|(\"|\')$", "");
           break;
         case "-w":
           wordCount = Integer.parseInt(args[i + 1]);
@@ -50,22 +50,26 @@ public class App {
     }
 
     // Require input.
-    if (reflectionDocumentTitle == null || authorName == null || previousReflectionDocument == null | readingMaterial == null | questions == null) {
-      System.err.println("prosammgen [-t REFLECTION_DOCUMENT_TITLE | -a AUTHOR_NAME | -w WORD_LIMIT | -p PREVIOUS_REFLECTION_DOCUMENT | -r READING_MATERIAL | -q QUESTIONS | -o OUTPUT_DIRECTORY | -m MAX_WEB_REQUESTS]");
-      System.err.println("In order to generate a reflection document, start the program with the above arguments.");
-      System.err.println("Make sure: ");
-      System.err.println("  REFLECTION_DOCUMENT_TITLE is the title of the current reflection seminar surrounded by quotes.");
-      System.err.println("  AUTHOR_NAME is the author's name surrounded by quotes.");
-      System.err.println("  WORD_LIMIT is a positive integer larger than zero.");
-      System.err.println("  PREVIOUS_REFLECTION_DOCUMENT is the path to a plaintext file with the author's previous reflection document.");
-      System.err.println("  READING_MATERIAL is the path to a plaintext file with all the reading material for the current reflection seminar.");
-      System.err.println("  QUESTIONS is the path to a plaintext file with the current seminar questions, with every question placed on its own line.");
-      System.err.println("  OUTPUT_DIRECTORY (optional) is the path to the root directory where the output files will be saved. Default is the program root.");
-      System.err.println("  MAX_WEB_REQUESTS (optional) is an integer limiting the amount of web requests allowed by the program. Default is the maximum.");
+    if (title == null || author == null || previousReflectionDocument == null || readingMaterial == null || questions == null) {
+      if (title == null) System.err.println("Missing reflection document title!");
+      if (author == null) System.err.println("Missing author name!");
+      if (previousReflectionDocument == null) System.err.println("Missing path to a previous reflection document!");
+      if (readingMaterial == null) System.err.println("Missing path to the seminar reading material.");
+      if (questions == null) System.err.println("Missing path to the seminar questions.");
+
+      System.out.println("prosammgen [-t TITLE | -a AUTHOR | -p PREVIOUS_REFLECTION_DOCUMENT | -r READING_MATERIAL | -q QUESTIONS | -w WORD_COUNT | -o OUTPUT_DIRECTORY | -m MAX_WEB_REQUESTS]");
+      System.out.println();
+      System.out.println("TITLE - the upcoming reflection seminar");
+      System.out.println("AUTHOR - reflection document author's name.");
+      System.out.println("PREVIOUS_REFLECTION_DOCUMENT - path to a plaintext file with the author's previous reflection document.");
+      System.out.println("READING_MATERIAL - path to a plaintext file with all of the reading material for the upcoming reflection seminar.");
+      System.out.println("QUESTIONS - path to a plaintext file with the current seminar questions, with every question placed on its own line.");
+      System.out.println("WORD_COUNT (optional) - integer with the sought number of words in the generated reflection document.");
+      System.out.println("OUTPUT_DIRECTORY (optional) - path to the root directory where the output files will be saved. Default is the program root.");
+      System.out.println("MAX_WEB_REQUESTS (optional) - integer limiting the amount of web requests allowed by the program. Default is the maximum.");
+
       System.exit(-1);
     }
-
-    //TODO Validate input and provide semantic errors.
 
     //TODO Sanitize input.
 
@@ -73,10 +77,10 @@ public class App {
     ImmutableList<String> questionList = ImmutableList.copyOf(Files.readAllLines(questions));
 
     // Generate a reflection document.
-    String report = new ReflectionDocumentGenerator().generateReport(reflectionDocumentTitle, authorName, questionList, readingMaterial, wordCount, maxWebRequests);
+    String report = new ReflectionDocumentGenerator().generateReport(title, author, questionList, readingMaterial, wordCount, maxWebRequests);
 
     // Replace characters in accordance with the prosamm instructions. å -> a, é -> e, etc.
-    String filename = Normalizer.normalize(authorName, Normalizer.Form.NFD).replaceAll(" ", "_").replaceAll("[^A-Za-z_]", "");
+    String filename = Normalizer.normalize(author, Normalizer.Form.NFD).replaceAll(" ", "_").replaceAll("[^A-Za-z_]", "");
 
     // Write LaTeX output to file.
     try (PrintWriter out = new PrintWriter(outputDirectory + "/" + filename + ".tex")) {
@@ -87,7 +91,7 @@ public class App {
     Process p = new ProcessBuilder()
             .redirectError(INHERIT)
             .redirectOutput(INHERIT)
-            .command("pdftex", "&pdflatex", outputDirectory + "/" + filename + ".tex")
+            .command("xetex", "&xelatex", outputDirectory + "/" + filename + ".tex")
             .start();
     if (p.waitFor() == 0) System.out.println("Successfully generated a reflection document as PDF.");
   }
