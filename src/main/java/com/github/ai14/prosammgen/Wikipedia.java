@@ -1,5 +1,6 @@
 package com.github.ai14.prosammgen;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.net.UrlEscapers;
 import org.apache.commons.lang3.StringEscapeUtils;
 
@@ -31,7 +32,8 @@ public class Wikipedia {
    * @param searchTerms
    * @return
    */
-  public static List<Path> getArticles(int articles, String... searchTerms) throws IOException {
+  public static ImmutableSet<Path> getArticles(int articles, ImmutableSet<String> searchTerms) throws IOException {
+    List<Path> searchResults = new ArrayList<>();
 
     // Create cache directory.
     Path cache = Paths.get("cache");
@@ -40,12 +42,11 @@ public class Wikipedia {
     }
 
     // Limit requests per search term to the maximum defined by the MediaWiki API Search extension.
-    int requestsPerSearchterm = 1 + articles / (1 + searchTerms.length);
+    int requestsPerSearchterm = 1 + articles / (1 + searchTerms.size());
     if (requestsPerSearchterm > 50) {
       requestsPerSearchterm = 50;
     }
 
-    List<Path> searchResults = new ArrayList<>();
     for (String searchTerm : searchTerms) {
 
       // Use cached file for search term instead, if fresh enough.
@@ -59,26 +60,11 @@ public class Wikipedia {
         }
       }
 
-      // Check number of search results.
-      int numberOfSearchResults = requestsPerSearchterm;
-      try (Scanner s = new Scanner(new URL("http://en.wikipedia.org/w/api.php?format=xml&action=query&list=search&srsearch=learning&srinfo=totalhits&srprop").openStream())) {
-
-        // Read url into a huge string.
-        s.useDelimiter("\\Z");
-        String response = s.next();
-
-        // Extract and keep search result as integer.
-        Matcher matcher = searchResultsPattern.matcher(response);
-        matcher.find();
-        int actualNumberOfSearchResults = Integer.parseInt(matcher.group(1));
-        numberOfSearchResults = Math.min(numberOfSearchResults, actualNumberOfSearchResults);
-      }
-
       // Fetch Wikipedia articles.
       try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(p.toString())))) {
 
         // “Because excerpts generation can be slow the limit is capped at one whole-page extract.” Solution: do several requests. Sorry Wikipedia!
-        for (int i = 0; i < numberOfSearchResults; ++i) {
+        for (int i = 0; i < requestsPerSearchterm; ++i) {
           String url = "http://en.wikipedia.org/w/api.php?format=xml&action=query&generator=search&gsrsearch=" + UrlEscapers.urlPathSegmentEscaper().escape(searchTerm) + "&gsrlimit=50&prop=extracts&exsectionformat=plain&explaintext&excontinue=" + i;
           try (Scanner s = new Scanner(new URL(url).openStream())) {
 
@@ -88,7 +74,7 @@ public class Wikipedia {
 
             // Extract article content from the response.
             Matcher m1 = articleContentPattern.matcher(response);
-            m1.find();
+            if (!m1.find()) continue;
             String content = m1.group(1);
 
             // Convert HTML entities to unicode.
@@ -103,10 +89,11 @@ public class Wikipedia {
           }
         }
       }
+
       // Store resulting articles in a file for the search term.
       searchResults.add(p);
     }
 
-    return searchResults;
+    return ImmutableSet.copyOf(searchResults);
   }
 }

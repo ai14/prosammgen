@@ -52,7 +52,7 @@ public final class ReflectionDocumentGenerator {
       // Get additional training data for the question from text sources (Wikipedia articles).
       ImmutableSet<String> searchTerms = keywordGenerator.getWords();
       String longestSearchTerm = Ordering.natural().onResultOf(String::length).max(searchTerms);
-      List<Path> wikipediaArticles = Wikipedia.getArticles(maxWebRequests, longestSearchTerm);
+      ImmutableSet<Path> wikipediaArticles = Wikipedia.getArticles(maxWebRequests, searchTerms);
 
       // Calculate the ratio of amount of reading material per additional training text.
       long s = 0;
