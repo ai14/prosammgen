@@ -43,17 +43,20 @@ public class Humanizer {
                 String newWord = wordsParagraph[j];
                 //Check if is one of our answer or not
                 if (!isAnswer(wordsParagraph[j])) {
-                    humanizedText.append(newWord + " ");
                     int brackets = HowManyBrackets(wordsParagraph[j]);
-                    while (brackets > 0) {
+                    humanizedText.append(newWord + " ");
+                    while (brackets > 0 && j < numberOfWords) {
+                        //TODO: remove printer
+System.err.println(newWord);
                         //TODO: Check why it doesn't create the Tex file!!
-                        if(j < numberOfWords) ++j;
+                        ++j;
                         brackets += HowManyBrackets(wordsParagraph[j]);
                         newWord = wordsParagraph[j];
                         humanizedText.append(newWord + " ");
                     }
                 }
                 else {
+                    newWord = wordsParagraph[j];
                     double misspellingRate = (misspellingProbability * numberOfWords);
                     List<String> possibleMisspellingWords = new ArrayList<>();
                     //Find misspelling words according to a given probability
@@ -78,7 +81,7 @@ public class Humanizer {
                         }
                         if (newWord.contains("_")) newWord.replace("_", " ");
                         //TODO: take of the print
-                        System.err.println(wordsParagraph[j]+"   "+newWord);
+//System.err.println(wordsParagraph[j]+"   "+newWord);
                     }
                     humanizedText.append(newWord + " ");
                 }
@@ -104,7 +107,7 @@ public class Humanizer {
      */
     private boolean isAnswer(String word) {
         if(word.contains("\\documentclass"))return false;
-        else if(word.contains("\\begin{document}"))return false;
+        else if(word.contains("\\begin{"))return false;
         else if(word.contains("\\title"))return false;
         else if(word.contains("\\author"))return false;
         else if(word.contains("\\maketitle"))return false;
