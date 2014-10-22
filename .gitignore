@@ -2,10 +2,10 @@
 !.git*
 !.travis.yml
 target/
+cache/
 *.log
 *.bak
 *.tex
 *.aux
 *.pdf
-*.txt
 *.iml

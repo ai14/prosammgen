@@ -1,5 +1,6 @@
 package com.github.ai14.prosammgen;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.net.UrlEscapers;
 import org.apache.commons.lang3.StringEscapeUtils;
 
@@ -14,9 +15,15 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class Wikipedia {
+
+  private static final Pattern searchResultsPattern = Pattern.compile("<searchinfo totalhits=\"([0-9]+)\" \\/>");
+  private static final Pattern articleContentPattern = Pattern.compile("<extract xml:space=\"preserve\">(.*?)<\\/extract>", Pattern.DOTALL);
+  private static final Pattern scrollingTextPattern = Pattern.compile("(.*)[!.?](.*)[!.?]");
 
   /**
    * Download Wikipedia articles with the MediaWiki API and parse out article content as plaintext.
@@ -25,74 +32,68 @@ public class Wikipedia {
    * @param searchTerms
    * @return
    */
-  public static List<Path> getArticles(int articles, String... searchTerms) {
+  public static ImmutableSet<Path> getArticles(int articles, ImmutableSet<String> searchTerms) throws IOException {
+    List<Path> searchResults = new ArrayList<>();
 
     // Create cache directory.
     Path cache = Paths.get("cache");
-    if (!Files.exists(cache)) try {
+    if (!Files.exists(cache)) {
       Files.createDirectory(cache);
-    } catch (IOException e) {
     }
 
-    //TODO Limit by program argument.
-    int requestsPerSearchterm = 1 + articles / (1 + searchTerms.length);
-    if (requestsPerSearchterm > 500) {
-      throw new IllegalArgumentException("Searching for too many articles. Disallowed by the MediaWiki API.");
+    // Limit requests per search term to the maximum defined by the MediaWiki API Search extension.
+    int requestsPerSearchterm = 1 + articles / (1 + searchTerms.size());
+    if (requestsPerSearchterm > 50) {
+      requestsPerSearchterm = 50;
     }
 
-    List<Path> searchResults = new ArrayList<>();
-    try {
-      for (int i = 0; i < searchTerms.length; i++) {
-        String searchTerm = searchTerms[i];
+    for (String searchTerm : searchTerms) {
 
-        // Use cached file for search term instead, if fresh enough.
-        Path p = Paths.get("cache/" + searchTerm);
-        if (Files.exists(p))
-          if (System.currentTimeMillis() - Files.getLastModifiedTime(p).toMillis() < 2592000000l) {
-            searchResults.add(p);
-            continue;
-          } else {
-            Files.delete(p);
-          }
+      // Use cached file for search term instead, if fresh enough.
+      Path p = Paths.get("cache/" + searchTerm);
+      if (Files.exists(p)) {
+        if (System.currentTimeMillis() - Files.getLastModifiedTime(p).toMillis() < 2592000000l) {
+          searchResults.add(p);
+          continue;
+        } else {
+          Files.delete(p);
+        }
+      }
 
-        // Fetch fresh Wikipedia articles.
-        try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(p.toString())))) {
-          int gaplimit = requestsPerSearchterm; // “Because excerpts generation can be slow the limit is capped at one whole-page extract.” Solution: do several requests. Sorry Wikipedia!
-          for (int j = 0; j < gaplimit; j++) {
+      // Fetch Wikipedia articles.
+      try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(p.toString())))) {
 
-            //TODO Use MediaWiki free-text search instead of gapfrom.
-            String url = "http://en.wikipedia.org/w/api.php";
-            String query = "?format=xml&action=query&generator=allpages&gaplimit=" + gaplimit + "&gapfrom=" + UrlEscapers.urlPathSegmentEscaper().escape(searchTerm) + "&prop=extracts&exsectionformat=plain&explaintext&excontinue=" + j;
+        // “Because excerpts generation can be slow the limit is capped at one whole-page extract.” Solution: do several requests. Sorry Wikipedia!
+        for (int i = 0; i < requestsPerSearchterm; ++i) {
+          String url = "http://en.wikipedia.org/w/api.php?format=xml&action=query&generator=search&gsrsearch=" + UrlEscapers.urlPathSegmentEscaper().escape(searchTerm) + "&gsrlimit=50&prop=extracts&exsectionformat=plain&explaintext&excontinue=" + i;
+          try (Scanner s = new Scanner(new URL(url).openStream())) {
 
-            try (Scanner s = new Scanner(new URL(url + query).openStream())) {
+            // Read url into a huge string.
+            s.useDelimiter("\\Z");
+            String response = s.next();
 
-              // Read url into a huge string.
-              s.useDelimiter("\\Z");
-              String response = s.next();
+            // Extract article content from the response.
+            Matcher m1 = articleContentPattern.matcher(response);
+            if (!m1.find()) continue;
+            String content = m1.group(1);
 
-              // Extract article content from the response.
-              String content = response.replaceAll("\\<.*?\\>", ""); //TODO Don't strip actual text content surrounded by < and >.
-              content = StringEscapeUtils.unescapeHtml4(content); // Convert HTML entities to unicode.
-              content = content.replaceAll("&|%|\\$|#|_|\\{|\\}|~|\\^|\\\\", ""); // Strip LaTeX reserved characters.
+            // Convert HTML entities to unicode.
+            content = StringEscapeUtils.unescapeHtml4(content);
 
-              // TODO: most likely easier to maintain a whitelist of allowed latex characters instead
-              //content = content.replaceAll("[^A-Za-z0-9_\\.!;:,\\t\\r\\n]", "_");
-
-              //TODO Try to filter out meta data sections such as "External links".
-
-              // Write article content to file.
-              out.print(content);
+            // Only keep paragraphs of at least two sentences (in order to filter out meta data sections such as "External links").
+            Matcher m2 = scrollingTextPattern.matcher(content);
+            while (m2.find()) {
+              String paragraph = m2.group();
+              out.println(paragraph);
             }
           }
         }
-        // Store resulting articles in a file for the search term.
-        searchResults.add(p);
       }
-    } catch (IOException e) {
-      System.err.println("Wikipedia articles could not be retrieved.");
-      System.exit(-1);
+
+      // Store resulting articles in a file for the search term.
+      searchResults.add(p);
     }
 
-    return searchResults;
+    return ImmutableSet.copyOf(searchResults);
   }
 }
