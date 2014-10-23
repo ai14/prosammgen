@@ -11,6 +11,7 @@ import java.io.PrintWriter;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -19,17 +20,17 @@ import java.util.regex.Pattern;
 
 public class Wikipedia extends TextSource {
 
-  private final Pattern contentPattern;
-  private static final Path localCache = CACHE.resolve("wikipedia");
-
   public Wikipedia(NLPModel nlp) throws IOException {
-    super(nlp, localCache);
-    contentPattern = Pattern.compile("<extract xml:space=\"preserve\">(.*?)<\\/extract>", Pattern.DOTALL);
+    super(
+            nlp,
+            Paths.get("cache/wikipedia"),
+            Pattern.compile("<extract xml:space=\"preserve\">(.*?)<\\/extract>", Pattern.DOTALL)
+    );
   }
 
   @Override
   public ImmutableSet<Path> getTexts(ImmutableSet<String> searchTerms, int resultsLimit) throws IOException {
-    List<Path> searchResults = new ArrayList<Path>();
+    List<Path> results = new ArrayList<Path>();
 
     // Limit requests per search term to the maximum defined by the MediaWiki API Search extension.
     int requestsPerSearchterm = 1 + resultsLimit / (1 + searchTerms.size());
@@ -40,10 +41,10 @@ public class Wikipedia extends TextSource {
     for (String searchTerm : searchTerms) {
 
       // Use cached file for search term instead, if fresh enough.
-      Path p = localCache.resolve(searchTerm);
+      Path p = cache.resolve(searchTerm);
       if (Files.exists(p)) {
         if (System.currentTimeMillis() - Files.getLastModifiedTime(p).toMillis() < 2592000000l) {
-          searchResults.add(p);
+          results.add(p);
           continue;
         } else {
           Files.delete(p);
@@ -57,38 +58,18 @@ public class Wikipedia extends TextSource {
         for (int i = 0; i < requestsPerSearchterm; ++i) {
           String url = "http://en.wikipedia.org/w/api.php?format=xml&action=query&generator=search&gsrsearch=" + UrlEscapers.urlPathSegmentEscaper().escape(searchTerm) + "&gsrlimit=50&prop=extracts&exsectionformat=plain&explaintext&excontinue=" + i;
           try (Scanner s = new Scanner(new URL(url).openStream())) {
-
-            // Read url into a huge string.
+            // Read url into a huge string, extract content from file, extract running text and store the results.
             s.useDelimiter("\\Z");
-            String response = s.next();
-
-            // Extract article content from the response.
-            Matcher m1 = contentPattern.matcher(response);
+            Matcher m1 = contentPattern.matcher(s.next());
             if (!m1.find()) continue;
-            String content = m1.group(1);
-
-            // Convert HTML entities to unicode.
-            content = StringEscapeUtils.unescapeHtml4(content);
-
-            // Find running text (get rid of meta data and so on).
-            Matcher m2 = runningTextPattern.matcher(content);
-            while (m2.find()) {
-              String paragraph = m2.group();
-
-              // Only keep grammar correct sentences (using OpenNLP).
-              for (String sentence : sentenceDetector.sentDetect(paragraph)) {
-                out.print(sentence + " ");
-              }
-              out.println();
-            }
+            out.println(extractRunningText(StringEscapeUtils.unescapeHtml4(m1.group(1))));
           }
         }
       }
 
-      // Store resulting article in a file for the search term.
-      searchResults.add(p);
+      results.add(p);
     }
 
-    return ImmutableSet.copyOf(searchResults);
+    return ImmutableSet.copyOf(results);
   }
 }

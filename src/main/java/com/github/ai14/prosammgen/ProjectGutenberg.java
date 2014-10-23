@@ -19,30 +19,34 @@ import java.util.regex.Pattern;
 import static java.lang.ProcessBuilder.Redirect.INHERIT;
 
 public class ProjectGutenberg extends TextSource {
-  private static final Path localCache = CACHE.resolve("gutenberg");
-  private final Pattern contentPattern;
-  private Path gutenbergMirror;
+  private Path gutenbergMirror = Paths.get("res/gutenberg");
 
   public ProjectGutenberg(NLPModel nlp) throws IOException, InterruptedException {
-    super(nlp, localCache);
-    gutenbergMirror = Paths.get("res/gutenberg");
-    if (!Files.exists(gutenbergMirror)) Files.createDirectory(gutenbergMirror);
-    contentPattern = Pattern.compile("(\\*\\*\\* START OF THIS PROJECT GUTENBERG EBOOK [\\w\\s]+ \\*\\*\\*)(.*?)(\\*\\*\\* END OF THIS PROJECT GUTENBERG EBOOK [\\w\\s]+ \\*\\*\\*)", Pattern.MULTILINE);
+    super(
+            nlp,
+            Paths.get("cache/gutenberg"),
+            Pattern.compile("(\\*\\*\\* START OF THIS PROJECT GUTENBERG EBOOK [\\w\\s]+ \\*\\*\\*)(.*?)(\\*\\*\\* END OF THIS PROJECT GUTENBERG EBOOK [\\w\\s]+ \\*\\*\\*)", Pattern.DOTALL)
+    );
+    if (!Files.exists(gutenbergMirror)) Files.createDirectories(gutenbergMirror);
     Process p = new ProcessBuilder()
             .redirectError(INHERIT)
             .redirectOutput(INHERIT)
-            .command("rsync", "-av", "--del", "--include=*/", "--include='*.txt'", "--exclude='*'", "ftp@ftp.ibiblio.org::gutenberg", gutenbergMirror.toString())
+            .command("rsync", "-av", "--del", "--include='*/'", "--include='*.txt'", "--exclude='*'", "ftp@ftp.ibiblio.org::gutenberg", gutenbergMirror.toString())
             .start();
     p.waitFor();
   }
 
   @Override
   public ImmutableSet<Path> getTexts(ImmutableSet<String> searchTerms, int resultsLimit) throws IOException {
-    List<Path> bookTexts = new ArrayList<>();
+    List<Path> results = new ArrayList<>();
 
-    //TODO Lookup paths to relevant books. For now, just go through all of it (which will take a really really long time...).
+    //TODO Lookup paths to relevant books with an index. For now, just go through all of the data (which will take a really really long time...).
+
     for (Path book : getBooks()) {
-      Path p = localCache.resolve(book.getFileName());
+      Path p = cache.resolve(book.getFileName());
+
+      // Skip parsing book if it's been done before.
+      if (Files.exists(p)) continue;
 
       try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(p.toString())))) {
         try (Scanner s = new Scanner(book.toString())) {
@@ -51,10 +55,10 @@ public class ProjectGutenberg extends TextSource {
           s.useDelimiter("\\Z");
           String response = s.next();
 
-          // Skip non-english books. TODO Don't check non-english books at all!
+          // Skip non-english books.
           if (!response.contains("Language: English")) continue;
 
-          // Look through the book for a search term, and consider the book relevant when a search term is found. //TODO Do this smarter. This will be super slow!
+          // Look through the book for a search term, and consider the book relevant when a search term is found.
           boolean relevant = false;
           for (String searchTerm : searchTerms) {
             if (response.contains(searchTerm)) {
@@ -64,29 +68,17 @@ public class ProjectGutenberg extends TextSource {
           }
           if (!relevant) continue;
 
-          // Extract book content from file.
+          // Extract content from file, extract running text and store the results.
           Matcher m = contentPattern.matcher(response);
-          m.find();
-          String content = m.group(2);
-          System.err.println(content); //TODO Remove.
-
-          // Find running text.
-          Matcher m2 = runningTextPattern.matcher(content);
-          while (m2.find()) {
-            String paragraph = m2.group();
-
-            // Only keep grammar correct sentences (using OpenNLP).
-            for (String sentence : sentenceDetector.sentDetect(paragraph)) {
-              out.print(sentence + " ");
-            }
-            out.println();
-          }
+          if (!m.find()) continue;
+          out.println(extractRunningText(m.group(2)));
         }
       }
-      bookTexts.add(p);
+
+      results.add(p);
     }
 
-    return ImmutableSet.copyOf(bookTexts);
+    return ImmutableSet.copyOf(results);
   }
 
   private List<Path> getBooks() throws IOException {

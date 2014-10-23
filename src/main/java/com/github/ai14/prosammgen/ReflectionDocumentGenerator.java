@@ -34,7 +34,7 @@ public final class ReflectionDocumentGenerator {
     // Prepare text sources.
     textSources = ImmutableSet.of(
             new Wikipedia(nlp),
-            new ProjectGutenberg()
+            new ProjectGutenberg(nlp)
     );
   }
 
