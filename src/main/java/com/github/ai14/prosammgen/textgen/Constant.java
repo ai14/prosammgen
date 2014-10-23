@@ -11,8 +11,8 @@ public class Constant implements TextGenerator {
   }
 
   @Override
-  public String generateText(Context context) {
-    return content;
+  public void generateText(Context context) {
+    context.getBuilder().append(content);
   }
 
   @Override

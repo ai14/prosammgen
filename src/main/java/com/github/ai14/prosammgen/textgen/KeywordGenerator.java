@@ -78,8 +78,8 @@ public class KeywordGenerator implements TextGenerator {
   }
 
   @Override
-  public String generateText(Context context) {
-    return Ordering.natural().onResultOf(String::length).max(words);
+  public void generateText(Context context) {
+    context.getBuilder().append(Ordering.natural().onResultOf(String::length).max(words));
   }
 
   public ImmutableSet<String> getWords() {

@@ -43,8 +43,8 @@ public final class ReflectionDocumentGenerator {
     // Load grammar.
     // Prepare text sources.
     textSources = ImmutableSet.of(
-            new Wikipedia(nlp),
-            new ProjectGutenberg(nlp)
+        new Wikipedia(nlp),
+        new ProjectGutenberg(nlp)
     );
     generators = TextGenerators.parseGrammar(
         Resources.readLines(Resources.getResource(App.class, "grammar"), StandardCharsets.UTF_8));
@@ -74,7 +74,6 @@ public final class ReflectionDocumentGenerator {
       // Create keyword generator for the current question and determine keywords, including the longest.
       KeywordGenerator keywordGenerator = KeywordGenerator.withPOSParsing(nlp, stopWords, question);
       ImmutableSet<String> searchTerms = keywordGenerator.getWords();
-      String longestSearchTerm = Ordering.natural().onResultOf(String::length).max(searchTerms);
 
       // Get training data for the question from text sources.
       long s = 0;
@@ -102,17 +101,16 @@ public final class ReflectionDocumentGenerator {
       // Expand grammar and generate some text.
       int remaining = wordCount / questions.size();
       while (remaining > 0) {
-        String paragraph = escapeLaTeXSpecialChars(generators.get("PARAGRAPH").generateText(new SimpleContext(generators, macroBuilder.build()))).replaceAll(longestSearchTerm, "\\\\emph{" + longestSearchTerm + "}");
+        generators.get("PARAGRAPH").generateText(new SimpleContext(generators, macroBuilder.build(), report));
 
-        report.append(paragraph);
         report.append("\n\n");
-        remaining -= paragraph.split("\\s+").length;
+        remaining = wordCount - report.toString().split("\\s+").length;
       }
     }
 
     report.append("\\end{document}");
 
-    return report.toString();
+    return escapeLaTeXSpecialChars(report.toString());
   }
 
   private String escapeLaTeXSpecialChars(String s) {
@@ -153,11 +151,14 @@ public final class ReflectionDocumentGenerator {
     private final Random random = new Random();
     private final ImmutableMap<String, TextGenerator> generators;
     private final ImmutableMap<String, Function<ImmutableList<String>, TextGenerator>> macros;
+    private final StringBuilder builder;
 
     private SimpleContext(ImmutableMap<String, TextGenerator> generators,
-                          ImmutableMap<String, Function<ImmutableList<String>, TextGenerator>> macros) {
+                          ImmutableMap<String, Function<ImmutableList<String>, TextGenerator>> macros,
+                          StringBuilder builder) {
       this.generators = generators;
       this.macros = macros;
+      this.builder = builder;
     }
 
     @Override
@@ -174,5 +175,11 @@ public final class ReflectionDocumentGenerator {
     public Function<ImmutableList<String>, TextGenerator> getMacro(String name) {
       return macros.get(name);
     }
+
+    @Override
+    public StringBuilder getBuilder() {
+      return builder;
+    }
+
   }
 }

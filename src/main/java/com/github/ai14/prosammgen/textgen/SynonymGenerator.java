@@ -17,8 +17,8 @@ public class SynonymGenerator implements TextGenerator {
   }
 
   @Override
-  public String generateText(Context context) {
+  public void generateText(Context context) {
     ImmutableSet<String> candidates = wordNet.getSynonyms(words);
-    return Iterables.get(candidates, context.getRandom().nextInt(candidates.size()));
+    context.getBuilder().append(Iterables.get(candidates, context.getRandom().nextInt(candidates.size())));
   }
 }

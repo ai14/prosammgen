@@ -1,12 +1,18 @@
 package com.github.ai14.prosammgen.textgen;
 
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
+
 import com.github.ai14.prosammgen.MarkovTrainer;
 import com.github.ai14.prosammgen.Ngram;
 import com.github.ai14.prosammgen.WordProbability;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.StringJoiner;
 
 public class MarkovTextGenerator implements TextGenerator {
 
@@ -19,8 +25,10 @@ public class MarkovTextGenerator implements TextGenerator {
   }
 
   @Override
-  public String generateText(Context context) {
-    return getText(context.getRandom(), numSentences, trainer);
+  public void generateText(Context context) {
+    List<String> previousWords = Splitter.on(CharMatcher.WHITESPACE).splitToList(context.getBuilder().toString());
+
+    context.getBuilder().append(getText(context.getRandom(), numSentences, trainer));
   }
 
   // TODO: remove averageSentenceLength from this method?

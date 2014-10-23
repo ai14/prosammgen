@@ -17,14 +17,10 @@ public class Conjunction implements TextGenerator {
   }
 
   @Override
-  public String generateText(Context context) {
-    final StringBuilder resultBuilder = new StringBuilder();
-
+  public void generateText(Context context) {
     for (TextGenerator generator : generators) {
-      resultBuilder.append(generator.generateText(context));
+      generator.generateText(context);
     }
-
-    return resultBuilder.toString();
   }
 
   @Override

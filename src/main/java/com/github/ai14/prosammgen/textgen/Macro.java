@@ -15,8 +15,8 @@ public class Macro implements TextGenerator {
   }
 
   @Override
-  public String generateText(Context context) {
-    return context.getMacro(name).apply(args).generateText(context);
+  public void generateText(Context context) {
+    context.getMacro(name).apply(args).generateText(context);
   }
 
   @Override

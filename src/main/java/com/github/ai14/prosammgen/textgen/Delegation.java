@@ -11,8 +11,8 @@ public class Delegation implements TextGenerator {
   }
 
   @Override
-  public String generateText(Context context) {
-    return context.getProduction(production).generateText(context);
+  public void generateText(Context context) {
+    context.getProduction(production).generateText(context);
   }
 
   @Override
