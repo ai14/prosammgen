@@ -22,7 +22,7 @@ public class Humanizer {
         this.closeCharacters = Files.readAllLines(Paths.get("res/keyboardclosecharacters"));
         WAnalyzerS analyze = new WAnalyzerS();
         analyze.analyze(Paths.get("example/previousreflectiondocument.in"));
-        this.misspellingProbability = analyze.getMisspellingWordsProbabilities();
+        this.misspellingProbability = analyze.getMisspellingWordsProbabilities(); //get misspelling probability from "previousreflectiondocument"
     }
 
     /**
@@ -32,19 +32,14 @@ public class Humanizer {
      */
     public String textHumanizer(String text)throws IOException, ParseException {
         //TODO: Change frequency of misspelling a word
-        //Get each paragraph of the text to different strings
-        String[] allParagraph = text.split("[\\n\\n]+");
-//int numberOfParagraphs = allParagraph.length;
+        String[] allParagraph = text.split("[\\n\\n]+");//Get each paragraph of the text to different strings
         StringBuilder humanizedText = new StringBuilder();
-        //for (int i = 0; i < numberOfParagraphs;++i){
         for (String paragraph : allParagraph){
-            //Split one paragraph to words
-            String[] wordsParagraph = paragraph.split("\\s+");
+            String[] wordsParagraph = paragraph.split("\\s+");//Split one paragraph to words
             int numberOfWords = wordsParagraph.length;
             for (int j =0; j < numberOfWords; ++j) {
                 String newWord = wordsParagraph[j];
-                //Check if is part of our answer
-                if (!isAnswer(wordsParagraph[j])) {
+                if (!isAnswer(wordsParagraph[j])) {//Check if is part of our answer
                     //if it is not leave it as it is.
                     int brackets = HowManyBrackets(wordsParagraph[j]);
                     humanizedText.append(newWord + " ");
@@ -57,62 +52,45 @@ public class Humanizer {
                         ++j;
                     }
                 }
-                else {
-                    //if it's an answer
+                else {  //if it's an answer
                     newWord = wordsParagraph[j];
-                    //calculate how often we want to misspell a word
-                    double misspellingRate = (misspellingProbability * numberOfWords);
+                    double misspellingRate = (misspellingProbability * numberOfWords); //calculate how often we want to misspell a word
                     List<String> possibleMisspellingWords = new ArrayList<>();
-                    //Find misspelling words according to a given probability and
-                    //check if contains part for the latex generation(if it does, skip the word)
                     //TODO: if it contains parts for the latex generation check the next word
                     //TODO: don't make the mistakes to close
-                   if ((((int) (misspellingRate % j)) == 0) &&
-                      (!wordsParagraph[j].startsWith("\\")) &&
+                   if ((((int) (misspellingRate % j)) == 0) && //Check if it should misspell a word according to the calculated probability
+                      (!wordsParagraph[j].startsWith("\\")) && //Check if contains part for the latex generation(if it does, skip the word)
                       (!wordsParagraph[j].contains("{")) &&
                       (!wordsParagraph[j].contains("}"))) {
-                        //Check for possible misspelled words.
-                        possibleMisspellingWords = checkForPossibleMisspellingWords(wordsParagraph[j]);
-                        //if there is no possible misspelled word (in our file "words")
-                        if (possibleMisspellingWords.isEmpty()) {
-                            //Get a list of words with one of the characters
-                            //(chosen randomly) switched by a close character of the (english QWERTY) keyboard.
-                            possibleMisspellingWords = checkPossibleSwitcherCharacters(wordsParagraph[j]);
+                        possibleMisspellingWords = checkForPossibleMisspellingWords(wordsParagraph[j]);//Check for possible misspelled words.
+                        if (possibleMisspellingWords.isEmpty()) { //if there is no possible misspelled word (in our file "words")
+                            possibleMisspellingWords = checkPossibleSwitcherCharacters(wordsParagraph[j]);//Get a list of words with one of the characters switched
                         }
                     }
-                    //check if we could misspelled the word
-                    if (!possibleMisspellingWords.isEmpty()) {
+                    if (!possibleMisspellingWords.isEmpty()) {//check if we could misspell the word
                         newWord = possibleMisspellingWords.get(0) + " ";
-                        //if there are several misspelled options
-                        if (possibleMisspellingWords.size() > 1) {
+                        if (possibleMisspellingWords.size() > 1) { //if there are several options (of misspelled words)
                             double[] similarityRate;
-                            //get values (from 0 to 1) on how similar are to the original word
-                            //using Jaro Winkler distance algorithm
-                            similarityRate = getSimilaritiesBetweenWords(possibleMisspellingWords, wordsParagraph[j]);
-                            //chose the most similar word
+                            similarityRate = getSimilaritiesBetweenWords(possibleMisspellingWords, wordsParagraph[j]); //get how similar are to the original word
                             //TODO: change it depending on the probability of misspelling
-                            newWord = chooseWord(possibleMisspellingWords, similarityRate);
+                            newWord = chooseWord(possibleMisspellingWords, similarityRate);//choose one of them
+
                         }
-                        //The file "words" contains strings with "_" as a "space" in between to parts of the word
-                        //check if the new word contains that character
-                        if (newWord.contains("_")){
-                            //if it does add to the text as to separeted words
+                        //The file "words" contains strings with "_" as a "space" in between parts of the word
+                        if (newWord.contains("_")){//check if the new word contains that character
                             int index=0;
-                            for(int h = 0; h < newWord.length(); ++h){
+                            for(int h = 0; h < newWord.length(); ++h){//if it does, add to the text as different words
                                 //get where the "_" is
                                 if(newWord.charAt(h) == '_'){
                                     index = h;
-                                    //add first part of the new word
-                                    humanizedText.append(newWord.substring(0,index)+" ");
+                                    humanizedText.append(newWord.substring(0,index)+" ");//add first part of the new word
                                     break;
                                 }
                             }
-                            //get the second part
-                            newWord = newWord.substring(index+1, newWord.length());
+                           newWord = newWord.substring(index+1, newWord.length()); //get the second part
                         }
                     }
-                    //add the new word (or the old one)
-                    humanizedText.append(newWord+" ");
+                    humanizedText.append(newWord+" ");//add the new word (or the old one)
                 }
             }
             humanizedText.append("\n\n");
@@ -121,24 +99,20 @@ public class Humanizer {
     }
 
     /**
-     * Given a word (correctWord) it checks if there is any
+     * Given a word (correctWord) checks if there is any
      * misspelled words in our file "words".
      * @param correctWord
      * @return
      */
     public   List<String> checkForPossibleMisspellingWords(String correctWord){
-        //take away the punctuation marks
-        String[] punctuationMarks = checkForPunctuationMarks(correctWord);
+        String[] punctuationMarks = checkForPunctuationMarks(correctWord);//take away the punctuation marks
         correctWord = punctuationMarks[0];
         List<String> possibleMisspellingWords = new ArrayList<>();
-        for(int i = 0; i < words.size(); ++i){
-            //Look for a possible misspelled word
-            //correct words have a "$" on the beginning in our file "words"
-            if((words.get(i)).equals("$"+correctWord)){
+        for(int i = 0; i < words.size(); ++i){ //Look for a possible misspelled word
+            if((words.get(i)).equals("$"+correctWord)){//correct words have a "$" on the beginning in our file "words"
                 ++i;
                 String misspelledWord;
-                while(i < words.size() && !(words.get(i)).contains("$") ){
-                    //get the list of possible misspelling options for that word
+                while(i < words.size() && !(words.get(i)).contains("$") ){//get the list of possible misspelling options for that word
                     misspelledWord = words.get(i);
                     //Adding punctuation symbols (if the original word had them)
                     if(!punctuationMarks[1].equals(" "))misspelledWord = punctuationMarks[1]+misspelledWord;
@@ -148,7 +122,7 @@ public class Humanizer {
                 }
                 //TODO: the file "word" contains repeated words with different misspelled options try to gather them
                 //Found the word no need to keep looking
-                break;
+                //break;
             }
         }
         return possibleMisspellingWords;
@@ -161,29 +135,22 @@ public class Humanizer {
      * @return
      */
     private List<String> checkPossibleSwitcherCharacters(String correctWord) {
-        //take away the punctuation marks
-        String[] punctuationMarks = checkForPunctuationMarks(correctWord);
+        String[] punctuationMarks = checkForPunctuationMarks(correctWord);//take away the punctuation marks
         correctWord = punctuationMarks[0];
         Random random = new Random();
-        //Choose the character to switch randomly
         int rand = random.nextInt(correctWord.length());
-        char characterToSwitch = correctWord.charAt(rand);
+        char characterToSwitch = correctWord.charAt(rand);//Choose the character to switch randomly
         boolean isUpperCase = Character.isUpperCase(characterToSwitch);
-        //writing character to lower case (if needed)
-        if(isUpperCase)characterToSwitch = Character.toLowerCase(characterToSwitch);
+        if(isUpperCase)characterToSwitch = Character.toLowerCase(characterToSwitch);//writing character to lower case (if needed)
         List<String> possibleSwitchingCharacter = new ArrayList<>();
         for(int i = 0; i < closeCharacters.size(); ++i){
-            //Search for the possible characters
-            if(closeCharacters.get(i).equals("$" + characterToSwitch)){
+            if(closeCharacters.get(i).equals("$" + characterToSwitch)){//Search for the possible characters
                 String stringPossibility;
                 ++i;
-                while(i < closeCharacters.size() && !(closeCharacters.get(i)).contains("$")){
-                    //get the list of possible close characters
+                while(i < closeCharacters.size() && !(closeCharacters.get(i)).contains("$")){//get the list of possible close characters
                     char CloseCharacter = (closeCharacters.get(i)).charAt(0);
-                    //if it was capital letter, make it again
-                    if(isUpperCase) CloseCharacter = Character.toUpperCase(CloseCharacter);
-                    //Switch the character
-                    stringPossibility = switchCharacters(correctWord, rand,CloseCharacter);
+                    if(isUpperCase) CloseCharacter = Character.toUpperCase(CloseCharacter); //if it was capital letter, make it again
+                    stringPossibility = switchCharacters(correctWord, rand,CloseCharacter);//Switch the character
                     //Adding punctuation symbols (if the original word had them)
                     if(!punctuationMarks[1].equals(" "))stringPossibility = punctuationMarks[1]+stringPossibility;
                     if(!punctuationMarks[2].equals(" "))stringPossibility = stringPossibility +punctuationMarks[2];
@@ -204,24 +171,18 @@ public class Humanizer {
      */
     private String[] checkForPunctuationMarks(String word) {
         String[] punctuationMarks = new String[3];
-        //String[0] -> the word
-        //String[1] -> characters from the beginning
-        //String[2] -> characters from the end
         punctuationMarks[0] = word;
-        punctuationMarks[1] = " ";
-        punctuationMarks[2] = " ";
-        //while there is punctuation marks at the beginning take them of the word
-        while((punctuationMarks[0].startsWith(" ( "))||
+        punctuationMarks[1] = " "; //String[1] -> characters from the beginning
+        punctuationMarks[2] = " "; //String[2] -> characters from the end
+        while((punctuationMarks[0].startsWith(" ( "))||//while there is punctuation marks at the beginning take them of the word
                 punctuationMarks[0].startsWith(" “ ")||
                 punctuationMarks[0].startsWith(" \" ")
                 && punctuationMarks[0].length() > 0 && punctuationMarks[0] != null) {
-                    //if it's the first time, delete the space
-                    if(punctuationMarks[1].equals(" "))punctuationMarks[1] = punctuationMarks[0].substring(0);
+                    if(punctuationMarks[1].equals(" "))punctuationMarks[1] = punctuationMarks[0].substring(0);//if it's the first found, delete the space
                     else punctuationMarks[1] = punctuationMarks[1] + punctuationMarks[0].substring(0);
                     punctuationMarks[0] = punctuationMarks[0].substring(1);
         }
-        //while there is punctuation marks at the end take them of the word
-        while ((punctuationMarks[0].endsWith(" . "))||
+        while ((punctuationMarks[0].endsWith(" . "))|| //while there is punctuation marks at the end take them of the word
                 punctuationMarks[0].endsWith("?") ||
                 punctuationMarks[0].endsWith("!")||
                 punctuationMarks[0].endsWith(",")||
@@ -230,12 +191,11 @@ public class Humanizer {
                 punctuationMarks[0].endsWith("”")||
                 punctuationMarks[0].endsWith(" \" ")
                 &&punctuationMarks[0].length() > 0 && punctuationMarks[0] != null) {
-                    //if it's the first time, delete the space
-                    if(punctuationMarks[2].equals(" "))punctuationMarks[2] =punctuationMarks[0].substring(punctuationMarks[0].length() - 1);
+                    if(punctuationMarks[2].equals(" "))punctuationMarks[2] =punctuationMarks[0].substring(punctuationMarks[0].length() - 1);//if it's the first found, delete the space
                     else punctuationMarks[2] = punctuationMarks[2] + punctuationMarks[0].substring(punctuationMarks[0].length() - 1);
                     punctuationMarks[0] = punctuationMarks[0].substring(0, punctuationMarks[0].length() - 1);
         }
-        //Different characters ’ and ' that are used for the same
+        //" ’ " and " ' " are different characters but used for the same
         //just a precaution to not skip the word
         if(punctuationMarks[0].contains("’")) punctuationMarks[0] = punctuationMarks[0].replace("’", "'");
         return punctuationMarks;
@@ -294,9 +254,8 @@ public class Humanizer {
         //TODO: implement algorithm to choose depending the probability
         double max = -1;
         String chosenOne = wordsToCompare.get(0);
-        //So far take the most similar one.
         for(int i = 0; i < wordsToCompare.size(); ++i){
-            if(similarityRate[i] > max){
+            if(similarityRate[i] > max){//take the most similar one.
                 max = similarityRate[i];
                 chosenOne = wordsToCompare.get(i);
             }
@@ -313,12 +272,9 @@ public class Humanizer {
      */
     private double[] getSimilaritiesBetweenWords(List<String> wordsToCompare, String originalWord) {
         double []ratingMisspelled = new double [wordsToCompare.size()];
-        //Get probabilities on how close are the WordToCompare to the originalWord
-        for(int i = 0; i < wordsToCompare.size(); ++i){
+        for(int i = 0; i < wordsToCompare.size(); ++i){ //Get probabilities on how close are the WordsToCompare to the originalWord (from 0 to 1)
             //Jaro Winkler Distance algorithm
             ratingMisspelled[i] = StringUtils.getJaroWinklerDistance(wordsToCompare.get(i), originalWord);
-            //Levenshtein Distance algorithm
-            //ratingMisspelled[i] = StringUtils.getLevenshteinDistance(wordsToCompare.get(i), originalWord);
         }
         return ratingMisspelled;
     }
