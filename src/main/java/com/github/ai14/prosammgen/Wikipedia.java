@@ -2,7 +2,6 @@ package com.github.ai14.prosammgen;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.net.UrlEscapers;
-import opennlp.tools.sentdetect.SentenceDetectorME;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.io.BufferedWriter;
@@ -19,33 +18,22 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
-public class Wikipedia {
-
-  private final Pattern searchResultsPattern, articleContentPattern, runningTextPattern;
-  private final SentenceDetectorME sentenceDetector;
+public class Wikipedia extends TextSource {
 
   public Wikipedia(NLPModel nlp) throws IOException {
-    searchResultsPattern = Pattern.compile("<searchinfo totalhits=\"([0-9]+)\" \\/>");
-    articleContentPattern = Pattern.compile("<extract xml:space=\"preserve\">(.*?)<\\/extract>", Pattern.DOTALL);
-    runningTextPattern = Pattern.compile("^([A-Z]\\w* ([\\w(),:'‘’\\-%/]* ){2,}([\\w(),:'‘’-]*[.,!?]) ){2,}", Pattern.MULTILINE);
-    sentenceDetector = new SentenceDetectorME(nlp.getSentenceModel());
-
-    // Create cache directory.
-    Path cache = Paths.get("cache");
-    if (!Files.exists(cache)) {
-      Files.createDirectory(cache);
-    }
+    super(
+            nlp,
+            Paths.get("cache/wikipedia"),
+            Pattern.compile("<extract xml:space=\"preserve\">(.*?)<\\/extract>", Pattern.DOTALL)
+    );
   }
 
-  /**
-   * Download Wikipedia articles with the MediaWiki API and parse out article content as plaintext.
-   */
-  public ImmutableSet<Path> getArticles(int articles, ImmutableSet<String> searchTerms) throws IOException {
-    List<Path> searchResults = new ArrayList<Path>();
+  @Override
+  public ImmutableSet<Path> getTexts(ImmutableSet<String> searchTerms, int resultsLimit) throws IOException {
+    List<Path> results = new ArrayList<Path>();
 
     // Limit requests per search term to the maximum defined by the MediaWiki API Search extension.
-    int requestsPerSearchterm = 1 + articles / (1 + searchTerms.size());
+    int requestsPerSearchterm = 1 + resultsLimit / (1 + searchTerms.size());
     if (requestsPerSearchterm > 50) {
       requestsPerSearchterm = 50;
     }
@@ -53,55 +41,35 @@ public class Wikipedia {
     for (String searchTerm : searchTerms) {
 
       // Use cached file for search term instead, if fresh enough.
-      Path p = Paths.get("cache/" + searchTerm);
+      Path p = cache.resolve(searchTerm);
       if (Files.exists(p)) {
         if (System.currentTimeMillis() - Files.getLastModifiedTime(p).toMillis() < 2592000000l) {
-          searchResults.add(p);
+          results.add(p);
           continue;
         } else {
           Files.delete(p);
         }
       }
 
-      // Fetch Wikipedia articles.
+      // Fetch Wikipedia resultsLimit.
       try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(p.toString())))) {
 
         // “Because excerpts generation can be slow the limit is capped at one whole-page extract.” Solution: do several requests. Sorry Wikipedia!
         for (int i = 0; i < requestsPerSearchterm; ++i) {
           String url = "http://en.wikipedia.org/w/api.php?format=xml&action=query&generator=search&gsrsearch=" + UrlEscapers.urlPathSegmentEscaper().escape(searchTerm) + "&gsrlimit=50&prop=extracts&exsectionformat=plain&explaintext&excontinue=" + i;
           try (Scanner s = new Scanner(new URL(url).openStream())) {
-
-            // Read url into a huge string.
+            // Read url into a huge string, extract content from file, extract running text and store the results.
             s.useDelimiter("\\Z");
-            String response = s.next();
-
-            // Extract article content from the response.
-            Matcher m1 = articleContentPattern.matcher(response);
+            Matcher m1 = contentPattern.matcher(s.next());
             if (!m1.find()) continue;
-            String content = m1.group(1);
-
-            // Convert HTML entities to unicode.
-            content = StringEscapeUtils.unescapeHtml4(content);
-
-            // Find running text (get rid of meta data and so on).
-            Matcher m2 = runningTextPattern.matcher(content);
-            while (m2.find()) {
-              String paragraph = m2.group();
-
-              // Only keep grammar correct sentences (using OpenNLP).
-              for (String sentence : sentenceDetector.sentDetect(paragraph)) {
-                out.print(sentence + " ");
-              }
-              out.println();
-            }
+            out.println(extractRunningText(StringEscapeUtils.unescapeHtml4(m1.group(1))));
           }
         }
       }
 
-      // Store resulting articles in a file for the search term.
-      searchResults.add(p);
+      results.add(p);
     }
 
-    return ImmutableSet.copyOf(searchResults);
+    return ImmutableSet.copyOf(results);
   }
 }
