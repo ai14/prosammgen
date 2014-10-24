@@ -54,7 +54,8 @@ public class MarkovTextGenerator implements TextGenerator {
 
     // First try to get an ngram from the n last words in the previous sentence
     Ngram ngram = new Ngram(MarkovTrainer.markovOrder);
-    for (int i = previousWords.size() - MarkovTrainer.markovOrder; i < previousWords.size(); i++) {
+    // NOTE: The very last word of the list is an empty string and should not be considered here
+    for (int i = previousWords.size() - MarkovTrainer.markovOrder - 1; i < previousWords.size() - 1; i++) {
       ngram.pushWord(previousWords.get(i));
     }
 
@@ -73,7 +74,8 @@ public class MarkovTextGenerator implements TextGenerator {
     }
 
     // Then try to get an ngram from the last word only
-    String lastWord = previousWords.get(previousWords.size() - 1);
+    // NOTE: The very last word of the list is an empty string and should not be considered here
+    String lastWord = previousWords.get(previousWords.size() - 2);
     List<Ngram> wordToNgrams = trainer.getSentenceStarts(lastWord);
     if (wordToNgrams != null) {
       return wordToNgrams.get(rand.nextInt(wordToNgrams.size()));
