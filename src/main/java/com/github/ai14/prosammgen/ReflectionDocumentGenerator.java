@@ -101,16 +101,21 @@ public final class ReflectionDocumentGenerator {
       // Expand grammar and generate some text.
       int remaining = wordCount / questions.size();
       while (remaining > 0) {
-        generators.get("PARAGRAPH").generateText(new SimpleContext(generators, macroBuilder.build(), report));
+        StringBuilder paragraphBuilder = new StringBuilder();
+        generators.get("PARAGRAPH").generateText(new SimpleContext(generators, macroBuilder.build(), paragraphBuilder));
 
+        String paragraph = paragraphBuilder.toString();
+
+        report.append(escapeLaTeXSpecialChars(paragraph));
         report.append("\n\n");
-        remaining = wordCount - report.toString().split("\\s+").length;
+
+        remaining -= paragraph.split("\\s+").length;
       }
     }
 
     report.append("\\end{document}");
 
-    return escapeLaTeXSpecialChars(report.toString());
+    return report.toString();
   }
 
   private String escapeLaTeXSpecialChars(String s) {
