@@ -79,6 +79,8 @@ public class App {
     // Generate a reflection document.
     String report = new ReflectionDocumentGenerator().generateReport(title, author, questionList, readingMaterial, wordCount, maxWebRequests);
 
+     Humanizer human = new Humanizer();
+     report = human.textHumanizer(report);
     // Replace characters in accordance with the prosamm instructions. å -> a, é -> e, etc.
     String filename = Normalizer.normalize(author, Normalizer.Form.NFD).replaceAll(" ", "_").replaceAll("[^A-Za-z_]", "");
 
