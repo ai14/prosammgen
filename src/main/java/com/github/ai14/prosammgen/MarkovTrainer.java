@@ -9,15 +9,15 @@ import java.util.*;
 
 public class MarkovTrainer {
 
-  public static final int markovOrder = 3;
+  public static final int markovOrder = 2;
   private Map<String, Map<String, Integer>> nextWordCounter;
+  private Map<String, List<Ngram>> wordToNgram;
   private List<Ngram> sentenceStarts;
-  private Set<Ngram> sentenceEnds;
 
   public MarkovTrainer() {
     nextWordCounter = new HashMap<>();
+    wordToNgram = new HashMap<>();
     sentenceStarts = new ArrayList<>();
-    sentenceEnds = new HashSet<>();
   }
 
   public void train(ImmutableSet<Path> files) throws IOException {
@@ -41,12 +41,6 @@ public class MarkovTrainer {
             sentenceStarts.add(ngramCopy);
           }
 
-          // find ends of sentences
-          if (ngram.getLast().endsWith(".")) {
-            Ngram ngramCopy = new Ngram(ngram);
-            sentenceEnds.add(ngramCopy);
-          }
-
           if (!nextWordCounter.containsKey(ns)) {
             nextWordCounter.put(ns, new HashMap<>());
           }
@@ -61,6 +55,29 @@ public class MarkovTrainer {
           wordBeforeNgram = ngram.getFirst();
           ngram.pushWord(nw);
         }
+      }
+    }
+
+    // for every word, store the following ngram
+    for (Map.Entry<String, Map<String, Integer>> me : nextWordCounter.entrySet()) {
+      if (me.getKey().length() == 0) continue;
+
+      String[] ngramKey = me.getKey().split(" ");
+      String word = ngramKey[0];
+
+      for (String followingWord : me.getValue().keySet()) {
+        Ngram ngram = new Ngram(markovOrder);
+        for (int i = 1; i < ngramKey.length; i++) {
+          ngram.pushWord(ngramKey[i]);
+        }
+
+        ngram.pushWord(followingWord);
+
+        if (!wordToNgram.containsKey(word)) {
+          wordToNgram.put(word, new ArrayList<>());
+        }
+
+        wordToNgram.get(word).add(ngram);
       }
     }
   }
@@ -100,7 +117,7 @@ public class MarkovTrainer {
     return sentenceStarts;
   }
 
-  public Set<Ngram> getSentenceEnds() {
-    return sentenceEnds;
+  public List<Ngram> getSentenceStarts(String word) {
+    return wordToNgram.get(word);
   }
 }

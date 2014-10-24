@@ -28,16 +28,16 @@ public class MarkovTextGenerator implements TextGenerator {
   public void generateText(Context context) {
     List<String> previousWords = Splitter.on(CharMatcher.WHITESPACE).splitToList(context.getBuilder().toString());
 
-    context.getBuilder().append(getText(context.getRandom(), numSentences, trainer));
+    context.getBuilder().append(getText(context.getRandom(), numSentences, previousWords, trainer));
   }
 
   // TODO: remove averageSentenceLength from this method?
   // use calculated statistics instead
-  private static String getText(Random rand, int numberSentences, MarkovTrainer trainer) {
+  private static String getText(Random rand, int numberSentences, List<String> previousWords, MarkovTrainer trainer) {
     Map<String, ArrayList<WordProbability>> markovChain = trainer.getMarkovChain();
 
     List<Ngram> startNgrams = trainer.getSentenceStarts();
-    Ngram ngram = startNgrams.get(rand.nextInt(startNgrams.size()));
+    Ngram ngram = getStartNgram(rand, previousWords, markovChain, trainer);
 
     StringJoiner sentences = new StringJoiner(" ");
     for (int i = 0; i < numberSentences; i++) {
@@ -45,6 +45,43 @@ public class MarkovTextGenerator implements TextGenerator {
     }
 
     return sentences.toString();
+  }
+
+  private static Ngram getStartNgram(Random rand,
+                              List<String> previousWords,
+                              Map<String, ArrayList<WordProbability>> markovChain,
+                              MarkovTrainer trainer) {
+
+    // First try to get an ngram from the n last words in the previous sentence
+    Ngram ngram = new Ngram(MarkovTrainer.markovOrder);
+    for (int i = previousWords.size() - MarkovTrainer.markovOrder; i < previousWords.size(); i++) {
+      ngram.pushWord(previousWords.get(i));
+    }
+
+    boolean failed = false;
+    for (int i = 0; i < MarkovTrainer.markovOrder && !failed; i++) {
+      if (markovChain.containsKey(ngram.toString())) {
+        String nextWord = chooseWord(rand, markovChain.get(ngram.toString()));
+        ngram.pushWord(nextWord);
+      } else {
+        failed = true;
+      }
+    }
+
+    if (!failed) {
+      return ngram;
+    }
+
+    // Then try to get an ngram from the last word only
+    String lastWord = previousWords.get(previousWords.size() - 1);
+    List<Ngram> wordToNgrams = trainer.getSentenceStarts(lastWord);
+    if (wordToNgrams != null) {
+      return wordToNgrams.get(rand.nextInt(wordToNgrams.size()));
+    }
+
+    // If all else fails, simply take a random starting ngram
+    List<Ngram> startNgrams = trainer.getSentenceStarts();
+    return startNgrams.get(rand.nextInt(startNgrams.size()));
   }
 
   private static String getSentence(Random rand,

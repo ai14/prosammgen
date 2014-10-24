@@ -28,12 +28,14 @@ public class ProjectGutenberg extends TextSource {
             Pattern.compile("(\\*\\*\\* START OF THIS PROJECT GUTENBERG EBOOK [\\w\\s]+ \\*\\*\\*)(.*?)(\\*\\*\\* END OF THIS PROJECT GUTENBERG EBOOK [\\w\\s]+ \\*\\*\\*)", Pattern.DOTALL)
     );
     if (!Files.exists(gutenbergMirror)) Files.createDirectories(gutenbergMirror);
-    Process p = new ProcessBuilder()
-            .redirectError(INHERIT)
-            .redirectOutput(INHERIT)
-            .command("rsync", "-av", "--del", "--include='*/'", "--include='*.txt'", "--exclude='*'", "ftp@ftp.ibiblio.org::gutenberg", gutenbergMirror.toString())
-            .start();
-    p.waitFor();
+
+//    Process p = new ProcessBuilder()
+//            .redirectError(INHERIT)
+//            .redirectOutput(INHERIT)
+//            .command("rsync", "-av", "--del", "--include='*/'", "--include='*.txt'", "--exclude='*'", "ftp@ftp.ibiblio.org::gutenberg", gutenbergMirror.toString())
+//            .start();
+//    p.waitFor();
+
   }
 
   @Override
