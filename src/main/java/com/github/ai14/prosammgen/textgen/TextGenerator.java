@@ -7,7 +7,7 @@ import java.util.function.Function;
 
 public interface TextGenerator {
 
-  String generateText(Context context);
+  void generateText(Context context);
 
   public interface Context {
 
@@ -16,5 +16,7 @@ public interface TextGenerator {
     TextGenerator getProduction(String name);
 
     Function<ImmutableList<String>, TextGenerator> getMacro(String name);
+
+    StringBuilder getBuilder();
   }
 }

@@ -14,8 +14,8 @@ public class Disjunction implements TextGenerator {
   }
 
   @Override
-  public String generateText(Context context) {
-    return Iterables.get(generators, context.getRandom().nextInt(generators.size()))
+  public void generateText(Context context) {
+    Iterables.get(generators, context.getRandom().nextInt(generators.size()))
         .generateText(context);
   }
 
