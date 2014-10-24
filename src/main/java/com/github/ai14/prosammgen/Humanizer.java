@@ -1,5 +1,6 @@
 package com.github.ai14.prosammgen;
 
+import com.google.common.io.Resources;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -9,6 +10,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.nio.charset.StandardCharsets;
 
 public class Humanizer {
     private List<String> words;
@@ -18,12 +20,14 @@ public class Humanizer {
 
     public Humanizer()throws IOException, ParseException {
         //Load words (both correct and misspelled ones)
-        this.words = Files.readAllLines(Paths.get("res/words"));
-        this.closeCharacters = Files.readAllLines(Paths.get("res/keyboardclosecharacters"));
+        this.words =  Resources.readLines(Resources.getResource(App.class, "words"), StandardCharsets.UTF_8);
+        this.closeCharacters =  Resources.readLines(Resources.getResource(App.class, "keyboardclosecharacters"), StandardCharsets.UTF_8);
         WAnalyzerS analyze = new WAnalyzerS();
         analyze.analyze(Paths.get("example/previousreflectiondocument.in"));
         this.misspellingProbability = analyze.getMisspellingWordsProbabilities(); //get misspelling probability from "previousreflectiondocument"
     }
+
+
 
     /**
      * Humanize a text by misspelling some of the words
@@ -38,6 +42,8 @@ public class Humanizer {
             String[] wordsParagraph = paragraph.split("\\s+");//Split one paragraph to words
             int numberOfWords = wordsParagraph.length;
             for (int j =0; j < numberOfWords; ++j) {
+                if(isLatexHeader(wordsParagraph[j])) j = endLatexHeader(paragraph,j);
+                //TODO: add words in between j_old and j_new
                 String newWord = wordsParagraph[j];
                 if (!isAnswer(wordsParagraph[j])) {//Check if is part of our answer
                     //if it is not leave it as it is.
@@ -53,7 +59,6 @@ public class Humanizer {
                     }
                 }
                 else {  //if it's an answer
-                    newWord = wordsParagraph[j];
                     double misspellingRate = (misspellingProbability * numberOfWords); //calculate how often we want to misspell a word
                     List<String> possibleMisspellingWords = new ArrayList<>();
                     //TODO: if it contains parts for the latex generation check the next word
@@ -89,6 +94,7 @@ public class Humanizer {
                             }
                            newWord = newWord.substring(index+1, newWord.length()); //get the second part
                         }
+                        System.out.println(wordsParagraph[j]+"   "+newWord);
                     }
                     humanizedText.append(newWord+" ");//add the new word (or the old one)
                 }
@@ -216,11 +222,12 @@ public class Humanizer {
     }
 
     /**
-     * Check is the word is part of one of our answers
+     * Checks if the word if part of a Latex header
      * @param word to check
      * @return
      */
-    private boolean isAnswer(String word) {
+    //TODO: Add the rest of possible Latex
+    private boolean isLatexHeader(String word) {
         if(word.contains("\\documentclass"))return false;
         else if(word.contains("\\begin{"))return false;
         else if(word.contains("\\title"))return false;
@@ -279,4 +286,23 @@ public class Humanizer {
         return ratingMisspelled;
     }
 
+    /**
+     * Returns the index on the first none Latex Header word of a paragraph
+     * @param paragraph
+     * @param j
+     * @return
+     */
+    private int endLatexHeader(String paragraph, int j) {
+        String[] wordsParagraph = paragraph.split("\\s+");
+        int brackets = HowManyBrackets(wordsParagraph[j]);
+        ++j;
+        while (brackets > 0 && j < wordsParagraph.length) {
+            //check until you find an answer
+            brackets += HowManyBrackets(wordsParagraph[j]);
+            newWord = wordsParagraph[j];
+            humanizedText.append(newWord + " ");
+            ++j;
+        }
+
+    }
 }
