@@ -1,11 +1,14 @@
 package com.github.ai14.prosammgen;
 
+import com.google.common.io.Resources;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.nio.charset.StandardCharsets;
 
 
 public class WAnalyzerS{
@@ -23,7 +26,7 @@ public class WAnalyzerS{
    */
   public void analyze(Path text){
     try {
-        this.words = Files.readAllLines(Paths.get("res/words"));
+        this.words = Resources.readLines(Resources.getResource(App.class, "words"), StandardCharsets.UTF_8);
         this.text = text;
         String allText = new String(Files.readAllBytes(text));
         this.totalWords = allText.split("\\s+"); //splitting into words
