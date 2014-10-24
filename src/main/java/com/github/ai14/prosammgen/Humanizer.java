@@ -35,69 +35,56 @@ public class Humanizer {
      * @return
      */
     public String textHumanizer(String text)throws IOException, ParseException {
-        //TODO: Change frequency of misspelling a word
         String[] allParagraph = text.split("[\\n\\n]+");//Get each paragraph of the text to different strings
         StringBuilder humanizedText = new StringBuilder();
+        int jAnswer;
         for (String paragraph : allParagraph){
             String[] wordsParagraph = paragraph.split("\\s+");//Split one paragraph to words
             int numberOfWords = wordsParagraph.length;
             for (int j =0; j < numberOfWords; ++j) {
-                if(isLatexHeader(wordsParagraph[j])) j = endLatexHeader(paragraph,j);
-                //TODO: add words in between j_old and j_new
-                String newWord = wordsParagraph[j];
-                if (!isAnswer(wordsParagraph[j])) {//Check if is part of our answer
-                    //if it is not leave it as it is.
-                    int brackets = HowManyBrackets(wordsParagraph[j]);
-                    humanizedText.append(newWord + " ");
-                    ++j;
-                    while (brackets > 0 && j < numberOfWords) {
-                        //check until you find an answer
-                        brackets += HowManyBrackets(wordsParagraph[j]);
-                        newWord = wordsParagraph[j];
-                        humanizedText.append(newWord + " ");
-                        ++j;
-                    }
+                jAnswer = j;
+                //Check if contains some Latex command (Questions are inside of a Latex command)
+                if (isLatexCommand(wordsParagraph[j])) {
+                    jAnswer = goToAnswerPart(paragraph, j);
                 }
-                else {  //if it's an answer
-                    double misspellingRate = (misspellingProbability * numberOfWords); //calculate how often we want to misspell a word
-                    List<String> possibleMisspellingWords = new ArrayList<>();
-                    //TODO: if it contains parts for the latex generation check the next word
-                    //TODO: don't make the mistakes to close
-                   if ((((int) (misspellingRate % j)) == 0) && //Check if it should misspell a word according to the calculated probability
-                      (!wordsParagraph[j].startsWith("\\")) && //Check if contains part for the latex generation(if it does, skip the word)
-                      (!wordsParagraph[j].contains("{")) &&
-                      (!wordsParagraph[j].contains("}"))) {
-                        possibleMisspellingWords = checkForPossibleMisspellingWords(wordsParagraph[j]);//Check for possible misspelled words.
-                        if (possibleMisspellingWords.isEmpty()) { //if there is no possible misspelled word (in our file "words")
-                            possibleMisspellingWords = checkPossibleSwitcherCharacters(wordsParagraph[j]);//Get a list of words with one of the characters switched
-                        }
+                //Add non question part
+                while (j < jAnswer) {
+                    humanizedText.append(wordsParagraph[j] + " ");
+                    j++;
+                }
+                if (j >= numberOfWords) break;
+                String newWord = wordsParagraph[j];
+                int misspellingRate = (int) (misspellingProbability * numberOfWords); //calculate how often we want to misspell a word
+                List<String> possibleMisspellingWords = new ArrayList<>();
+                if ((((j % misspellingRate)) == 0)) { //Check if it should misspell a word according to the calculated probability
+                    possibleMisspellingWords = checkForPossibleMisspellingWords(wordsParagraph[j]);//Check for possible misspelled words.
+                    if (possibleMisspellingWords.isEmpty()) { //if there is no possible misspelled word (in our file "words")
+                        possibleMisspellingWords = checkPossibleSwitcherCharacters(wordsParagraph[j]);//Get a list of words with one of the characters switched
                     }
                     if (!possibleMisspellingWords.isEmpty()) {//check if we could misspell the word
-                        newWord = possibleMisspellingWords.get(0) + " ";
-                        if (possibleMisspellingWords.size() > 1) { //if there are several options (of misspelled words)
-                            double[] similarityRate;
-                            similarityRate = getSimilaritiesBetweenWords(possibleMisspellingWords, wordsParagraph[j]); //get how similar are to the original word
-                            //TODO: change it depending on the probability of misspelling
-                            newWord = chooseWord(possibleMisspellingWords, similarityRate);//choose one of them
+                    newWord = possibleMisspellingWords.get(0) + " ";
+                    if (possibleMisspellingWords.size() > 1) { //if there are several options (of misspelled words)
+                        double[] similarityRate;
+                        similarityRate = getSimilaritiesBetweenWords(possibleMisspellingWords, wordsParagraph[j]); //get how similar are to the original word
+                        newWord = chooseWord(possibleMisspellingWords, similarityRate);//choose one of them
 
-                        }
-                        //The file "words" contains strings with "_" as a "space" in between parts of the word
-                        if (newWord.contains("_")){//check if the new word contains that character
-                            int index=0;
-                            for(int h = 0; h < newWord.length(); ++h){//if it does, add to the text as different words
-                                //get where the "_" is
-                                if(newWord.charAt(h) == '_'){
-                                    index = h;
-                                    humanizedText.append(newWord.substring(0,index)+" ");//add first part of the new word
-                                    break;
-                                }
-                            }
-                           newWord = newWord.substring(index+1, newWord.length()); //get the second part
-                        }
-                        System.out.println(wordsParagraph[j]+"   "+newWord);
                     }
-                    humanizedText.append(newWord+" ");//add the new word (or the old one)
+                    //The file "words" contains strings with "_" as a "space" in between parts of the word
+                    if (newWord.contains("_")) {//check if the new word contains that character
+                        int index = 0;
+                        for (int h = 0; h < newWord.length(); ++h) {//if it does, add to the text as different words
+                            //get where the "_" is
+                            if (newWord.charAt(h) == '_') {
+                                index = h;
+                                humanizedText.append(newWord.substring(0, index) + " ");//add first part of the new word
+                                break;
+                            }
+                        }
+                        newWord = newWord.substring(index + 1, newWord.length()); //get the second part
+                    }
+                    }
                 }
+                humanizedText.append(newWord+" ");//add the new word (or the old one)
             }
             humanizedText.append("\n\n");
         }
@@ -126,9 +113,6 @@ public class Humanizer {
                     possibleMisspellingWords.add(misspelledWord);
                     ++i;
                 }
-                //TODO: the file "word" contains repeated words with different misspelled options try to gather them
-                //Found the word no need to keep looking
-                //break;
             }
         }
         return possibleMisspellingWords;
@@ -145,6 +129,7 @@ public class Humanizer {
         correctWord = punctuationMarks[0];
         Random random = new Random();
         int rand = random.nextInt(correctWord.length());
+        while(!Character.isLetter(correctWord.charAt(rand))) rand = random.nextInt(correctWord.length());
         char characterToSwitch = correctWord.charAt(rand);//Choose the character to switch randomly
         boolean isUpperCase = Character.isUpperCase(characterToSwitch);
         if(isUpperCase)characterToSwitch = Character.toLowerCase(characterToSwitch);//writing character to lower case (if needed)
@@ -184,6 +169,7 @@ public class Humanizer {
                 punctuationMarks[0].startsWith(" “ ")||
                 punctuationMarks[0].startsWith(" \" ")
                 && punctuationMarks[0].length() > 0 && punctuationMarks[0] != null) {
+
                     if(punctuationMarks[1].equals(" "))punctuationMarks[1] = punctuationMarks[0].substring(0);//if it's the first found, delete the space
                     else punctuationMarks[1] = punctuationMarks[1] + punctuationMarks[0].substring(0);
                     punctuationMarks[0] = punctuationMarks[0].substring(1);
@@ -197,6 +183,7 @@ public class Humanizer {
                 punctuationMarks[0].endsWith("”")||
                 punctuationMarks[0].endsWith(" \" ")
                 &&punctuationMarks[0].length() > 0 && punctuationMarks[0] != null) {
+
                     if(punctuationMarks[2].equals(" "))punctuationMarks[2] =punctuationMarks[0].substring(punctuationMarks[0].length() - 1);//if it's the first found, delete the space
                     else punctuationMarks[2] = punctuationMarks[2] + punctuationMarks[0].substring(punctuationMarks[0].length() - 1);
                     punctuationMarks[0] = punctuationMarks[0].substring(0, punctuationMarks[0].length() - 1);
@@ -222,22 +209,21 @@ public class Humanizer {
     }
 
     /**
-     * Checks if the word if part of a Latex header
-     * @param word to check
+     * Checks if the word is for the Latex generation of the text
+     * @param word
      * @return
      */
-    //TODO: Add the rest of possible Latex
-    private boolean isLatexHeader(String word) {
-        if(word.contains("\\documentclass"))return false;
-        else if(word.contains("\\begin{"))return false;
-        else if(word.contains("\\title"))return false;
-        else if(word.contains("\\author"))return false;
-        else if(word.contains("\\maketitle"))return false;
-        else if(word.contains("\\section")) return false;
-        else if(word.contains("\\end{document}")) return false;
-        return true;
+    private boolean isLatexCommand(String word) {
+        if(word.contains("\\documentclass"))return true;
+        else if(word.contains("\\begin{document}"))return true;
+        else if(word.contains("\\title"))return true;
+        else if(word.contains("\\author"))return true;
+        else if(word.contains("\\maketitle"))return true;
+        else if(word.contains("\\section")) return true;
+        else if(word.contains("\\end{document}")) return true;
+        else if(word.contains("\\emph")) return true;
+        return false;
     }
-
 
     /**
      * Writes the given character into the word (at the index position)
@@ -258,7 +244,6 @@ public class Humanizer {
      * @return
      */
     private String chooseWord(List<String> wordsToCompare, double[] similarityRate) {
-        //TODO: implement algorithm to choose depending the probability
         double max = -1;
         String chosenOne = wordsToCompare.get(0);
         for(int i = 0; i < wordsToCompare.size(); ++i){
@@ -287,22 +272,21 @@ public class Humanizer {
     }
 
     /**
-     * Returns the index on the first none Latex Header word of a paragraph
+     * Search in a paragraph when is part of an answer and returns the index
      * @param paragraph
-     * @param j
+     * @param index
      * @return
      */
-    private int endLatexHeader(String paragraph, int j) {
-        String[] wordsParagraph = paragraph.split("\\s+");
-        int brackets = HowManyBrackets(wordsParagraph[j]);
-        ++j;
-        while (brackets > 0 && j < wordsParagraph.length) {
+    private int goToAnswerPart(String paragraph, int index) {
+        String[] wordsParagraph = paragraph.split("\\s+");//Split one paragraph to words
+        //Brackets are part of Latex Headers and questions
+        int brackets = HowManyBrackets(wordsParagraph[index]);
+        ++index;
+        while (brackets > 0 && index < wordsParagraph.length) {
             //check until you find an answer
-            brackets += HowManyBrackets(wordsParagraph[j]);
-            newWord = wordsParagraph[j];
-            humanizedText.append(newWord + " ");
-            ++j;
+            brackets += HowManyBrackets(wordsParagraph[index]);
+            ++index;
         }
-
+        return index;
     }
 }
