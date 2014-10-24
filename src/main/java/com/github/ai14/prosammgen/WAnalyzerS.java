@@ -122,8 +122,7 @@ public class WAnalyzerS{
 
   public double getMisspellingWordsProbabilities(){
         int numberOfWords = totalWords.length;
-	    int misspellingWords = 0;
-	    List<Integer>misspellWords = new ArrayList<>();;
+	int misspellingWords = 0;
         //for each word
         for (int j = 0; j < numberOfWords; j++) {
             //If it's end of sentence, remove the last character to check the synonyms.
