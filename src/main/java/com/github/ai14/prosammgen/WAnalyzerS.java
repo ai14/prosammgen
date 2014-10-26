@@ -23,11 +23,16 @@ public class WAnalyzerS {
     private String[] totalParagraphs;
     private String allWords;
     private List<String> words;
+    private final WordNet wordNet;
 
     private Random rand = new Random();
 
     private boolean sentenceLengthProbabilityCalculated = false;
     private double[] sentenceLengthProbabilites;
+
+    public WAnalyzerS(WordNet wordNet) {
+        this.wordNet = wordNet;
+    }
 
     /**
      * Given a text this calculates the probabilities for different metrics that describes the writing style of the text author.
@@ -197,6 +202,8 @@ public class WAnalyzerS {
     public double getMisspellingWordsProbabilities() throws IOException, ParseException {
         int numberOfWords = totalWords.length;
         int misspellingWords = 0;
+        WordNet wordNet;
+        wordNet = WordNet.load(Resources.getResource(App.class, "wordnet.dat"));
         //for each word
         for (int j = 0; j < numberOfWords; j++) {
             //If it's end of sentence, remove the last character to check the synonyms.
@@ -213,8 +220,7 @@ public class WAnalyzerS {
                 totalWords[j] = totalWords[j].toLowerCase();
             //Search for the correct word
             ImmutableList<String> synWord = ImmutableList.of(totalWords[j]);
-            WordNet wordNet;
-            wordNet = WordNet.load(Resources.getResource(App.class, "wordnet.dat"));
+
             ImmutableSet<String> synonym = wordNet.getSynonyms(synWord);
             if(synonym.size() > 1) correct = true;
 
