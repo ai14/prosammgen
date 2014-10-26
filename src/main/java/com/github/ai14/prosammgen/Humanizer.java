@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -19,12 +20,12 @@ public class Humanizer {
     private double misspellingProbability;
 
 
-    public Humanizer()throws IOException, ParseException {
+    public Humanizer(File example)throws IOException, ParseException {
         //Load words (both correct and misspelled ones)
         this.words =  Resources.readLines(Resources.getResource(App.class, "words"), StandardCharsets.UTF_8);
         this.closeCharacters =  Resources.readLines(Resources.getResource(App.class, "keyboardclosecharacters"), StandardCharsets.UTF_8);
         WAnalyzerS analyze = new WAnalyzerS();
-        analyze.analyze(Paths.get("example/previousreflectiondocument.in"));
+        analyze.analyze(example);
         this.misspellingProbability = analyze.getMisspellingWordsProbabilities(); //get misspelling probability from "previousreflectiondocument"
     }
 
