@@ -3,18 +3,14 @@ package com.github.ai14.prosammgen;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import com.google.common.io.CharSource;
 import com.google.common.io.Resources;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -29,7 +25,7 @@ public class WordNet {
   }
 
   public static WordNet load(URL dbUrl) throws IOException {
-    CharSource dataSource = Resources.asCharSource(dbUrl, StandardCharsets.ISO_8859_1);
+    CharSource dataSource = Resources.asCharSource(dbUrl, Charset.forName("ISO-8859-1"));
     ImmutableMultimap.Builder<String, String> synonymsBuilder = ImmutableMultimap.builder();
 
     BufferedReader br = null;
@@ -100,7 +96,7 @@ public class WordNet {
       if (synonyms != null) {
         // Found synonyms; add the word itself and make into a set for easier handling
         ImmutableSet<String> synonymSet =
-            ImmutableSet.<String>builder().add(word).addAll(synonyms).build();
+                ImmutableSet.<String>builder().add(word).addAll(synonyms).build();
 
         if (result == null) {
           // This is the first word, add all synonyms
@@ -119,7 +115,7 @@ public class WordNet {
     } else {
       // Return the synonyms properly capitalized
       return ImmutableSet.copyOf(
-          capitalize ? Iterables.transform(result, Capitalizer.INSTANCE) : result);
+              capitalize ? Iterables.transform(result, Capitalizer.INSTANCE) : result);
     }
   }
 

@@ -1,11 +1,9 @@
 package com.github.ai14.prosammgen;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 import java.util.LinkedList;
-import java.util.StringJoiner;
 
 public class Ngram {
   private final int order;
@@ -48,13 +46,15 @@ public class Ngram {
 
   @Override
   public String toString() {
-    StringJoiner str = new StringJoiner(" ");
+    StringBuilder sb = new StringBuilder();
+
     for (String s : ngram) {
       if (s.length() > 0) {
-        str.add(s);
+        sb.append(s);
+        sb.append(" ");
       }
     }
 
-    return str.toString();
+    return sb.toString();
   }
 }

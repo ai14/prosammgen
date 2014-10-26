@@ -11,8 +11,6 @@ import java.io.PrintWriter;
 import java.text.Normalizer;
 import java.text.ParseException;
 
-import static java.lang.ProcessBuilder.Redirect.INHERIT;
-
 public class App {
   public static WAnalyzerS analyzer;
 
@@ -71,7 +69,7 @@ public class App {
     // Parse questions.
     ImmutableList<String> questionList = ImmutableList.copyOf(Files.readLines(questions, Charsets.UTF_8));
 
-      WordNet wordNet = WordNet.load(Resources.getResource(App.class, "wordnet.dat"));
+    WordNet wordNet = WordNet.load(Resources.getResource(App.class, "wordnet.dat"));
 
     analyzer = new WAnalyzerS(wordNet);
     analyzer.analyze(previousReflectionDocument);
@@ -80,8 +78,8 @@ public class App {
     String report = new ReflectionDocumentGenerator(wordNet).generateReport(title, author, questionList, readingMaterial, wordCount, maxWebRequests);
 
 
-     Humanizer human = new Humanizer(wordNet, previousReflectionDocument);
-     report = human.textHumanizer(report);
+    Humanizer human = new Humanizer(wordNet, previousReflectionDocument);
+    report = human.textHumanizer(report);
     // Replace characters in accordance with the prosamm instructions. å -> a, é -> e, etc.
     String filename = Normalizer.normalize(author, Normalizer.Form.NFD).replaceAll(" ", "_").replaceAll("[^A-Za-z_]", "");
 
@@ -98,8 +96,7 @@ public class App {
 
     // Generate PDF from LaTeX file.
     Process p = new ProcessBuilder()
-            .redirectError(INHERIT)
-            .redirectOutput(INHERIT)
+            .redirectErrorStream(true)
             .command("xetex", "&xelatex", outputDirectory + "/" + filename + ".tex")
             .start();
     if (p.waitFor() == 0) System.out.println("Successfully generated a reflection document as PDF.");

@@ -3,22 +3,11 @@ package com.github.ai14.prosammgen;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.io.*;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static java.lang.ProcessBuilder.Redirect.INHERIT;
 
 public class ProjectGutenberg extends TextSource {
   public ProjectGutenberg(NLPModel nlp) throws IOException, InterruptedException {
