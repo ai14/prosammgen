@@ -1,5 +1,6 @@
 package com.github.ai14.prosammgen.textgen;
 
+import com.github.ai14.prosammgen.App;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
@@ -93,7 +94,8 @@ public class MarkovTextGenerator implements TextGenerator {
 
     List<String> toJoin = Lists.newArrayList();
 
-    int avgSentenceLength = 10; // TODO: later get this from statistics
+    int avgSentenceLength = 10; //App.analyzer.getSentenceLength();
+    //System.out.println("SENTENCE LENGTH: " + avgSentenceLength);
     int currentLength = 0;
     boolean sentenceEnded = false;
     while (!sentenceEnded) {

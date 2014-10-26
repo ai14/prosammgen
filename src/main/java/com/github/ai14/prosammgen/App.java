@@ -14,6 +14,8 @@ import java.text.ParseException;
 import static java.lang.ProcessBuilder.Redirect.INHERIT;
 
 public class App {
+  public static WAnalyzerS analyzer;
+
   public static void main(String[] args) throws IOException, ParseException, InterruptedException {
 
 
@@ -65,10 +67,14 @@ public class App {
 
     //TODO Sanitize input.
 
+
     // Parse questions.
     ImmutableList<String> questionList = ImmutableList.copyOf(Files.readLines(questions, Charsets.UTF_8));
 
       WordNet wordNet = WordNet.load(Resources.getResource(App.class, "wordnet.dat"));
+
+    analyzer = new WAnalyzerS(wordNet);
+    analyzer.analyze(previousReflectionDocument);
 
     // Generate a reflection document.
     String report = new ReflectionDocumentGenerator(wordNet).generateReport(title, author, questionList, readingMaterial, wordCount, maxWebRequests);
