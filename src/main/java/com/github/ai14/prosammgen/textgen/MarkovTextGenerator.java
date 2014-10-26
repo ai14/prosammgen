@@ -94,8 +94,7 @@ public class MarkovTextGenerator implements TextGenerator {
 
     List<String> toJoin = Lists.newArrayList();
 
-    int avgSentenceLength = 10; //App.analyzer.getSentenceLength();
-    //System.out.println("SENTENCE LENGTH: " + avgSentenceLength);
+    int avgSentenceLength = 16; //App.analyzer.getSentenceLength(); // TODO: seems to return max length too much
     int currentLength = 0;
     boolean sentenceEnded = false;
     while (!sentenceEnded) {
