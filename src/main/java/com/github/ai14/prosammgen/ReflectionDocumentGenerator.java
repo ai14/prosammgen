@@ -29,9 +29,10 @@ public final class ReflectionDocumentGenerator {
   private ImmutableMap<String, TextGenerator> generators;
   private ImmutableSet<TextSource> textSources;
 
-  public ReflectionDocumentGenerator() throws IOException, InterruptedException, ParseException {
+  public ReflectionDocumentGenerator(WordNet wordNet) throws IOException, InterruptedException, ParseException {
+      this.wordNet = wordNet;
 
-    // Load stop words.
+      // Load stop words.
     stopWords = ImmutableSet.copyOf(
         Resources.readLines(Resources.getResource(App.class, "stopwords"), Charsets.UTF_8));
 
@@ -48,9 +49,7 @@ public final class ReflectionDocumentGenerator {
         new ProjectGutenberg(nlp)
     );
     generators = TextGenerators.parseGrammar(
-        Resources.readLines(Resources.getResource(App.class, "grammar"), Charsets.UTF_8));
-
-    wordNet = WordNet.load(Resources.getResource(App.class, "wordnet.dat"));
+            Resources.readLines(Resources.getResource(App.class, "grammar"), Charsets.UTF_8));
   }
 
   public String generateReport(String title, String author, ImmutableList<String> questions,
