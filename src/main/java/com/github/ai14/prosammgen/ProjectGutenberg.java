@@ -9,6 +9,7 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+//TODO wget relevant books directly instead of relying on a mirrored resource.
 public class ProjectGutenberg extends TextSource {
   public ProjectGutenberg(NLPModel nlp) throws IOException, InterruptedException {
     super(
