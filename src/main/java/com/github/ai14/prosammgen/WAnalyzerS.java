@@ -79,10 +79,12 @@ public class WAnalyzerS {
             if(words.length > max) max = words.length;
             sentenceSize.add(words.length);
         }
+        System.out.println(sentenceSize);
         Integer[] total = new Integer[max];
         for (int i = 0; i < sentenceSize.size(); i++) {
             //split sentences into words
             int size = sentenceSize.get(i);
+            System.out.println(size);
             if (total[size-1]==null) total[size-1] =1;
             else total[size-1]++;
 
@@ -91,9 +93,8 @@ public class WAnalyzerS {
         //Calculating probabilities
         for (int j = 0; j < probabilities.length; j++) {
             if(total[j] == null ) probabilities[j] = 0;
-            else probabilities[j] = total[j] / numberOfSentences;
+            else probabilities[j] = (double)total[j] / numberOfSentences;
         }
-
         sentenceLengthProbabilityCalculated = true;
         sentenceLengthProbabilites = probabilities;
 
@@ -149,7 +150,7 @@ public class WAnalyzerS {
         double[] probabilities = new double[max];
         for (int j = 0; j < probabilities.length; j++) {
             if(total[j] == null ) probabilities[j] = 0;
-            else probabilities[j] = wordSize.get(j) / textSize;
+            else probabilities[j] =  (double)wordSize.get(j) / textSize;
         }
         return probabilities;
     }
@@ -184,7 +185,7 @@ public class WAnalyzerS {
         double[] probabilities = new double[max];
         for (int j = 0; j < probabilities.length; j++) {
             if(total[j] == null ) probabilities[j] = 0;
-            probabilities[j] = sentencesParagraph.get(j) / numberOfParagraph;
+            probabilities[j] =  (double)sentencesParagraph.get(j) / numberOfParagraph;
         }
         return probabilities;
 
