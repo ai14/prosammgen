@@ -1,6 +1,7 @@
 package com.github.ai14.prosammgen;
 
-import com.google.common.base.CharMatcher;
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
@@ -31,7 +32,10 @@ public class WordNet {
     CharSource dataSource = Resources.asCharSource(dbUrl, StandardCharsets.ISO_8859_1);
     ImmutableMultimap.Builder<String, String> synonymsBuilder = ImmutableMultimap.builder();
 
-    try (BufferedReader br = dataSource.openBufferedStream()) {
+    BufferedReader br = null;
+    try {
+      br = dataSource.openBufferedStream();
+
       if (!"ISO8859-1".equals(br.readLine())) {
         throw new RuntimeException("Unexpected synonym DB encoding");
       }
@@ -73,6 +77,10 @@ public class WordNet {
           }
         }
       }
+    } finally {
+      if (br != null) {
+        br.close();
+      }
     }
 
     return new WordNet(synonymsBuilder.build());
@@ -83,7 +91,7 @@ public class WordNet {
    */
   public ImmutableSet<String> getSynonyms(ImmutableList<String> words) {
     // Capitalize output if all input words are capitalized
-    boolean capitalize = Iterables.all(words, w -> Character.isUpperCase(w.charAt(0)));
+    boolean capitalize = Iterables.all(words, IsCapitalized.INSTANCE);
 
     Set<String> result = null;
     for (String word : words) {
@@ -111,9 +119,25 @@ public class WordNet {
     } else {
       // Return the synonyms properly capitalized
       return ImmutableSet.copyOf(
-          Iterables.transform(
-              result,
-              (String w) -> capitalize ? Character.toUpperCase(w.charAt(0)) + w.substring(1) : w));
+          capitalize ? Iterables.transform(result, Capitalizer.INSTANCE) : result);
+    }
+  }
+
+  private enum IsCapitalized implements Predicate<String> {
+    INSTANCE;
+
+    @Override
+    public boolean apply(String input) {
+      return Character.isUpperCase(input.charAt(0));
+    }
+  }
+
+  private enum Capitalizer implements Function<String, String> {
+    INSTANCE;
+
+    @Override
+    public String apply(String input) {
+      return Character.toUpperCase(input.charAt(0)) + input.substring(1);
     }
   }
 }

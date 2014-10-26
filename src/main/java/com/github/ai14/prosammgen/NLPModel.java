@@ -39,17 +39,34 @@ public class NLPModel {
     final TokenizerModel tok;
     final POSModel pos;
 
-    try (InputStream is = sentDb.openStream()) {
+    InputStream is = null;
+    try {
+      is = sentDb.openStream();
       sent = new SentenceModel(is);
+    } finally {
+      if (is != null) {
+        is.close();
+      }
     }
 
-    try (InputStream is = tokenDb.openStream()) {
+    try {
+      is = tokenDb.openStream();
       tok = new TokenizerModel(is);
+    } finally {
+      if (is != null) {
+        is.close();
+      }
     }
 
-    try (InputStream is = posDb.openStream()) {
+    try {
+      is = posDb.openStream();
       pos = new POSModel(is);
+    } finally {
+      if (is != null) {
+        is.close();
+      }
     }
+
     return new NLPModel(sent, tok, pos);
   }
 }

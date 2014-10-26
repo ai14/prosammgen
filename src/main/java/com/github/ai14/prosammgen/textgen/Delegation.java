@@ -1,7 +1,5 @@
 package com.github.ai14.prosammgen.textgen;
 
-import com.google.common.base.MoreObjects;
-
 public class Delegation implements TextGenerator {
 
   private final String production;

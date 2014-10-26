@@ -1,5 +1,8 @@
 package com.github.ai14.prosammgen;
 
+import com.google.common.base.Charsets;
+import com.google.common.base.Function;
+import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -12,13 +15,11 @@ import com.github.ai14.prosammgen.textgen.SynonymGenerator;
 import com.github.ai14.prosammgen.textgen.TextGenerator;
 import com.github.ai14.prosammgen.textgen.TextGenerators;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.Random;
-import java.util.function.Function;
+
 
 public final class ReflectionDocumentGenerator {
 
@@ -32,7 +33,7 @@ public final class ReflectionDocumentGenerator {
 
     // Load stop words.
     stopWords = ImmutableSet.copyOf(
-        Resources.readLines(Resources.getResource(App.class, "stopwords"), StandardCharsets.UTF_8));
+        Resources.readLines(Resources.getResource(App.class, "stopwords"), Charsets.UTF_8));
 
     // Load NLP.
     nlp =
@@ -47,13 +48,13 @@ public final class ReflectionDocumentGenerator {
         new ProjectGutenberg(nlp)
     );
     generators = TextGenerators.parseGrammar(
-        Resources.readLines(Resources.getResource(App.class, "grammar"), StandardCharsets.UTF_8));
+        Resources.readLines(Resources.getResource(App.class, "grammar"), Charsets.UTF_8));
 
     wordNet = WordNet.load(Resources.getResource(App.class, "wordnet.dat"));
   }
 
   public String generateReport(String title, String author, ImmutableList<String> questions,
-                               Path readingMaterial, int wordCount, int maxWebRequests)
+                               File readingMaterial, int wordCount, int maxWebRequests)
       throws IOException {
     StringBuilder report = new StringBuilder();
     report.append("\\documentclass{article}\\begin{document}\\title{")
@@ -69,7 +70,7 @@ public final class ReflectionDocumentGenerator {
       report.append("\\section{").append(question).append("}");
 
       // Setup a new Markov chain for the current question.
-      MarkovTrainer markovTrainer = new MarkovTrainer();
+      final MarkovTrainer markovTrainer = new MarkovTrainer();
 
       // Create keyword generator for the current question and determine keywords, including the longest.
       KeywordGenerator keywordGenerator = KeywordGenerator.withPOSParsing(nlp, stopWords, question);
@@ -78,25 +79,35 @@ public final class ReflectionDocumentGenerator {
       // Get training data for the question from text sources.
       long s = 0;
       for (TextSource ts : textSources) {
-        ImmutableSet<Path> texts = ts.getTexts(searchTerms, maxWebRequests);
-        for (Path p : texts) {
-          s += Files.size(p);
+        ImmutableSet<File> texts = ts.getTexts(searchTerms, maxWebRequests);
+        for (File p : texts) {
+          s += p.length();
         }
         markovTrainer.train(texts);
       }
 
       // Calculate the ratio between given reading material and additional training texts.
-      double ratio = Files.size(readingMaterial) / (double) s;
+      double ratio = readingMaterial.length() / (double) s;
       int weight = (int) (0.5 / ratio);
 
       // aim for reading material to be 50% of wiki articles TODO Document properly.
       markovTrainer.train(weight, ImmutableSet.of(readingMaterial));
 
       // Define grammar macros for the current question.
-      ImmutableMap.Builder<String, Function<ImmutableList<String>, TextGenerator>> macroBuilder = ImmutableMap.builder();
-      macroBuilder.put("MARKOV", n -> new MarkovTextGenerator(markovTrainer, Integer.parseInt(n.get(0))));
-      macroBuilder.put("SYNONYM", words -> new SynonymGenerator(wordNet, words));
-      macroBuilder.put("KEYWORD", x -> keywordGenerator);
+      ImmutableMap.Builder<String, Function<? super ImmutableList<String>, ? extends TextGenerator>> macroBuilder = ImmutableMap.builder();
+      macroBuilder.put("MARKOV", new Function<ImmutableList<String>, TextGenerator>() {
+        @Override
+        public TextGenerator apply(ImmutableList<String> n) {
+          return new MarkovTextGenerator(markovTrainer, Integer.parseInt(n.get(0)));
+        }
+      });
+      macroBuilder.put("SYNONYM", new Function<ImmutableList<String>, TextGenerator>() {
+        @Override
+        public TextGenerator apply(ImmutableList<String> words) {
+          return new SynonymGenerator(wordNet, words);
+        }
+      });
+      macroBuilder.put("KEYWORD", Functions.constant(keywordGenerator));
 
       // Expand grammar and generate some text.
       int remaining = wordCount / questions.size();
@@ -155,11 +166,11 @@ public final class ReflectionDocumentGenerator {
 
     private final Random random = new Random();
     private final ImmutableMap<String, TextGenerator> generators;
-    private final ImmutableMap<String, Function<ImmutableList<String>, TextGenerator>> macros;
+    private final ImmutableMap<String, Function<? super ImmutableList<String>, ? extends TextGenerator>> macros;
     private final StringBuilder builder;
 
     private SimpleContext(ImmutableMap<String, TextGenerator> generators,
-                          ImmutableMap<String, Function<ImmutableList<String>, TextGenerator>> macros,
+                          ImmutableMap<String, Function<? super ImmutableList<String>, ? extends TextGenerator>> macros,
                           StringBuilder builder) {
       this.generators = generators;
       this.macros = macros;
@@ -177,7 +188,7 @@ public final class ReflectionDocumentGenerator {
     }
 
     @Override
-    public Function<ImmutableList<String>, TextGenerator> getMacro(String name) {
+    public Function<? super ImmutableList<String>, ? extends TextGenerator> getMacro(String name) {
       return macros.get(name);
     }
 

@@ -1,9 +1,13 @@
 package com.github.ai14.prosammgen.textgen;
 
-import com.github.ai14.prosammgen.NLPModel;
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
+
+import com.github.ai14.prosammgen.NLPModel;
+
 import opennlp.tools.postag.POSTagger;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.sentdetect.SentenceDetector;
@@ -22,9 +26,9 @@ public class KeywordGenerator implements TextGenerator {
   }
 
   public static KeywordGenerator withPOSParsing(NLPModel nlpModel,
-                                                ImmutableSet<String> stopWords,
+                                                final ImmutableSet<String> stopWords,
                                                 String body)
-          throws IOException {
+      throws IOException {
 
     SentenceDetector sentenceDetector = new SentenceDetectorME(nlpModel.getSentenceModel());
     String[] sentences = sentenceDetector.sentDetect(body);
@@ -41,23 +45,20 @@ public class KeywordGenerator implements TextGenerator {
       StringBuilder wordBuilder = null;
 
       for (int i = 0; i < tokens.length; i++) {
-        switch (tags[i]) {
-          case "NN":
-          case "NNS":
-          case "NNP":
-          case "NNPS":
-            if (wordBuilder == null) {
-              wordBuilder = new StringBuilder();
-            } else {
-              wordBuilder.append(' ');
-            }
-            wordBuilder.append(tokens[i]);
-            break;
-          default:
-            if (wordBuilder != null) {
-              resultBuilder.add(wordBuilder.toString());
-              wordBuilder = null;
-            }
+        if ("NN".equals(tags[i]) || "NNS".equals(tags[i]) || "NNP".equals(tags[i]) ||
+            "NNPS".equals(tags[i])) {
+          if (wordBuilder == null) {
+            wordBuilder = new StringBuilder();
+          } else {
+            wordBuilder.append(' ');
+          }
+          wordBuilder.append(tokens[i]);
+
+        } else {
+          if (wordBuilder != null) {
+            resultBuilder.add(wordBuilder.toString());
+            wordBuilder = null;
+          }
         }
       }
 
@@ -70,19 +71,54 @@ public class KeywordGenerator implements TextGenerator {
     System.err.println("Keywords are: " + keywords); //TODO Remove.
 
     ImmutableSet<String> filteredKeywords =
-            ImmutableSet.copyOf(Iterables.filter(keywords,
-                    (String word) ->
-                            Iterables.any(stopWords, word::contains)));
+        ImmutableSet.copyOf(Iterables.filter(keywords, new AnyStringContains(stopWords)));
 
     return new KeywordGenerator(filteredKeywords);
   }
 
   @Override
   public void generateText(Context context) {
-    context.getBuilder().append(Ordering.natural().onResultOf(String::length).max(words));
+    context.getBuilder().append(Ordering.natural().onResultOf(LengthGetter.INSTANCE).max(words));
   }
 
   public ImmutableSet<String> getWords() {
     return words;
+  }
+
+  private static class StringContains implements Predicate<String> {
+
+    private final String string;
+
+    public StringContains(String string) {
+      this.string = string;
+    }
+
+    @Override
+    public boolean apply(String input) {
+      return string.contains(input);
+    }
+  }
+
+  private static class AnyStringContains implements Predicate<String> {
+
+    private final ImmutableSet<String> strings;
+
+    public AnyStringContains(ImmutableSet<String> strings) {
+      this.strings = strings;
+    }
+
+    @Override
+    public boolean apply(final String input) {
+      return Iterables.any(strings, new StringContains(input));
+    }
+  }
+
+  private enum LengthGetter implements Function<String, Integer> {
+    INSTANCE;
+
+    @Override
+    public Integer apply(String input) {
+      return input.length();
+    }
   }
 }

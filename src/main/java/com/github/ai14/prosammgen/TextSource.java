@@ -3,29 +3,28 @@ package com.github.ai14.prosammgen;
 import com.google.common.collect.ImmutableSet;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class TextSource {
   private static final Pattern paragraphPattern = Pattern.compile("^([A-Z]\\w* ([\\w(),:'‘’\\-%/]* ){2,}([\\w(),:'‘’-]*[.,!?]) ){2,}", Pattern.MULTILINE);
   protected final Pattern contentPattern;
-  protected final Path cache;
+  protected final File cache;
   protected final SentenceDetectorME sentenceDetector;
 
-  public TextSource(NLPModel nlp, Path cache, Pattern contentPattern) throws IOException {
+  public TextSource(NLPModel nlp, File cache, Pattern contentPattern) throws IOException {
     this.contentPattern = contentPattern;
     this.sentenceDetector = new SentenceDetectorME(nlp.getSentenceModel());
     this.cache = cache;
-    if (!Files.exists(cache)) Files.createDirectories(cache);
+    if (!cache.exists()) cache.mkdirs();
   }
 
   /**
    * Return a set of paths containing running texts relevant to the search terms.
    */
-  public abstract ImmutableSet<Path> getTexts(ImmutableSet<String> searchTerms, int resultsLimit) throws IOException;
+  public abstract ImmutableSet<File> getTexts(ImmutableSet<String> searchTerms, int resultsLimit) throws IOException;
 
 
   /**

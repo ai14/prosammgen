@@ -1,10 +1,13 @@
 package com.github.ai14.prosammgen;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.io.Files;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 
 public class MarkovTrainer {
@@ -15,20 +18,20 @@ public class MarkovTrainer {
   private List<Ngram> sentenceStarts;
 
   public MarkovTrainer() {
-    nextWordCounter = new HashMap<>();
-    wordToNgram = new HashMap<>();
-    sentenceStarts = new ArrayList<>();
+    nextWordCounter = Maps.newHashMap();
+    wordToNgram = Maps.newHashMap();
+    sentenceStarts = Lists.newArrayList();
   }
 
-  public void train(ImmutableSet<Path> files) throws IOException {
+  public void train(ImmutableSet<File> files) throws IOException {
     train(1, files);
   }
 
-  public void train(int weight, ImmutableSet<Path> files) throws IOException {
-    for (Path file : files) {
+  public void train(int weight, ImmutableSet<File> files) throws IOException {
+    for (File file : files) {
       Ngram ngram = new Ngram(markovOrder);
       String wordBeforeNgram = "";
-      for (String line : Files.readAllLines(file)) {
+      for (String line : Files.readLines(file, Charsets.UTF_8)) {
         String[] words = line.split("(\\s+)");
 
         for (int i = 0; i < words.length; i++) {
@@ -42,7 +45,7 @@ public class MarkovTrainer {
           }
 
           if (!nextWordCounter.containsKey(ns)) {
-            nextWordCounter.put(ns, new HashMap<>());
+            nextWordCounter.put(ns, Maps.<String, Integer>newHashMap());
           }
 
           if (!nextWordCounter.get(ns).containsKey(nw)) {
@@ -74,7 +77,7 @@ public class MarkovTrainer {
         ngram.pushWord(followingWord);
 
         if (!wordToNgram.containsKey(word)) {
-          wordToNgram.put(word, new ArrayList<>());
+          wordToNgram.put(word, Lists.<Ngram>newArrayList());
         }
 
         wordToNgram.get(word).add(ngram);
@@ -87,13 +90,13 @@ public class MarkovTrainer {
   }
 
   public Map<String, ArrayList<WordProbability>> getMarkovChain() {
-    Map<String, ArrayList<WordProbability>> markovChain = new HashMap<>();
+    Map<String, ArrayList<WordProbability>> markovChain = Maps.newHashMap();
 
     for (Map.Entry<String, Map<String, Integer>> me : nextWordCounter.entrySet()) {
       String word = me.getKey();
       Map<String, Integer> wordCounts = me.getValue();
 
-      markovChain.put(word, new ArrayList<>(wordCounts.size()));
+      markovChain.put(word, Lists.<WordProbability>newArrayListWithCapacity(wordCounts.size()));
       ArrayList<WordProbability> probabilities = markovChain.get(word);
 
       int n = 0;

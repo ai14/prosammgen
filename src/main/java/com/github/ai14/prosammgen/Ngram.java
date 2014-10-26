@@ -2,6 +2,7 @@ package com.github.ai14.prosammgen;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 
 import java.util.LinkedList;
 import java.util.StringJoiner;
@@ -12,7 +13,7 @@ public class Ngram {
 
   public Ngram(int order) {
     this.order = order;
-    ngram = new LinkedList<>();
+    ngram = Lists.newLinkedList();
 
     for (int i = 0; i < order; i++) {
       ngram.add("");
@@ -21,10 +22,7 @@ public class Ngram {
 
   public Ngram(Ngram ngramToCopy) {
     this.order = ngramToCopy.order;
-    this.ngram = new LinkedList<>();
-    for (String s : ngramToCopy.ngram) {
-      this.ngram.add(s);
-    }
+    this.ngram = Lists.newLinkedList(ngramToCopy.ngram);
   }
 
   public void pushWord(String word) {

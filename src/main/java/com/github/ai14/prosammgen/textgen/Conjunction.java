@@ -1,7 +1,6 @@
 package com.github.ai14.prosammgen.textgen;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 public class Conjunction implements TextGenerator {

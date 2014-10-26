@@ -1,9 +1,9 @@
 package com.github.ai14.prosammgen.textgen;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 
 import java.util.Random;
-import java.util.function.Function;
 
 public interface TextGenerator {
 
@@ -15,7 +15,7 @@ public interface TextGenerator {
 
     TextGenerator getProduction(String name);
 
-    Function<ImmutableList<String>, TextGenerator> getMacro(String name);
+    Function<? super ImmutableList<String>, ? extends TextGenerator> getMacro(String name);
 
     StringBuilder getBuilder();
   }
