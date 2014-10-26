@@ -6,10 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.nio.charset.StandardCharsets;
@@ -20,11 +17,11 @@ public class Humanizer {
     private double misspellingProbability;
 
 
-    public Humanizer(File example)throws IOException, ParseException {
+    public Humanizer(WordNet wordNet, File example)throws IOException, ParseException {
         //Load words (both correct and misspelled ones)
         this.words =  Resources.readLines(Resources.getResource(App.class, "words"), StandardCharsets.UTF_8);
         this.closeCharacters =  Resources.readLines(Resources.getResource(App.class, "keyboardclosecharacters"), StandardCharsets.UTF_8);
-        WAnalyzerS analyze = new WAnalyzerS();
+        WAnalyzerS analyze = new WAnalyzerS(wordNet);
         analyze.analyze(example);
         this.misspellingProbability = analyze.getMisspellingWordsProbabilities(); //get misspelling probability from "previousreflectiondocument"
     }
