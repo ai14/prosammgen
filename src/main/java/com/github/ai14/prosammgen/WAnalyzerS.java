@@ -1,42 +1,49 @@
 package com.github.ai14.prosammgen;
 
+import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import com.google.common.io.Files;
 import com.google.common.io.Resources;
 
+import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-
 public class WAnalyzerS {
 
-    private Path text;
+    private File text;
     private String[] totalWords;
     private String[] totalSentences;
     private String[] totalParagraphs;
     private String allWords;
     private List<String> words;
+    private final WordNet wordNet;
 
     private Random rand = new Random();
 
     private boolean sentenceLengthProbabilityCalculated = false;
     private double[] sentenceLengthProbabilites;
 
+    public WAnalyzerS(WordNet wordNet) {
+        this.wordNet = wordNet;
+    }
+
     /**
      * Given a text this calculates the probabilities for different metrics that describes the writing style of the text author.
      *
      * @param text
      */
-    public void analyze(Path text) {
+    public void analyze(File text) {
         try {
-            this.words = Resources.readLines(Resources.getResource(App.class, "words"), StandardCharsets.UTF_8);
+            //this.words = Resources.readLines(Resources.getResource(App.class, "words"), StandardCharsets.UTF_8);
             this.text = text;
-            List<String> allText = Files.readAllLines(text);
+            List<String> allText =  Files.readLines(this.text, Charsets.UTF_8);
             allWords = "";
             for(String singleWord : allText){ this.allWords += singleWord + " ";}
             this.totalWords = this.allWords.split("\\s+"); //splitting into words
@@ -190,9 +197,13 @@ public class WAnalyzerS {
    * @return
    */
 
-  public double getMisspellingWordsProbabilities(){
+
+
+    public double getMisspellingWordsProbabilities() throws IOException, ParseException {
         int numberOfWords = totalWords.length;
-	int misspellingWords = 0;
+        int misspellingWords = 0;
+        WordNet wordNet;
+        wordNet = WordNet.load(Resources.getResource(App.class, "wordnet.dat"));
         //for each word
         for (int j = 0; j < numberOfWords; j++) {
             //If it's end of sentence, remove the last character to check the synonyms.
@@ -205,27 +216,23 @@ public class WAnalyzerS {
             //Diferent characters ’ and ' that are used for the same
             if(totalWords[j].contains("’")) totalWords[j] = totalWords[j].replace("’","'");
             boolean correct = false;
+            if (totalWords[j].length() > 1 || (totalWords[j].length() == 1 && !totalWords[j].equals("I")))
+                totalWords[j] = totalWords[j].toLowerCase();
             //Search for the correct word
-            for(int i = 0; i < words.size(); ++i){
-                //The checking part distinguish between capital letters, switching to LowerCase letters except "I"
-                if (totalWords[j].length() > 1 || (totalWords[j].length() == 1 && !totalWords[j].equals("I")))
-                    totalWords[j] = totalWords[j].toLowerCase();
-                //found the word
-                if (words.equals(totalWords[j])) {
-                    //Found the word no need to keep looking
-                    correct = true;
-                    break;
-                }
-            }
+            ImmutableList<String> synWord = ImmutableList.of(totalWords[j]);
+
+            ImmutableSet<String> synonym = wordNet.getSynonyms(synWord);
+            if(synonym.size() > 1) correct = true;
+
             //if we don't find the word, means is misspelled
             if (!correct){
                 ++misspellingWords;
 
             }
         }
-	    //calculate probability
-      double probability = (double)misspellingWords/ totalWords.length;
-      return probability;
-  }
+        //calculate probability
+        double probability = (double)misspellingWords/ totalWords.length;
+        return probability;
+    }
     
 }

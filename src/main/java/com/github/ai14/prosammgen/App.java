@@ -2,8 +2,8 @@ package com.github.ai14.prosammgen;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
-import com.google.common.io.CharStreams;
 import com.google.common.io.Files;
+import com.google.common.io.Resources;
 
 import java.io.File;
 import java.io.IOException;
@@ -68,10 +68,13 @@ public class App {
     // Parse questions.
     ImmutableList<String> questionList = ImmutableList.copyOf(Files.readLines(questions, Charsets.UTF_8));
 
-    // Generate a reflection document.
-    String report = new ReflectionDocumentGenerator().generateReport(title, author, questionList, readingMaterial, wordCount, maxWebRequests);
+      WordNet wordNet = WordNet.load(Resources.getResource(App.class, "wordnet.dat"));
 
-     Humanizer human = new Humanizer();
+    // Generate a reflection document.
+    String report = new ReflectionDocumentGenerator(wordNet).generateReport(title, author, questionList, readingMaterial, wordCount, maxWebRequests);
+
+
+     Humanizer human = new Humanizer(wordNet, previousReflectionDocument);
      report = human.textHumanizer(report);
     // Replace characters in accordance with the prosamm instructions. å -> a, é -> e, etc.
     String filename = Normalizer.normalize(author, Normalizer.Form.NFD).replaceAll(" ", "_").replaceAll("[^A-Za-z_]", "");
