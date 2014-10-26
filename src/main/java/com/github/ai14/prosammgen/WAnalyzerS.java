@@ -1,5 +1,6 @@
 package com.github.ai14.prosammgen;
 
+import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 
 import java.io.IOException;
@@ -46,7 +47,7 @@ public class WAnalyzerS{
 
   public double[] getSentenceLengthProbabilities() {
 	    int numberOfSentences = totalSentences.length;
-		List<Integer>sentenceSize = new ArrayList<>();
+		List<Integer>sentenceSize = Lists.newArrayList();
         for (int i = 0; i < numberOfSentences; i++) {
             //split sentences into words
             String[] words = totalSentences[i].split("\\s+");
@@ -69,7 +70,7 @@ public class WAnalyzerS{
 
   public double[] getWordLengthProbabilities(){
 	    int textSize = 0;
-	    List<Integer>wordSize = new ArrayList<>();
+	    List<Integer>wordSize = Lists.newArrayList();
         textSize = totalWords.length;
         for (int i = 0; i < textSize; i++) {
           //increasing the number of characters with words[i].length
@@ -94,7 +95,7 @@ public class WAnalyzerS{
   public double[] getSentencesPerParagraphProbabilities(){
 
         int numberOfParagraph = totalParagraphs.length;
-        List<Integer>sentencesParagraph = new ArrayList<>();
+        List<Integer>sentencesParagraph = Lists.newArrayList();
         //each paragraph
         for (int i = 0; i < numberOfParagraph; i++) {
             //Split into sentences every paragraph

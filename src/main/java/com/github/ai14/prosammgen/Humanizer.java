@@ -1,5 +1,6 @@
 package com.github.ai14.prosammgen;
 
+import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 import org.apache.commons.lang3.StringUtils;
 
@@ -55,7 +56,7 @@ public class Humanizer {
                 if (j >= numberOfWords) break;
                 String newWord = wordsParagraph[j];
                 int misspellingRate = (int) (misspellingProbability * numberOfWords); //calculate how often we want to misspell a word
-                List<String> possibleMisspellingWords = new ArrayList<>();
+                List<String> possibleMisspellingWords;
                 if ((((j % misspellingRate)) == 0)) { //Check if it should misspell a word according to the calculated probability
                     possibleMisspellingWords = checkForPossibleMisspellingWords(wordsParagraph[j]);//Check for possible misspelled words.
                     if (possibleMisspellingWords.isEmpty()) { //if there is no possible misspelled word (in our file "words")
@@ -100,7 +101,7 @@ public class Humanizer {
     public   List<String> checkForPossibleMisspellingWords(String correctWord){
         String[] punctuationMarks = checkForPunctuationMarks(correctWord);//take away the punctuation marks
         correctWord = punctuationMarks[0];
-        List<String> possibleMisspellingWords = new ArrayList<>();
+        List<String> possibleMisspellingWords = Lists.newArrayList();
         for(int i = 0; i < words.size(); ++i){ //Look for a possible misspelled word
             if((words.get(i)).equals("$"+correctWord)){//correct words have a "$" on the beginning in our file "words"
                 ++i;
@@ -133,7 +134,7 @@ public class Humanizer {
         char characterToSwitch = correctWord.charAt(rand);//Choose the character to switch randomly
         boolean isUpperCase = Character.isUpperCase(characterToSwitch);
         if(isUpperCase)characterToSwitch = Character.toLowerCase(characterToSwitch);//writing character to lower case (if needed)
-        List<String> possibleSwitchingCharacter = new ArrayList<>();
+        List<String> possibleSwitchingCharacter = Lists.newArrayList();
         for(int i = 0; i < closeCharacters.size(); ++i){
             if(closeCharacters.get(i).equals("$" + characterToSwitch)){//Search for the possible characters
                 String stringPossibility;

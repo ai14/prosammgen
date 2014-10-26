@@ -1,12 +1,13 @@
 package com.github.ai14.prosammgen;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
+import com.google.common.io.CharStreams;
+import com.google.common.io.Files;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.Normalizer;
 import java.text.ParseException;
 
@@ -19,33 +20,24 @@ public class App {
     // Get input.
     int wordCount = 500, maxWebRequests = 10;
     String title = null, author = null, outputDirectory = ".";
-    Path previousReflectionDocument = null, readingMaterial = null, questions = null;
+    File previousReflectionDocument = null, readingMaterial = null, questions = null;
     for (int i = 0; i < args.length; i++) {
-      switch (args[i]) {
-        case "-t":
-          title = args[i + 1].replaceAll("^(\"|\')|(\"|\')$", "");
-          break;
-        case "-a":
-          author = args[i + 1].replaceAll("^(\"|\')|(\"|\')$", "");
-          break;
-        case "-w":
-          wordCount = Integer.parseInt(args[i + 1]);
-          break;
-        case "-p":
-          previousReflectionDocument = Paths.get(args[i + 1]);
-          break;
-        case "-r":
-          readingMaterial = Paths.get(args[i + 1]);
-          break;
-        case "-q":
-          questions = Paths.get(args[i + 1]);
-          break;
-        case "-o":
-          outputDirectory = args[i + 1];
-          break;
-        case "-m":
-          maxWebRequests = Integer.parseInt(args[i + 1]);
-          break;
+      if (args[i].equals("-t")) {
+        title = args[i + 1].replaceAll("^(\"|\')|(\"|\')$", "");
+      } else if (args[i].equals("-a")) {
+        author = args[i + 1].replaceAll("^(\"|\')|(\"|\')$", "");
+      } else if (args[i].equals("-w")) {
+        wordCount = Integer.parseInt(args[i + 1]);
+      } else if (args[i].equals("-p")) {
+        previousReflectionDocument = new File(args[i + 1]);
+      } else if (args[i].equals("-r")) {
+        readingMaterial = new File(args[i + 1]);
+      } else if (args[i].equals("-q")) {
+        questions = new File(args[i + 1]);
+      } else if (args[i].equals("-o")) {
+        outputDirectory = args[i + 1];
+      } else if (args[i].equals("-m")) {
+        maxWebRequests = Integer.parseInt(args[i + 1]);
       }
     }
 
@@ -74,7 +66,7 @@ public class App {
     //TODO Sanitize input.
 
     // Parse questions.
-    ImmutableList<String> questionList = ImmutableList.copyOf(Files.readAllLines(questions));
+    ImmutableList<String> questionList = ImmutableList.copyOf(Files.readLines(questions, Charsets.UTF_8));
 
     // Generate a reflection document.
     String report = new ReflectionDocumentGenerator().generateReport(title, author, questionList, readingMaterial, wordCount, maxWebRequests);
@@ -85,8 +77,14 @@ public class App {
     String filename = Normalizer.normalize(author, Normalizer.Form.NFD).replaceAll(" ", "_").replaceAll("[^A-Za-z_]", "");
 
     // Write LaTeX output to file.
-    try (PrintWriter out = new PrintWriter(outputDirectory + "/" + filename + ".tex")) {
+    PrintWriter out = null;
+    try {
+      out = new PrintWriter(outputDirectory + "/" + filename + ".tex");
       out.write(report);
+    } finally {
+      if (out != null) {
+        out.close();
+      }
     }
 
     // Generate PDF from LaTeX file.

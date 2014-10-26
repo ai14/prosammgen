@@ -1,8 +1,10 @@
 package com.github.ai14.prosammgen;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -19,39 +21,31 @@ import java.util.regex.Pattern;
 import static java.lang.ProcessBuilder.Redirect.INHERIT;
 
 public class ProjectGutenberg extends TextSource {
-  private Path gutenbergMirror = Paths.get("res/gutenberg");
-
   public ProjectGutenberg(NLPModel nlp) throws IOException, InterruptedException {
     super(
             nlp,
-            Paths.get("cache/gutenberg"),
+            new File("cache/gutenberg"),
             Pattern.compile("(\\*\\*\\* START OF THIS PROJECT GUTENBERG EBOOK [\\w\\s]+ \\*\\*\\*)(.*?)(\\*\\*\\* END OF THIS PROJECT GUTENBERG EBOOK [\\w\\s]+ \\*\\*\\*)", Pattern.DOTALL)
     );
-    if (!Files.exists(gutenbergMirror)) Files.createDirectories(gutenbergMirror);
-
-//    Process p = new ProcessBuilder()
-//            .redirectError(INHERIT)
-//            .redirectOutput(INHERIT)
-//            .command("rsync", "-av", "--del", "--include='*/'", "--include='*.txt'", "--exclude='*'", "ftp@ftp.ibiblio.org::gutenberg", gutenbergMirror.toString())
-//            .start();
-//    p.waitFor();
-
   }
 
   @Override
-  public ImmutableSet<Path> getTexts(ImmutableSet<String> searchTerms, int resultsLimit) throws IOException {
-    List<Path> results = new ArrayList<>();
+  public ImmutableSet<File> getTexts(ImmutableSet<String> searchTerms, int resultsLimit) throws IOException {
+    List<File> results = Lists.newArrayList();
 
     //TODO Lookup paths to relevant books with an index. For now, just go through all of the data (which will take a really really long time...).
 
-    for (Path book : getBooks()) {
-      Path p = cache.resolve(book.getFileName());
+    for (File book : getBooks()) {
+      File p = new File(cache, book.getName());
 
       // Skip parsing book if it's been done before.
-      if (Files.exists(p)) continue;
-
-      try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(p.toString())))) {
-        try (Scanner s = new Scanner(book.toString())) {
+      if (p.exists()) continue;
+      PrintWriter out = null;
+      try {
+        out = new PrintWriter(new BufferedWriter(new FileWriter(p.toString())));
+        Scanner s = null;
+        try {
+          s = new Scanner(book.toString());
 
           // Read file into a huge string. // TODO Beware of huge books.
           s.useDelimiter("\\Z");
@@ -74,6 +68,14 @@ public class ProjectGutenberg extends TextSource {
           Matcher m = contentPattern.matcher(response);
           if (!m.find()) continue;
           out.println(extractRunningText(m.group(2)));
+        } finally {
+          if (s != null) {
+            s.close();
+          }
+        }
+      } finally {
+        if (out != null) {
+          out.close();
         }
       }
 
@@ -83,17 +85,15 @@ public class ProjectGutenberg extends TextSource {
     return ImmutableSet.copyOf(results);
   }
 
-  private List<Path> getBooks() throws IOException {
-    return (getPathsToTextFiles(new ArrayList<>(), gutenbergMirror));
+  private List<File> getBooks() throws IOException {
+    return (getPathsToTextFiles(Lists.<File>newArrayList(), cache));
   }
 
-  private List<Path> getPathsToTextFiles(List<Path> paths, Path directory) throws IOException {
-    DirectoryStream ds = Files.newDirectoryStream(directory);
-    for (Path p : Files.newDirectoryStream(directory)) {
-      if (Files.isDirectory(p)) getPathsToTextFiles(paths, p);
-      else if (p.endsWith(".txt")) paths.add(p);
+  private List<File> getPathsToTextFiles(List<File> paths, File directory) throws IOException {
+    for (File p : directory.listFiles()) {
+      if (p.isDirectory()) getPathsToTextFiles(paths, p);
+      else if (p.getName().endsWith(".txt")) paths.add(p);
     }
-    ds.close();
     return paths;
   }
 }

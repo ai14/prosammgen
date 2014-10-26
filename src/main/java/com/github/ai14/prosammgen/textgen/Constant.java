@@ -1,6 +1,6 @@
 package com.github.ai14.prosammgen.textgen;
 
-import com.google.common.base.MoreObjects;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 public class Constant implements TextGenerator {
 
@@ -40,7 +40,7 @@ public class Constant implements TextGenerator {
 
   @Override
   public String toString() {
-    return "\"" + content + "\"";
+    return "\"" + StringEscapeUtils.escapeJava(content) + "\"";
   }
 
 }

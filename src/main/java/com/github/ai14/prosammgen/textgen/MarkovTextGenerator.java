@@ -1,6 +1,7 @@
 package com.github.ai14.prosammgen.textgen;
 
 import com.google.common.base.CharMatcher;
+import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
@@ -12,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.StringJoiner;
 
 public class MarkovTextGenerator implements TextGenerator {
 
@@ -39,12 +39,12 @@ public class MarkovTextGenerator implements TextGenerator {
     List<Ngram> startNgrams = trainer.getSentenceStarts();
     Ngram ngram = getStartNgram(rand, previousWords, markovChain, trainer);
 
-    StringJoiner sentences = new StringJoiner(" ");
+    List<String> toJoin = Lists.newArrayListWithCapacity(numberSentences);
     for (int i = 0; i < numberSentences; i++) {
-      sentences.add(getSentence(rand, markovChain, startNgrams, ngram));
+      toJoin.add(getSentence(rand, markovChain, startNgrams, ngram));
     }
 
-    return sentences.toString();
+    return Joiner.on(' ').join(toJoin);
   }
 
   private static Ngram getStartNgram(Random rand,
@@ -91,13 +91,13 @@ public class MarkovTextGenerator implements TextGenerator {
                                     List<Ngram> startNgrams,
                                     Ngram ngram) {
 
-    StringJoiner sentence = new StringJoiner(" ");
+    List<String> toJoin = Lists.newArrayList();
 
     int avgSentenceLength = 10; // TODO: later get this from statistics
     int currentLength = 0;
     boolean sentenceEnded = false;
     while (!sentenceEnded) {
-      sentence.add(ngram.getFirst());
+      toJoin.add(ngram.getFirst());
       currentLength++;
 
       // TODO: less arbitrary maybe and also not as strict, maybe write it as some kind of prob function
@@ -118,7 +118,7 @@ public class MarkovTextGenerator implements TextGenerator {
       chooseNextWord(rand, markovChain, startNgrams, ngram, tryToEndSentence);
     }
 
-    return sentence.toString();
+    return Joiner.on(' ').join(toJoin);
   }
 
   private static void chooseNextWord(
@@ -141,7 +141,7 @@ public class MarkovTextGenerator implements TextGenerator {
 
     if (tryToEndSentence) {
       // choose only next words that end in "." if possible
-      ArrayList<WordProbability> endWords = new ArrayList<>(wordProbabilities.size());
+      ArrayList<WordProbability> endWords = Lists.newArrayListWithCapacity(wordProbabilities.size());
 
       double prob = 0.0;
       for (WordProbability wp : wordProbabilities) {
