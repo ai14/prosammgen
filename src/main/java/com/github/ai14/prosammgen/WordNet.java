@@ -1,5 +1,6 @@
 package com.github.ai14.prosammgen;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
@@ -25,7 +26,7 @@ public class WordNet {
   }
 
   public static WordNet load(URL dbUrl) throws IOException {
-    CharSource dataSource = Resources.asCharSource(dbUrl, Charset.forName("ISO-8859-1"));
+    CharSource dataSource = Resources.asCharSource(dbUrl, Charsets.ISO_8859_1);
     ImmutableMultimap.Builder<String, String> synonymsBuilder = ImmutableMultimap.builder();
 
     BufferedReader br = null;
@@ -122,7 +123,6 @@ public class WordNet {
   private enum IsCapitalized implements Predicate<String> {
     INSTANCE;
 
-    @Override
     public boolean apply(String input) {
       return Character.isUpperCase(input.charAt(0));
     }
@@ -131,7 +131,6 @@ public class WordNet {
   private enum Capitalizer implements Function<String, String> {
     INSTANCE;
 
-    @Override
     public String apply(String input) {
       return Character.toUpperCase(input.charAt(0)) + input.substring(1);
     }

@@ -13,21 +13,24 @@
   </properties>
 
   <dependencies>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>18.0</version>
-    </dependency>
+      <dependency>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava-jdk5</artifactId>
+          <version>17.0</version>
+      </dependency>
+
     <dependency>
       <groupId>org.apache.opennlp</groupId>
       <artifactId>opennlp-tools</artifactId>
       <version>1.5.3</version>
     </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <version>3.3.2</version>
-    </dependency>
+
+      <dependency>
+          <groupId>commons-lang</groupId>
+          <artifactId>commons-lang</artifactId>
+          <version>2.2</version>
+      </dependency>
+
 
     <dependency>
       <groupId>junit</groupId>
@@ -44,8 +47,8 @@
         <version>3.1</version>
 
         <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
+          <source>1.5</source>
+          <target>1.5</target>
         </configuration>
       </plugin>
     </plugins>

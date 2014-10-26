@@ -19,7 +19,6 @@ public class ProjectGutenberg extends TextSource {
     );
   }
 
-  @Override
   public ImmutableSet<File> getTexts(ImmutableSet<String> searchTerms, int resultsLimit) throws IOException {
     List<File> results = Lists.newArrayList();
 

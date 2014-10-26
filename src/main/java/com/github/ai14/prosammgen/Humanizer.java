@@ -2,7 +2,7 @@ package com.github.ai14.prosammgen;
 
 import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -277,7 +277,7 @@ public class Humanizer {
     double[] ratingMisspelled = new double[wordsToCompare.size()];
     for (int i = 0; i < wordsToCompare.size(); ++i) { //Get probabilities on how close are the WordsToCompare to the originalWord (from 0 to 1)
       //Jaro Winkler Distance algorithm
-      ratingMisspelled[i] = StringUtils.getJaroWinklerDistance(wordsToCompare.get(i), originalWord);
+      ratingMisspelled[i] = 0;//TODO StringUtils.getJaroWinklerDistance(wordsToCompare.get(i), originalWord);
     }
     return ratingMisspelled;
   }

@@ -3,13 +3,10 @@ package com.github.ai14.prosammgen;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.net.UrlEscapers;
-import org.apache.commons.lang3.StringEscapeUtils;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import org.apache.commons.lang.StringEscapeUtils;
+
+import java.io.*;
 import java.net.URL;
 import java.util.List;
 import java.util.Scanner;
@@ -26,7 +23,6 @@ public class Wikipedia extends TextSource {
     );
   }
 
-  @Override
   public ImmutableSet<File> getTexts(ImmutableSet<String> searchTerms, int resultsLimit) throws IOException {
     List<File> results = Lists.newArrayList();
 
@@ -63,7 +59,7 @@ public class Wikipedia extends TextSource {
             s.useDelimiter("\\Z");
             Matcher m1 = contentPattern.matcher(s.next());
             if (!m1.find()) continue;
-            out.println(extractRunningText(StringEscapeUtils.unescapeHtml4(m1.group(1))));
+            out.println(extractRunningText(StringEscapeUtils.unescapeHtml(m1.group(1))));
           } finally {
             if (s != null) {
               s.close();

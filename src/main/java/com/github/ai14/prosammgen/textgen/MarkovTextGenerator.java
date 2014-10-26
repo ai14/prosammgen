@@ -25,7 +25,6 @@ public class MarkovTextGenerator implements TextGenerator {
     this.numSentences = numSentences;
   }
 
-  @Override
   public void generateText(Context context) {
     List<String> previousWords = Splitter.on(CharMatcher.WHITESPACE).splitToList(context.getBuilder().toString());
 
