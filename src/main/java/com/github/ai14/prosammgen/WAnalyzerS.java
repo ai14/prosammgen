@@ -80,7 +80,7 @@ public class WAnalyzerS {
             else total[size-1]++;
 
         }
-        double[] probabilities = new double[numberOfSentences];
+        double[] probabilities = new double[max];
         //Calculating probabilities
         for (int j = 0; j < probabilities.length; j++) {
             if(total[j] == null ) probabilities[j] = 0;
@@ -139,7 +139,7 @@ public class WAnalyzerS {
 
         }
         //Calculating probabilities
-        double[] probabilities = new double[wordSize.size()];
+        double[] probabilities = new double[max];
         for (int j = 0; j < probabilities.length; j++) {
             if(total[j] == null ) probabilities[j] = 0;
             else probabilities[j] = wordSize.get(j) / textSize;
@@ -174,7 +174,7 @@ public class WAnalyzerS {
             else total[size-1]++;
 
         }
-        double[] probabilities = new double[numberOfParagraph];
+        double[] probabilities = new double[max];
         for (int j = 0; j < probabilities.length; j++) {
             if(total[j] == null ) probabilities[j] = 0;
             probabilities[j] = sentencesParagraph.get(j) / numberOfParagraph;
