@@ -23,7 +23,7 @@ public final class ReflectionDocumentGenerator {
   private ImmutableMap<String, TextGenerator> generators;
   private ImmutableSet<TextSource> textSources;
 
-  public ReflectionDocumentGenerator(WordNet wordNet) throws IOException, InterruptedException, ParseException {
+  public ReflectionDocumentGenerator(WordNet wordNet, File outputDirectory) throws IOException, InterruptedException, ParseException {
     this.wordNet = wordNet;
 
     // Load stop words.
@@ -38,8 +38,8 @@ public final class ReflectionDocumentGenerator {
 
     // Prepare text sources.
     textSources = ImmutableSet.of(
-            new Wikipedia(nlp),
-            new ProjectGutenberg(nlp)
+            new Wikipedia(nlp, outputDirectory),
+            new ProjectGutenberg(nlp, outputDirectory)
     );
 
     // Load grammar.
@@ -47,9 +47,7 @@ public final class ReflectionDocumentGenerator {
             Resources.readLines(Resources.getResource(App.class, "grammar"), Charsets.UTF_8));
   }
 
-  public String generateReport(String title, String author, ImmutableList<String> questions,
-                               File readingMaterial, int wordCount, int maxWebRequests)
-          throws IOException {
+  public String generateReport(String title, String author, ImmutableList<String> questions, File readingMaterial, int wordCount, int maxWebRequests) throws IOException {
     StringBuilder report = new StringBuilder();
     report.append("\\documentclass{article}\\begin{document}\\title{")
             .append(title)

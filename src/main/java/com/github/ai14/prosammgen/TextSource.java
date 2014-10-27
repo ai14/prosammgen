@@ -14,10 +14,10 @@ public abstract class TextSource {
   protected final File cache;
   protected final SentenceDetectorME sentenceDetector;
 
-  public TextSource(NLPModel nlp, File cache, Pattern contentPattern) throws IOException {
+  public TextSource(NLPModel nlp, File outputDirectory, String cachePath, Pattern contentPattern) throws IOException {
     this.contentPattern = contentPattern;
     this.sentenceDetector = new SentenceDetectorME(nlp.getSentenceModel());
-    this.cache = cache;
+    this.cache = new File(outputDirectory, cachePath);
     if (!cache.exists()) cache.mkdirs();
   }
 

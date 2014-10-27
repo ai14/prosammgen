@@ -11,10 +11,11 @@ import java.util.regex.Pattern;
 
 //TODO wget relevant books directly instead of relying on a mirrored resource.
 public class ProjectGutenberg extends TextSource {
-  public ProjectGutenberg(NLPModel nlp) throws IOException, InterruptedException {
+  public ProjectGutenberg(NLPModel nlp, File cache) throws IOException, InterruptedException {
     super(
             nlp,
-            new File("cache/gutenberg"),
+            cache,
+            "gutenberg",
             Pattern.compile("(\\*\\*\\* START OF THIS PROJECT GUTENBERG EBOOK [\\w\\s]+ \\*\\*\\*)(.*?)(\\*\\*\\* END OF THIS PROJECT GUTENBERG EBOOK [\\w\\s]+ \\*\\*\\*)", Pattern.DOTALL)
     );
   }

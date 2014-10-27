@@ -3,7 +3,6 @@ package com.github.ai14.prosammgen;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.net.UrlEscapers;
-
 import org.apache.commons.lang.StringEscapeUtils;
 
 import java.io.*;
@@ -15,10 +14,11 @@ import java.util.regex.Pattern;
 
 public class Wikipedia extends TextSource {
 
-  public Wikipedia(NLPModel nlp) throws IOException {
+  public Wikipedia(NLPModel nlp, File cache) throws IOException {
     super(
             nlp,
-            new File("cache/wikipedia"),
+            cache,
+            "wikipedia",
             Pattern.compile("<extract xml:space=\"preserve\">(.*?)<\\/extract>", Pattern.DOTALL)
     );
   }
