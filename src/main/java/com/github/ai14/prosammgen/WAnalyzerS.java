@@ -1,7 +1,8 @@
 package com.github.ai14.prosammgen;
 
 import com.google.common.base.Charsets;
-import com.google.common.collect.*;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
@@ -17,13 +18,13 @@ import java.util.regex.Pattern;
 
 public class WAnalyzerS {
 
+    private final WordNet wordNet;
     private File text;
     private String[] totalWords;
     private String[] totalSentences;
     private String[] totalParagraphs;
     private String allWords;
-    private final WordNet wordNet;
-
+    private List<String> words;
     private Random rand = new Random();
 
     private boolean sentenceLengthProbabilityCalculated = false;
@@ -40,11 +41,12 @@ public class WAnalyzerS {
      */
     public void analyze(File text) {
         try {
-            //this.words = Resources.readLines(Resources.getResource(App.class, "words"), StandardCharsets.UTF_8);
             this.text = text;
-            List<String> allText =  Files.readLines(this.text, Charsets.UTF_8);
+            List<String> allText = Files.readLines(this.text, Charsets.UTF_8);
             allWords = "";
-            for(String singleWord : allText){ this.allWords += singleWord + " ";}
+            for (String singleWord : allText) {
+                this.allWords += singleWord + " ";
+            }
             this.totalWords = this.allWords.split("\\s+"); //splitting into words
             this.totalSentences = this.allWords.split("(?<=[a-z])\\.\\s+");//splitting into sentences
             this.totalParagraphs = this.allWords.split("\\n\\n");//splitting into Paragraphs
@@ -64,34 +66,31 @@ public class WAnalyzerS {
 
     public double[] getSentenceLengthProbabilities() {
         if (sentenceLengthProbabilityCalculated) {
-            System.out.println("RETURNING SAVED SENTENCE LENGTH PROBS");
             return sentenceLengthProbabilites;
         }
 
-        System.out.println("CALCULATING SENTENCE LENGTHS PROBS");
         int numberOfSentences = totalSentences.length;
         List<Integer> sentenceSize = new ArrayList<Integer>();
         int max = -1;
         for (int i = 0; i < numberOfSentences; i++) {
             //split sentences into words
             String[] words = totalSentences[i].split("\\s+");
-            if(words.length > max) max = words.length;
+            if (words.length > max) max = words.length;
             sentenceSize.add(words.length);
         }
-        System.out.println(sentenceSize);
         Integer[] total = new Integer[max+1];
         for (int i = 0; i < sentenceSize.size(); i++) {
             //split sentences into words
             int size = sentenceSize.get(i);
-            if (total[size]==null) total[size] =1;
+            if (total[size] == null) total[size] = 1;
             else total[size]++;
 
         }
         double[] probabilities = new double[total.length];
         //Calculating probabilities
         for (int j = 0; j < probabilities.length; j++) {
-            if(total[j] == null ) probabilities[j] = 0;
-            else probabilities[j] = ((double) total[j])  / numberOfSentences;
+            if (total[j] == null) probabilities[j] = 0;
+            else probabilities[j] = (double) total[j] / numberOfSentences;
         }
         sentenceLengthProbabilityCalculated = true;
         sentenceLengthProbabilites = probabilities;
@@ -110,11 +109,15 @@ public class WAnalyzerS {
         double upperLimit = prob[0];
 
         for (int i = 0; i < prob.length - 1; i++) {
+            if (Double.compare(prob[i], 0.0) == 0) {
+                continue;
+            }
+
             if (Double.compare(d, upperLimit) < 0) {
                 return i;
             }
 
-            upperLimit += prob[i+1];
+            upperLimit += prob[i + 1];
         }
 
         return prob.length - 1;
@@ -132,25 +135,22 @@ public class WAnalyzerS {
         int max = -1;
         for (int i = 0; i < textSize; i++) {
             //increasing the number of characters with words[i].length
-
-            if(totalWords[i].length() > max) max = totalWords[i].length();
-
+            if (totalWords[i].length() > max) max = totalWords[i].length();
             wordSize.add(totalWords[i].length());
         }
-
         Integer[] total = new Integer[max+1];
         for (int i = 0; i < wordSize.size(); i++) {
             //split sentences into words
             int size = wordSize.get(i);
-            if (total[size]==null) total[size] =1;
+            if (total[size] == null) total[size] = 1;
             else total[size]++;
 
         }
         //Calculating probabilities
         double[] probabilities = new double[total.length];
         for (int j = 0; j < probabilities.length; j++) {
-            if(total[j] == null ) probabilities[j] = 0;
-            else probabilities[j] =  ((double) total[j])  / textSize;
+            if (total[j] == null) probabilities[j] = 0;
+            else probabilities[j] = (double) wordSize.get(j) / textSize;
         }
         return probabilities;
     }
@@ -164,28 +164,28 @@ public class WAnalyzerS {
     public double[] getSentencesPerParagraphProbabilities() {
 
         int numberOfParagraph = totalParagraphs.length;
-        List<Integer>sentencesParagraph = Lists.newArrayList();
+        List<Integer> sentencesParagraph = Lists.newArrayList();
         //each paragraph
         int max = -1;
         for (int i = 0; i < numberOfParagraph; i++) {
             //Split into sentences every paragraph
             String[] sentencesOnParagraph = totalParagraphs[i].split("(?<=[a-z])\\.\\s+");
             //increasing the times that a paragraph have "countSentences" sentences
-            if(sentencesOnParagraph.length > max) max = sentencesOnParagraph.length;
+            if (sentencesOnParagraph.length > max) max = sentencesOnParagraph.length;
             sentencesParagraph.add(sentencesOnParagraph.length);
         }
         Integer[] total = new Integer[max+1];
         for (int i = 0; i < sentencesParagraph.size(); i++) {
             //split sentences into words
             int size = sentencesParagraph.get(i);
-            if (total[size]==null) total[size] =1;
+            if (total[size] == null) total[size] = 1;
             else total[size]++;
 
         }
         double[] probabilities = new double[total.length];
         for (int j = 0; j < probabilities.length; j++) {
-            if(total[j] == null ) probabilities[j] = 0;
-            probabilities[j] =  ((double) total[j])  / numberOfParagraph;
+            if (total[j] == null) probabilities[j] = 0;
+            probabilities[j] = (double) sentencesParagraph.get(j) / numberOfParagraph;
         }
         return probabilities;
 
@@ -197,9 +197,6 @@ public class WAnalyzerS {
      *
      * @return
      */
-
-
-
     public double getMisspellingWordsProbabilities() throws IOException, ParseException {
         int numberOfWords = totalWords.length;
         int misspellingWords = 0;
@@ -256,6 +253,5 @@ public class WAnalyzerS {
         }
         return probabilies;
     }
-
 
 }
