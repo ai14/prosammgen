@@ -109,6 +109,7 @@ public class App {
     } catch (IOException e) {
       // Since xetex didn't work, just print the latex on stdout instead.
       System.out.println(report);
+      System.exit(-1);
     }
   }
 }
