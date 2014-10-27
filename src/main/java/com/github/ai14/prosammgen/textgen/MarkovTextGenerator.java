@@ -111,6 +111,10 @@ public class MarkovTextGenerator implements TextGenerator {
       // TODO: find a better solution to this, or fix the input so that this will not be possible
       if (currentLength >= 80) {
         System.err.println("FINISHED SENTENCE WITHOUT FINDING PERIOD");
+
+        // TODO: Should not prepend space for this string
+        toJoin.add(", or something... I don't know.");
+
         sentenceEnded = true;
         tryToEndSentence = false;
       }

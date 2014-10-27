@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -89,7 +90,7 @@ public class WAnalyzerS {
     //Calculating probabilities
     for (int j = 0; j < probabilities.length; j++) {
       if (total[j] == null) probabilities[j] = 0;
-      else probabilities[j] = (double) total[j] / numberOfSentences;
+      else probabilities[j] = ((double) total[j]) / numberOfSentences;
     }
     sentenceLengthProbabilityCalculated = true;
     sentenceLengthProbabilites = probabilities;
