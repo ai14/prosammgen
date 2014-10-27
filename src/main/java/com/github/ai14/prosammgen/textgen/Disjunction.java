@@ -1,7 +1,6 @@
 package com.github.ai14.prosammgen.textgen;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
@@ -16,7 +15,7 @@ public class Disjunction implements TextGenerator {
   @Override
   public void generateText(Context context) {
     Iterables.get(generators, context.getRandom().nextInt(generators.size()))
-        .generateText(context);
+            .generateText(context);
   }
 
   @Override

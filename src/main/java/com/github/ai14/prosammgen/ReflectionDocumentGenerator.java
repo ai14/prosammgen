@@ -1,19 +1,13 @@
 package com.github.ai14.prosammgen;
 
+import com.github.ai14.prosammgen.textgen.*;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Ordering;
 import com.google.common.io.Resources;
-
-import com.github.ai14.prosammgen.textgen.KeywordGenerator;
-import com.github.ai14.prosammgen.textgen.MarkovTextGenerator;
-import com.github.ai14.prosammgen.textgen.SynonymGenerator;
-import com.github.ai14.prosammgen.textgen.TextGenerator;
-import com.github.ai14.prosammgen.textgen.TextGenerators;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,37 +24,38 @@ public final class ReflectionDocumentGenerator {
   private ImmutableSet<TextSource> textSources;
 
   public ReflectionDocumentGenerator(WordNet wordNet) throws IOException, InterruptedException, ParseException {
-      this.wordNet = wordNet;
+    this.wordNet = wordNet;
 
-      // Load stop words.
+    // Load stop words.
     stopWords = ImmutableSet.copyOf(
-        Resources.readLines(Resources.getResource(App.class, "stopwords"), Charsets.UTF_8));
+            Resources.readLines(Resources.getResource(App.class, "stopwords"), Charsets.UTF_8));
 
     // Load NLP.
     nlp =
-        NLPModel.loadFromDBs(Resources.getResource(App.class, "en-sent.bin"),
-                             Resources.getResource(App.class, "en-token.bin"),
-                             Resources.getResource(App.class, "en-pos-maxent.bin"));
+            NLPModel.loadFromDBs(Resources.getResource(App.class, "en-sent.bin"),
+                    Resources.getResource(App.class, "en-token.bin"),
+                    Resources.getResource(App.class, "en-pos-maxent.bin"));
 
-    // Load grammar.
     // Prepare text sources.
     textSources = ImmutableSet.of(
-        new Wikipedia(nlp),
-        new ProjectGutenberg(nlp)
+            new Wikipedia(nlp),
+            new ProjectGutenberg(nlp)
     );
+
+    // Load grammar.
     generators = TextGenerators.parseGrammar(
             Resources.readLines(Resources.getResource(App.class, "grammar"), Charsets.UTF_8));
   }
 
   public String generateReport(String title, String author, ImmutableList<String> questions,
                                File readingMaterial, int wordCount, int maxWebRequests)
-      throws IOException {
+          throws IOException {
     StringBuilder report = new StringBuilder();
     report.append("\\documentclass{article}\\begin{document}\\title{")
-        .append(title)
-        .append("}\\author{")
-        .append(author)
-        .append("}\\maketitle");
+            .append(title)
+            .append("}\\author{")
+            .append(author)
+            .append("}\\maketitle");
 
     // Go through each question and try to answer it.
     for (String question : questions) {
@@ -95,13 +90,11 @@ public final class ReflectionDocumentGenerator {
       // Define grammar macros for the current question.
       ImmutableMap.Builder<String, Function<? super ImmutableList<String>, ? extends TextGenerator>> macroBuilder = ImmutableMap.builder();
       macroBuilder.put("MARKOV", new Function<ImmutableList<String>, TextGenerator>() {
-        @Override
         public TextGenerator apply(ImmutableList<String> n) {
           return new MarkovTextGenerator(markovTrainer, Integer.parseInt(n.get(0)));
         }
       });
       macroBuilder.put("SYNONYM", new Function<ImmutableList<String>, TextGenerator>() {
-        @Override
         public TextGenerator apply(ImmutableList<String> words) {
           return new SynonymGenerator(wordNet, words);
         }
@@ -113,9 +106,7 @@ public final class ReflectionDocumentGenerator {
       while (remaining > 0) {
         StringBuilder paragraphBuilder = new StringBuilder();
         generators.get("PARAGRAPH").generateText(new SimpleContext(generators, macroBuilder.build(), paragraphBuilder));
-
         String paragraph = paragraphBuilder.toString();
-
         report.append(escapeLaTeXSpecialChars(paragraph));
         report.append("\n\n");
 
@@ -176,22 +167,18 @@ public final class ReflectionDocumentGenerator {
       this.builder = builder;
     }
 
-    @Override
     public Random getRandom() {
       return random;
     }
 
-    @Override
     public TextGenerator getProduction(String name) {
       return generators.get(name);
     }
 
-    @Override
     public Function<? super ImmutableList<String>, ? extends TextGenerator> getMacro(String name) {
       return macros.get(name);
     }
 
-    @Override
     public StringBuilder getBuilder() {
       return builder;
     }
