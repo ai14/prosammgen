@@ -3,7 +3,6 @@ package com.github.ai14.prosammgen;
 import com.google.common.base.Charsets;
 import com.google.common.collect.*;
 import com.google.common.io.Resources;
-//import com.aliasi.spell.JaroWinklerDistance;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,6 +18,7 @@ public class Humanizer {
     private WordNet wordNet;
     private WordNet informalLanguageWordNet;
     private WAnalyzerS analyze;
+    private JaroWinklerDistance jaroWinklerDistance;
 
 
     public Humanizer(WordNet wordNet, File example)throws IOException, ParseException {
@@ -30,7 +30,7 @@ public class Humanizer {
         this.analyze.analyze(example);
         this.misspellingProbability = analyze.getMisspellingWordsProbabilities(); //get misspelling probability
         this.usualWordLength = analyze.getWordLengthProbabilities();
-
+        this.jaroWinklerDistance = new JaroWinklerDistance();
 
         informalLanguageWordNet = WordNet.load(Resources.getResource(App.class, "wordnet.dat"));//TODO: change to informallanguage.dat
     }
@@ -64,7 +64,10 @@ public class Humanizer {
                 if (j >= numberOfWords) break;
                 String newWord = wordsParagraph[j];
                 //TODO: check what to do with the Writing Style part
-                ImmutableList<String> synWord = ImmutableList.of(newWord);
+                ImmutableList<String> synWord;
+                /*if (j+2 < numberOfWords) synWord = ImmutableList.of(newWord,wordsParagraph[j+1],wordsParagraph[j+2]);
+                else */if (j+1 < numberOfWords) synWord = ImmutableList.of(newWord,wordsParagraph[j+1]);
+                else synWord = ImmutableList.of();//last word don't try to get synonym
                 ImmutableSet<String> synonyms = informalLanguageWordNet.getSynonyms(synWord);
                 if(synonyms.size() > 1){
 
@@ -124,7 +127,7 @@ public class Humanizer {
                             }
                             newWord = newWord.substring(index + 1, newWord.length()); //get the second part
                         }
-                        System.out.println("WORD PROB: "+wordsParagraph[j] +"    "+newWord);//TODO: remove print
+                        System.out.println("MISPELL: "+wordsParagraph[j] +"    "+newWord);//TODO: remove print
                     }
                 }
                 //System.out.println(wordsParagraph[j] +"    "+newWord);
@@ -311,7 +314,8 @@ public class Humanizer {
         double []ratingMisspelled = new double [wordsToCompare.size()];
         for(int i = 0; i < wordsToCompare.size(); ++i){ //Get probabilities on how close are the WordsToCompare to the originalWord (from 0 to 1)
             //Jaro Winkler Distance algorithm
-            ratingMisspelled[i] = 0;//TODO StringUtils.getJaroWinklerDistance(wordsToCompare.get(i), originalWord);
+            ratingMisspelled[i] = jaroWinklerDistance.similarity(wordsToCompare.get(i), originalWord);
+            System.out.println(originalWord+"   "+ratingMisspelled[i]+"   "+wordsToCompare.get(i));
         }
         return ratingMisspelled;
     }
