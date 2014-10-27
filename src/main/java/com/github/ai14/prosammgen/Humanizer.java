@@ -1,6 +1,9 @@
 package com.github.ai14.prosammgen;
 
+import com.github.ai14.prosammgen.textgen.SynonymGenerator;
+import com.github.ai14.prosammgen.textgen.TextGenerator;
 import com.google.common.base.Charsets;
+import com.google.common.base.Function;
 import com.google.common.collect.*;
 import com.google.common.io.Resources;
 
@@ -32,7 +35,7 @@ public class Humanizer {
         this.usualWordLength = analyze.getWordLengthProbabilities();
         this.jaroWinklerDistance = new JaroWinklerDistance();
 
-        informalLanguageWordNet = WordNet.load(Resources.getResource(App.class, "wordnet.dat"));//TODO: change to informallanguage.dat
+        informalLanguageWordNet = WordNet.load(Resources.getResource(App.class, "informallanguage.dat"));
     }
 
 
@@ -63,40 +66,39 @@ public class Humanizer {
                 }
                 if (j >= numberOfWords) break;
                 String newWord = wordsParagraph[j];
-                //TODO: check what to do with the Writing Style part
-                ImmutableList<String> synWord;
-                /*if (j+2 < numberOfWords) synWord = ImmutableList.of(newWord,wordsParagraph[j+1],wordsParagraph[j+2]);
-                else */if (j+1 < numberOfWords) synWord = ImmutableList.of(newWord,wordsParagraph[j+1]);
-                else synWord = ImmutableList.of();//last word don't try to get synonym
-                ImmutableSet<String> synonyms = informalLanguageWordNet.getSynonyms(synWord);
-                if(synonyms.size() > 1){
+                boolean wSA = false;
+                if(wSA) {//TODO: change in other to use de Writing Style Analyzer. So far it gets wrong synonyms
+                    ImmutableList<String> wordToCheck;
+                    wordToCheck = ImmutableList.of(newWord);
+                    ImmutableSet<String> synonyms = informalLanguageWordNet.getSynonyms(wordToCheck);
+                    if (synonyms.size() > 1) {
 
-                    double[]wordProb = this.analyze.getInformalWordUseProbabilities(synonyms.asList());
-                    newWord = chooseWord(synonyms.asList(),wordProb);
-                    if(newWord.equals(wordsParagraph[j])) slanged = false;
-                    else{
-                        slanged = true;
-                        System.out.println("SLANGED: "+wordsParagraph[j] +"    "+newWord);//TODO: remove print
-                    }
-                }
-                boolean needStyle = false;
-                if(newWord.length() >= this.usualWordLength.length) needStyle = true;
-                else if(this.usualWordLength[newWord.length()]< 0.015)needStyle = true;
-                //
-                if(needStyle && !slanged){
-                    synonyms = wordNet.getSynonyms(synWord);
-                    if(synonyms.size() > 1) {
-                        int max = -1;
-                        for(String synonym : synonyms){
-                            if(synonym.equals(newWord)){
-                                continue;
-                            }
-                            else if(synonym.length() < this.usualWordLength.length && this.usualWordLength[synonym.length()]> max){
-                                max = synonym.length();
-                                newWord = synonym;
-                            }
+                        double[] wordProb = this.analyze.getInformalWordUseProbabilities(synonyms.asList());
+                        newWord = chooseWord(synonyms.asList(), wordProb);
+                        if (newWord.equals(wordsParagraph[j])) slanged = false;
+                        else {
+                            slanged = true;
+                            System.out.println("SLANGED: " + wordsParagraph[j] + "    " + newWord);//TODO: remove print
                         }
-                        System.out.println("WORD PROB: "+wordsParagraph[j] +"    "+newWord);//TODO: remove print
+                    }
+                    boolean needStyle = false;
+                    if (newWord.length() >= this.usualWordLength.length) needStyle = true;
+                    else if (this.usualWordLength[newWord.length()] < 0.005) needStyle = true;
+                    //
+                    if (needStyle && !slanged) {
+                        synonyms = wordNet.getSynonyms(wordToCheck);
+                        if (synonyms.size() > 1) {
+                            int max = -1;
+                            for (String synonym : synonyms) {
+                                if (synonym.equals(newWord)) {
+                                    continue;
+                                } else if (synonym.length() < this.usualWordLength.length && this.usualWordLength[synonym.length()] > max) {
+                                    max = synonym.length();
+                                    newWord = synonym;
+                                }
+                            }
+                            System.out.println("WORD PROB: " + wordsParagraph[j] + "    " + newWord);//TODO: remove print
+                        }
                     }
                 }
                 int misspellingRate = (int) (misspellingProbability * numberOfWords); //calculate how often we want to misspell a word
@@ -127,10 +129,8 @@ public class Humanizer {
                             }
                             newWord = newWord.substring(index + 1, newWord.length()); //get the second part
                         }
-                        System.out.println("MISPELL: "+wordsParagraph[j] +"    "+newWord);//TODO: remove print
                     }
                 }
-                //System.out.println(wordsParagraph[j] +"    "+newWord);
                 humanizedText.append(newWord+" ");//add the new word (or the old one)
             }
             humanizedText.append("\n\n");
@@ -315,7 +315,6 @@ public class Humanizer {
         for(int i = 0; i < wordsToCompare.size(); ++i){ //Get probabilities on how close are the WordsToCompare to the originalWord (from 0 to 1)
             //Jaro Winkler Distance algorithm
             ratingMisspelled[i] = jaroWinklerDistance.similarity(wordsToCompare.get(i), originalWord);
-            System.out.println(originalWord+"   "+ratingMisspelled[i]+"   "+wordsToCompare.get(i));
         }
         return ratingMisspelled;
     }

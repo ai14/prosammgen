@@ -1,6 +1,8 @@
 package com.github.ai14.prosammgen;
 
-
+/**
+ * An implementation of the Jaro-Winkler string similarity measure.
+ */
 public class JaroWinklerDistance {
     public double compare(String s1, String s2) {
         return similarity(s1, s2);
