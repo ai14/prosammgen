@@ -71,8 +71,10 @@ public class Humanizer {
                     double[]wordProb = this.analyze.getInformalWordUseProbabilities(synonyms.asList());
                     newWord = chooseWord(synonyms.asList(),wordProb);
                     if(newWord.equals(wordsParagraph[j])) slanged = false;
-                    else slanged = true;
-                    System.out.println("SLANGED: "+wordsParagraph[j] +"    "+newWord);//TODO: remove print
+                    else{
+                        slanged = true;
+                        System.out.println("SLANGED: "+wordsParagraph[j] +"    "+newWord);//TODO: remove print
+                    }
                 }
                 boolean needStyle = false;
                 if(newWord.length() >= this.usualWordLength.length) needStyle = true;
