@@ -89,7 +89,7 @@
 #FACT someone like #FAMOUSPERSON might be the only person who previously #ACTION.
 #FACT we can't put our trust in #FAMOUSPERSON, as has been shown before.
 #FACT things get confusing, really quickly.
-#FACT if #FAMOUSPERSON were present, the discussion would be much more %SYNONYM(clear).
+#FACT if #FAMOUSPERSON were present, the discussion would be much more %SYNONYM(clear, obvious).
 #FACT nothing more can be said about it.
 
 #ACTION #APREFIX #REALACTION
