@@ -2,7 +2,6 @@ package com.github.ai14.prosammgen;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.*;
-import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 //import com.aliasi.spell.JaroWinklerDistance;
 
