@@ -98,7 +98,7 @@ public class App {
     try {
       Process p = new ProcessBuilder()
               .redirectErrorStream(true)
-              .command("xetesx", "-halt-on-error", "-output-directory=" + outputDirectory, "&xelatex", filename + ".tex")
+              .command("xetex", "-halt-on-error", "-output-directory=" + outputDirectory, "&xelatex", filename + ".tex")
               .start();
       Scanner s = new Scanner(p.getInputStream());
       while (s.hasNextLine()) System.out.println(s.nextLine());
