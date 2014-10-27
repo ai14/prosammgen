@@ -8,14 +8,14 @@ import com.google.common.io.Resources;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.Normalizer;
 import java.text.ParseException;
 import java.util.Scanner;
 
 public class App {
-  public static WAnalyzerS analyzer;
+  public static WAnalyzerS analyzer; //TODO Make private.
 
   public static void main(String[] args) throws IOException, ParseException, InterruptedException {
-
 
     // Get input.
     int wordCount = 500, maxWebRequests = 10;
@@ -68,19 +68,20 @@ public class App {
     // Parse questions.
     ImmutableList<String> questionList = ImmutableList.copyOf(Files.readLines(questions, Charsets.UTF_8));
 
+    // TODO Document properly.
     WordNet wordNet = WordNet.load(Resources.getResource(App.class, "wordnet.dat"));
     analyzer = new WAnalyzerS(wordNet); // TODO Dead code? Not being used anywhere. Remove if so.
     analyzer.analyze(previousReflectionDocument); // TODO Dead code? Not being used anywhere. Remove if so.
 
     // Generate a reflection document.
-    String report = new ReflectionDocumentGenerator(wordNet).generateReport(title, author, questionList, readingMaterial, wordCount, maxWebRequests);
+    String report = new ReflectionDocumentGenerator(wordNet, new File(outputDirectory)).generateReport(title, author, questionList, readingMaterial, wordCount, maxWebRequests);
 
     //TODO Document properly.
     Humanizer human = new Humanizer(wordNet, previousReflectionDocument);
     report = human.textHumanizer(report);
 
     // Replace characters in accordance with the prosamm instructions. å -> a, é -> e, etc.
-    String filename = "reflection_document"; //TODO Normalizer.normalize(author, Normalizer.Form.NFD).replaceAll(" ", "_").replaceAll("[^A-Za-z_]", "");
+    String filename = Normalizer.normalize(author, Normalizer.Form.NFD).replaceAll(" ", "_").replaceAll("[^A-Za-z_]", "");
 
     // Write LaTeX output to file.
     PrintWriter out = null;
@@ -94,14 +95,20 @@ public class App {
     }
 
     // Generate PDF from LaTeX file.
-    Process p = new ProcessBuilder()
-            .redirectErrorStream(true)
-            .command("xetex", "-halt-on-error", "-output-directory=" + outputDirectory, "&xelatex", filename + ".tex")
-            .start();
-    Scanner s = new Scanner(p.getInputStream());
-    while (s.hasNextLine()) System.out.println(s.nextLine());
-    s.close();
-    if (p.waitFor() == 0) System.out.println("Successfully generated a reflection document as PDF.");
+    try {
+      Process p = new ProcessBuilder()
+              .redirectErrorStream(true)
+              .command("xetesx", "-halt-on-error", "-output-directory=" + outputDirectory, "&xelatex", filename + ".tex")
+              .start();
+      Scanner s = new Scanner(p.getInputStream());
+      while (s.hasNextLine()) System.out.println(s.nextLine());
+      s.close();
+      if (p.waitFor() == 0) {
+        System.out.println("Successfully generated a reflection document as PDF.");
+      }
+    } catch (IOException e) {
+      // Since xetex didn't work, just print the latex on stdout instead.
+      System.out.println(report);
+    }
   }
-
 }
