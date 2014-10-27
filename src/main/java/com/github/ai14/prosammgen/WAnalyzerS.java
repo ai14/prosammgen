@@ -91,7 +91,7 @@ public class WAnalyzerS {
         //Calculating probabilities
         for (int j = 0; j < probabilities.length; j++) {
             if(total[j] == null ) probabilities[j] = 0;
-            else probabilities[j] = (double)total[j] / numberOfSentences;
+            else probabilities[j] = ((double) total[j])  / numberOfSentences;
         }
         sentenceLengthProbabilityCalculated = true;
         sentenceLengthProbabilites = probabilities;
@@ -150,7 +150,7 @@ public class WAnalyzerS {
         double[] probabilities = new double[total.length];
         for (int j = 0; j < probabilities.length; j++) {
             if(total[j] == null ) probabilities[j] = 0;
-            else probabilities[j] =  (double)total[j] / textSize;
+            else probabilities[j] =  ((double) total[j])  / textSize;
         }
         return probabilities;
     }
@@ -185,7 +185,7 @@ public class WAnalyzerS {
         double[] probabilities = new double[total.length];
         for (int j = 0; j < probabilities.length; j++) {
             if(total[j] == null ) probabilities[j] = 0;
-            probabilities[j] =  (double)total[j] / numberOfParagraph;
+            probabilities[j] =  ((double) total[j])  / numberOfParagraph;
         }
         return probabilities;
 
@@ -232,7 +232,7 @@ public class WAnalyzerS {
             }
         }
         //calculate probability
-        double probability = (double)misspellingWords/ totalWords.length;
+        double probability = ((double)misspellingWords)/ totalWords.length;
         return probability;
     }
 
@@ -252,7 +252,7 @@ public class WAnalyzerS {
 
             }
 
-            probabilies[i] = (double)count / totalWords.length;
+            probabilies[i] = ((double)count) / totalWords.length;
         }
         return probabilies;
     }
