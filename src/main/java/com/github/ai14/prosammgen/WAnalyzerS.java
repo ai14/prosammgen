@@ -63,39 +63,36 @@ public class WAnalyzerS {
      */
 
     public double[] getSentenceLengthProbabilities() {
-        if (sentenceLengthProbabilityCalculated) {
-            System.out.println("RETURNING SAVED SENTENCE LENGTH PROBS");
+       if (sentenceLengthProbabilityCalculated) {
             return sentenceLengthProbabilites;
         }
 
-        System.out.println("CALCULATING SENTENCE LENGTHS PROBS");
         int numberOfSentences = totalSentences.length;
         List<Integer> sentenceSize = new ArrayList<Integer>();
         int max = -1;
         for (int i = 0; i < numberOfSentences; i++) {
-            //split sentences into words
-            String[] words = totalSentences[i].split("\\s+");
-            if(words.length > max) max = words.length;
-            sentenceSize.add(words.length);
+          //split sentences into words
+          String[] words = totalSentences[i].split("\\s+");
+          if (words.length > max) max = words.length;
+          sentenceSize.add(words.length);
         }
-        System.out.println(sentenceSize);
-        Integer[] total = new Integer[max+1];
+        Integer[] total = new Integer[max];
         for (int i = 0; i < sentenceSize.size(); i++) {
-            //split sentences into words
-            int size = sentenceSize.get(i);
-            if (total[size]==null) total[size] =1;
-            else total[size]++;
-
+          //split sentences into words
+          int size = sentenceSize.get(i);
+          if (total[size - 1] == null) total[size - 1] = 1;
+          else total[size - 1]++;
+    
         }
-        double[] probabilities = new double[total.length];
+        double[] probabilities = new double[max];
         //Calculating probabilities
         for (int j = 0; j < probabilities.length; j++) {
-            if(total[j] == null ) probabilities[j] = 0;
-            else probabilities[j] = ((double) total[j])  / numberOfSentences;
+          if (total[j] == null) probabilities[j] = 0;
+          else probabilities[j] = ((double) total[j]) / numberOfSentences;
         }
         sentenceLengthProbabilityCalculated = true;
         sentenceLengthProbabilites = probabilities;
-
+    
         return probabilities;
     }
 
