@@ -3,7 +3,8 @@ package com.github.ai14.prosammgen;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.net.UrlEscapers;
-import org.apache.commons.lang.StringEscapeUtils;
+import opennlp.tools.sentdetect.SentenceDetectorME;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.io.*;
 import java.net.URL;
@@ -13,13 +14,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Wikipedia extends TextSource {
-
-  public Wikipedia(NLPModel nlp, File cache) throws IOException {
+  public Wikipedia(SentenceDetectorME sentenceDetector, String outputDirectory) throws IOException {
     super(
-            nlp,
-            cache,
+            outputDirectory,
             "wikipedia",
-            Pattern.compile("<extract xml:space=\"preserve\">(.*?)<\\/extract>", Pattern.DOTALL)
+            Pattern.compile("<extract xml:space=\"preserve\">(.*?)<\\/extract>", Pattern.DOTALL),
+            sentenceDetector
     );
   }
 
@@ -45,21 +45,23 @@ public class Wikipedia extends TextSource {
         }
       }
 
-      // Fetch Wikipedia resultsLimit.
+      // Fetch Wikipedia articles.
       PrintWriter out = null;
       try {
         out = new PrintWriter(new BufferedWriter(new FileWriter(p.toString())));
         // “Because excerpts generation can be slow the limit is capped at one whole-page extract.” Solution: do several requests. Sorry Wikipedia!
         for (int i = 0; i < requestsPerSearchterm; ++i) {
-          String url = "http://en.wikipedia.org/w/api.php?format=xml&action=query&generator=search&gsrsearch=" + UrlEscapers.urlPathSegmentEscaper().escape(searchTerm) + "&gsrlimit=50&prop=extracts&exsectionformat=plain&explaintext&excontinue=" + i;
+          // Read url into a huge string, extract content from file, extract running text and store the results.
           Scanner s = null;
           try {
-            s = new Scanner(new URL(url).openStream());
-            // Read url into a huge string, extract content from file, extract running text and store the results.
+            s = new Scanner(new URL("http://en.wikipedia.org/w/api.php?format=xml&action=query&generator=search&gsrsearch=" + UrlEscapers.urlPathSegmentEscaper().escape(searchTerm) + "&gsrlimit=50&prop=extracts&exsectionformat=plain&explaintext&excontinue=" + i).openStream());
             s.useDelimiter("\\Z");
-            Matcher m1 = contentPattern.matcher(s.next());
-            if (!m1.find()) continue;
-            out.println(extractRunningText(StringEscapeUtils.unescapeHtml(m1.group(1))));
+            String response = StringEscapeUtils.unescapeHtml4(s.next());
+            Matcher m = contentPattern.matcher(response);
+            if (!m.find()) continue;
+            String content = m.group(1);
+            String runningText = extractRunningText(content);
+            out.println(runningText);
           } finally {
             if (s != null) {
               s.close();

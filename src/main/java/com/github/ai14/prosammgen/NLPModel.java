@@ -21,20 +21,8 @@ public class NLPModel {
     this.posModel = posModel;
   }
 
-  public SentenceModel getSentenceModel() {
-    return sentenceModel;
-  }
-
-  public TokenizerModel getTokenizerModel() {
-    return tokenizerModel;
-  }
-
-  public POSModel getPosModel() {
-    return posModel;
-  }
-
   public static NLPModel loadFromDBs(URL sentDb, URL tokenDb, URL posDb)
-      throws IOException {
+          throws IOException {
     final SentenceModel sent;
     final TokenizerModel tok;
     final POSModel pos;
@@ -68,5 +56,17 @@ public class NLPModel {
     }
 
     return new NLPModel(sent, tok, pos);
+  }
+
+  public SentenceModel getSentenceModel() {
+    return sentenceModel;
+  }
+
+  public TokenizerModel getTokenizerModel() {
+    return tokenizerModel;
+  }
+
+  public POSModel getPosModel() {
+    return posModel;
   }
 }

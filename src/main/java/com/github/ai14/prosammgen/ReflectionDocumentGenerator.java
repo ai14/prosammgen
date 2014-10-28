@@ -8,12 +8,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Resources;
+import opennlp.tools.sentdetect.SentenceDetectorME;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Random;
-
 
 public final class ReflectionDocumentGenerator {
 
@@ -23,43 +23,40 @@ public final class ReflectionDocumentGenerator {
   private ImmutableMap<String, TextGenerator> generators;
   private ImmutableSet<TextSource> textSources;
 
-  public ReflectionDocumentGenerator(WordNet wordNet, File outputDirectory) throws IOException, InterruptedException, ParseException {
+  public ReflectionDocumentGenerator(WordNet wordNet, String outputDirectory) throws IOException, InterruptedException, ParseException {
     this.wordNet = wordNet;
 
     // Load stop words.
-    stopWords = ImmutableSet.copyOf(
-            Resources.readLines(Resources.getResource(App.class, "stopwords"), Charsets.UTF_8));
+    stopWords = ImmutableSet.copyOf(Resources.readLines(Resources.getResource(App.class, "stopwords"), Charsets.UTF_8));
 
     // Load NLP.
-    nlp =
-            NLPModel.loadFromDBs(Resources.getResource(App.class, "en-sent.bin"),
-                    Resources.getResource(App.class, "en-token.bin"),
-                    Resources.getResource(App.class, "en-pos-maxent.bin"));
+    nlp = NLPModel.loadFromDBs(Resources.getResource(App.class, "en-sent.bin"), Resources.getResource(App.class, "en-token.bin"), Resources.getResource(App.class, "en-pos-maxent.bin"));
 
     // Prepare text sources.
+    SentenceDetectorME sentenceDetector = new SentenceDetectorME(nlp.getSentenceModel());
     textSources = ImmutableSet.of(
-            new Wikipedia(nlp, outputDirectory),
-            new ProjectGutenberg(nlp, outputDirectory)
+            new Wikipedia(sentenceDetector, outputDirectory),
+            new ProjectGutenberg(sentenceDetector, outputDirectory)
     );
 
     // Load grammar.
-    generators = TextGenerators.parseGrammar(
-            Resources.readLines(Resources.getResource(App.class, "grammar"), Charsets.UTF_8));
+    generators = TextGenerators.parseGrammar(Resources.readLines(Resources.getResource(App.class, "grammar"), Charsets.UTF_8));
   }
 
   public String generateReport(String title, String author, ImmutableList<String> questions, File readingMaterial, int wordCount, int maxWebRequests) throws IOException {
     StringBuilder report = new StringBuilder();
-    report.append("\\documentclass{article}\\begin{document}\\title{")
-            .append(title)
+    report
+            .append("\\documentclass{article}\\begin{document}\\title{")
+            .append(escapeLaTeXSpecialChars(title))
             .append("}\\author{")
-            .append(author)
+            .append(escapeLaTeXSpecialChars(author))
             .append("}\\maketitle");
 
     // Go through each question and try to answer it.
     for (String question : questions) {
 
       // Append the question to the report as a headline.
-      report.append("\\section{").append(question).append("}");
+      report.append("\\section{").append(escapeLaTeXSpecialChars(question)).append("}");
 
       // Setup a new Markov chain for the current question.
       final MarkovTrainer markovTrainer = new MarkovTrainer();

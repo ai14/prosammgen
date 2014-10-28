@@ -1,13 +1,11 @@
 package com.github.ai14.prosammgen.textgen;
 
+import com.github.ai14.prosammgen.NLPModel;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
-
-import com.github.ai14.prosammgen.NLPModel;
-
 import opennlp.tools.postag.POSTagger;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.sentdetect.SentenceDetector;
@@ -28,7 +26,7 @@ public class KeywordGenerator implements TextGenerator {
   public static KeywordGenerator withPOSParsing(NLPModel nlpModel,
                                                 final ImmutableSet<String> stopWords,
                                                 String body)
-      throws IOException {
+          throws IOException {
 
     SentenceDetector sentenceDetector = new SentenceDetectorME(nlpModel.getSentenceModel());
     String[] sentences = sentenceDetector.sentDetect(body);
@@ -46,7 +44,7 @@ public class KeywordGenerator implements TextGenerator {
 
       for (int i = 0; i < tokens.length; i++) {
         if ("NN".equals(tags[i]) || "NNS".equals(tags[i]) || "NNP".equals(tags[i]) ||
-            "NNPS".equals(tags[i])) {
+                "NNPS".equals(tags[i])) {
           if (wordBuilder == null) {
             wordBuilder = new StringBuilder();
           } else {
@@ -70,7 +68,7 @@ public class KeywordGenerator implements TextGenerator {
     ImmutableSet<String> keywords = resultBuilder.build();
 
     ImmutableSet<String> filteredKeywords =
-        ImmutableSet.copyOf(Iterables.filter(keywords, new AnyStringContains(stopWords)));
+            ImmutableSet.copyOf(Iterables.filter(keywords, new AnyStringContains(stopWords)));
 
     return new KeywordGenerator(filteredKeywords);
   }
@@ -82,6 +80,15 @@ public class KeywordGenerator implements TextGenerator {
 
   public ImmutableSet<String> getWords() {
     return words;
+  }
+
+  private enum LengthGetter implements Function<String, Integer> {
+    INSTANCE;
+
+    @Override
+    public Integer apply(String input) {
+      return input.length();
+    }
   }
 
   private static class StringContains implements Predicate<String> {
@@ -109,15 +116,6 @@ public class KeywordGenerator implements TextGenerator {
     @Override
     public boolean apply(final String input) {
       return Iterables.any(strings, new StringContains(input));
-    }
-  }
-
-  private enum LengthGetter implements Function<String, Integer> {
-    INSTANCE;
-
-    @Override
-    public Integer apply(String input) {
-      return input.length();
     }
   }
 }

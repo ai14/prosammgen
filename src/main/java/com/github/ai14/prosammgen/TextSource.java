@@ -10,14 +10,14 @@ import java.util.regex.Pattern;
 
 public abstract class TextSource {
   private static final Pattern paragraphPattern = Pattern.compile("^([A-Z]\\w* ([\\w(),:'‘’\\-%/]* ){2,}([\\w(),:'‘’-]*[.,!?]) ){2,}", Pattern.MULTILINE);
-  protected final Pattern contentPattern;
   protected final File cache;
-  protected final SentenceDetectorME sentenceDetector;
+  protected final Pattern contentPattern;
+  private final SentenceDetectorME sentenceDetector;
 
-  public TextSource(NLPModel nlp, File outputDirectory, String cachePath, Pattern contentPattern) throws IOException {
+  public TextSource(String outputDirectory, String cacheDirectory, Pattern contentPattern, SentenceDetectorME sentenceDetector) throws IOException {
     this.contentPattern = contentPattern;
-    this.sentenceDetector = new SentenceDetectorME(nlp.getSentenceModel());
-    this.cache = new File(outputDirectory, cachePath);
+    this.sentenceDetector = sentenceDetector;
+    this.cache = new File(outputDirectory, cacheDirectory);
     if (!cache.exists()) cache.mkdirs();
   }
 
@@ -26,14 +26,10 @@ public abstract class TextSource {
    */
   public abstract ImmutableSet<File> getTexts(ImmutableSet<String> searchTerms, int resultsLimit) throws IOException;
 
-
   /**
    * Clean a text into only containing grammar-correct running text.
-   *
-   * @param content
-   * @return
    */
-  public String extractRunningText(String content) {
+  protected String extractRunningText(String content) {
     StringBuilder sb = new StringBuilder();
 
     // Find running text (get rid of meta data and so on).

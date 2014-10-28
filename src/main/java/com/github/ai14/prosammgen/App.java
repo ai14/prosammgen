@@ -13,13 +13,11 @@ import java.text.ParseException;
 import java.util.Scanner;
 
 public class App {
-  public static WAnalyzerS analyzer; //TODO Make private.
-
   public static void main(String[] args) throws IOException, ParseException, InterruptedException {
 
     // Get input.
     int wordCount = 500, maxWebRequests = 10;
-    String title = null, author = null, outputDirectory = "./";
+    String title = "", author = "", outputDirectory = "./";
     File previousReflectionDocument = null, readingMaterial = null, questions = null;
     for (int i = 0; i < args.length; i++) {
       if (args[i].equals("-t")) {
@@ -42,9 +40,9 @@ public class App {
     }
 
     // Require input.
-    if (title == null || author == null || previousReflectionDocument == null || readingMaterial == null || questions == null) {
-      if (title == null) System.err.println("Missing reflection document title!");
-      if (author == null) System.err.println("Missing author name!");
+    if (title.equals("") || author.equals("") || previousReflectionDocument == null || readingMaterial == null || questions == null) {
+      if (title.equals("")) System.err.println("Missing reflection document title!");
+      if (author.equals("")) System.err.println("Missing author name!");
       if (previousReflectionDocument == null) System.err.println("Missing path to a previous reflection document!");
       if (readingMaterial == null) System.err.println("Missing path to the seminar reading material.");
       if (questions == null) System.err.println("Missing path to the seminar questions.");
@@ -68,48 +66,43 @@ public class App {
     // Parse questions.
     ImmutableList<String> questionList = ImmutableList.copyOf(Files.readLines(questions, Charsets.UTF_8));
 
-    // TODO Document properly.
-    WordNet wordNet = WordNet.load(Resources.getResource(App.class, "wordnet.dat"));
-    analyzer = new WAnalyzerS(wordNet); // TODO Dead code? Not being used anywhere. Remove if so.
-    analyzer.analyze(previousReflectionDocument); // TODO Dead code? Not being used anywhere. Remove if so.
+    // Load synonyms database.
+    WordNet synonyms = WordNet.load(Resources.getResource(App.class, "wordnet.dat"));
+
+    // Analyze previous reflection document.
+    WritingStyleAnalyzer analyzer = new WritingStyleAnalyzer(synonyms);
+    analyzer.analyze(previousReflectionDocument);
 
     // Generate a reflection document.
-    String report = new ReflectionDocumentGenerator(wordNet, new File(outputDirectory)).generateReport(title, author, questionList, readingMaterial, wordCount, maxWebRequests);
+    String report = new ReflectionDocumentGenerator(synonyms, outputDirectory).generateReport(title, author, questionList, readingMaterial, wordCount, maxWebRequests);
 
-    //TODO Document properly.
-    Humanizer human = new Humanizer(wordNet, previousReflectionDocument);
-    report = human.textHumanizer(report);
+    // Transform writing style of the new reflection document to match the previous reflection document.
+    Humanizer humanizer = new Humanizer(synonyms, previousReflectionDocument);
+    report = humanizer.textHumanizer(report);
 
     // Replace characters in accordance with the prosamm instructions. å -> a, é -> e, etc.
-    String filename = Normalizer.normalize(author, Normalizer.Form.NFD).replaceAll(" ", "_").replaceAll("[^A-Za-z_]", "");
+    String filename = Normalizer.normalize(author, Normalizer.Form.NFD).replaceAll(" ", "_").replaceAll("[^A-Za-z_]", "") + ".tex";
 
     // Write LaTeX output to file.
-    PrintWriter out = null;
-    try {
-      out = new PrintWriter(outputDirectory + filename + ".tex");
-      out.write(report);
-    } finally {
-      if (out != null) {
-        out.close();
-      }
-    }
+    File f = new File(outputDirectory, filename);
+    PrintWriter pw = new PrintWriter(f);
+    pw.println(report);
+    pw.close();
+    System.out.println("Generated reflection document: " + f.getAbsolutePath());
 
-    // Generate PDF from LaTeX file.
-    try {
-      Process p = new ProcessBuilder()
-              .redirectErrorStream(true)
-              .command("xetex", "-halt-on-error", "-output-directory=" + outputDirectory, "&xelatex", filename + ".tex")
-              .start();
+    // Try to generate a PDF from the LaTeX file with xetex.
+    Process p = new ProcessBuilder()
+            .redirectErrorStream(true)
+            .command("xetex", "-interaction=nonstopmode", "-output-directory=" + outputDirectory, "&xelatex", filename)
+            .start();
+    int statusCode = p.waitFor();
+    if (statusCode == 0) {
+      System.out.println("Successfully compiled PDF.");
+    } else {
       Scanner s = new Scanner(p.getInputStream());
       while (s.hasNextLine()) System.out.println(s.nextLine());
       s.close();
-      if (p.waitFor() == 0) {
-        System.out.println("Successfully generated a reflection document as PDF.");
-      }
-    } catch (IOException e) {
-      // Since xetex didn't work, just print the latex on stdout instead.
-      System.out.println(report);
-      System.exit(-1);
     }
+    System.exit(statusCode);
   }
 }

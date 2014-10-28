@@ -1,14 +1,12 @@
 package com.github.ai14.prosammgen.textgen;
 
-import com.github.ai14.prosammgen.App;
+import com.github.ai14.prosammgen.MarkovTrainer;
+import com.github.ai14.prosammgen.Ngram;
+import com.github.ai14.prosammgen.WordProbability;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-
-import com.github.ai14.prosammgen.MarkovTrainer;
-import com.github.ai14.prosammgen.Ngram;
-import com.github.ai14.prosammgen.WordProbability;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,12 +21,6 @@ public class MarkovTextGenerator implements TextGenerator {
   public MarkovTextGenerator(MarkovTrainer trainer, int numSentences) {
     this.trainer = trainer;
     this.numSentences = numSentences;
-  }
-
-  public void generateText(Context context) {
-    List<String> previousWords = Splitter.on(CharMatcher.WHITESPACE).splitToList(context.getBuilder().toString());
-
-    context.getBuilder().append(getText(context.getRandom(), numSentences, previousWords, trainer));
   }
 
   // TODO: remove averageSentenceLength from this method?
@@ -48,9 +40,9 @@ public class MarkovTextGenerator implements TextGenerator {
   }
 
   private static Ngram getStartNgram(Random rand,
-                              List<String> previousWords,
-                              Map<String, ArrayList<WordProbability>> markovChain,
-                              MarkovTrainer trainer) {
+                                     List<String> previousWords,
+                                     Map<String, ArrayList<WordProbability>> markovChain,
+                                     MarkovTrainer trainer) {
 
     // First try to get an ngram from the n last words in the previous sentence
     Ngram ngram = new Ngram(MarkovTrainer.markovOrder);
@@ -126,10 +118,10 @@ public class MarkovTextGenerator implements TextGenerator {
   }
 
   private static void chooseNextWord(
-      Random rand,
-      Map<String, ArrayList<WordProbability>> markovChain,
-      List<Ngram> startNgrams,
-      Ngram ngram, boolean tryToEndSentence) {
+          Random rand,
+          Map<String, ArrayList<WordProbability>> markovChain,
+          List<Ngram> startNgrams,
+          Ngram ngram, boolean tryToEndSentence) {
 
     ArrayList<WordProbability> wordProbabilities = markovChain.get(ngram.toString());
     String nextWord;
@@ -161,7 +153,7 @@ public class MarkovTextGenerator implements TextGenerator {
       }
 
       nextWord =
-          !endWords.isEmpty() ? chooseWord(rand, endWords) : chooseWord(rand, wordProbabilities);
+              !endWords.isEmpty() ? chooseWord(rand, endWords) : chooseWord(rand, wordProbabilities);
 
     } else {
       // choose from all possible next words
@@ -184,5 +176,11 @@ public class MarkovTextGenerator implements TextGenerator {
     }
 
     return wordProbabilities.get(wordProbabilities.size() - 1).word;
+  }
+
+  public void generateText(Context context) {
+    List<String> previousWords = Splitter.on(CharMatcher.WHITESPACE).splitToList(context.getBuilder().toString());
+
+    context.getBuilder().append(getText(context.getRandom(), numSentences, previousWords, trainer));
   }
 }

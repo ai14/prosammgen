@@ -1,6 +1,6 @@
 package com.github.ai14.prosammgen.textgen;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 public class Constant implements TextGenerator {
 

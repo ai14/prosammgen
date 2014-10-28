@@ -2,12 +2,7 @@ package com.github.ai14.prosammgen.textgen;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.*;
 
 import java.text.ParseException;
 import java.util.Collection;
@@ -19,7 +14,7 @@ import java.util.regex.Pattern;
 public final class TextGenerators {
 
   public static final Pattern MACRO_PATTERN =
-      Pattern.compile("([A-Z]+)\\(([^)]*)\\).*");
+          Pattern.compile("([A-Z]+)\\(([^)]*)\\).*");
   public static final CharMatcher ESCAPE_CHARS = CharMatcher.anyOf("%#");
   public static final CharMatcher PRODUCTION_CHARS = CharMatcher.JAVA_LETTER;
 
@@ -28,7 +23,7 @@ public final class TextGenerators {
   }
 
   public static TextGenerator parse(String definition)
-      throws ParseException {
+          throws ParseException {
     ImmutableList.Builder<TextGenerator> resultBuilder = ImmutableList.builder();
 
     int i = 0;
@@ -43,7 +38,7 @@ public final class TextGenerators {
 
           String macroName = matcher.group(1);
           ImmutableList<String> macroArgs = ImmutableList.copyOf(
-              Splitter.on(',').omitEmptyStrings().trimResults().split(matcher.group(2)));
+                  Splitter.on(',').omitEmptyStrings().trimResults().split(matcher.group(2)));
 
           resultBuilder.add(new Macro(macroName, macroArgs));
           i = definition.indexOf(')', i) + 1;
@@ -77,7 +72,7 @@ public final class TextGenerators {
   }
 
   public static ImmutableMap<String, TextGenerator> parseGrammar(List<String> lines)
-      throws ParseException {
+          throws ParseException {
     Multimap<String, TextGenerator> productions = HashMultimap.create();
     for (String line : lines) {
       if (line.matches("\\s*(//.*)?")) {
@@ -100,7 +95,7 @@ public final class TextGenerators {
         generatorsBuilder.put(entry.getKey(), Iterables.getOnlyElement(entry.getValue()));
       } else {
         generatorsBuilder
-            .put(entry.getKey(), new Disjunction(ImmutableSet.copyOf(entry.getValue())));
+                .put(entry.getKey(), new Disjunction(ImmutableSet.copyOf(entry.getValue())));
       }
     }
     return generatorsBuilder.build();

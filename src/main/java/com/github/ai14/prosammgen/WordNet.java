@@ -11,7 +11,6 @@ import com.google.common.io.Resources;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;

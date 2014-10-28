@@ -2,6 +2,7 @@ package com.github.ai14.prosammgen;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import opennlp.tools.sentdetect.SentenceDetectorME;
 
 import java.io.*;
 import java.util.List;
@@ -11,12 +12,15 @@ import java.util.regex.Pattern;
 
 //TODO wget relevant books directly instead of relying on a mirrored resource.
 public class ProjectGutenberg extends TextSource {
-  public ProjectGutenberg(NLPModel nlp, File cache) throws IOException, InterruptedException {
+  private Pattern contentPattern;
+  private SentenceDetectorME sentenceDetector;
+
+  public ProjectGutenberg(SentenceDetectorME sentenceDetector, String outputDirectory) throws IOException {
     super(
-            nlp,
-            cache,
+            outputDirectory,
             "gutenberg",
-            Pattern.compile("(\\*\\*\\* START OF THIS PROJECT GUTENBERG EBOOK [\\w\\s]+ \\*\\*\\*)(.*?)(\\*\\*\\* END OF THIS PROJECT GUTENBERG EBOOK [\\w\\s]+ \\*\\*\\*)", Pattern.DOTALL)
+            Pattern.compile("(\\*\\*\\* START OF THIS PROJECT GUTENBERG EBOOK [\\w\\s]+ \\*\\*\\*)(.*?)(\\*\\*\\* END OF THIS PROJECT GUTENBERG EBOOK [\\w\\s]+ \\*\\*\\*)", Pattern.DOTALL),
+            sentenceDetector
     );
   }
 
@@ -27,9 +31,7 @@ public class ProjectGutenberg extends TextSource {
 
     for (File book : getBooks()) {
       File p = new File(cache, book.getName());
-
-      // Skip parsing book if it's been done before.
-      if (p.exists()) continue;
+      if (p.exists()) continue; // Skip parsing book if it's been done before.
       PrintWriter out = null;
       try {
         out = new PrintWriter(new BufferedWriter(new FileWriter(p.toString())));

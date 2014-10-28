@@ -1,10 +1,9 @@
 package com.github.ai14.prosammgen.textgen;
 
+import com.github.ai14.prosammgen.WordNet;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-
-import com.github.ai14.prosammgen.WordNet;
 
 public class SynonymGenerator implements TextGenerator {
 
