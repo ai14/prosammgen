@@ -239,7 +239,7 @@ public class WritingStyleAnalyzer {
    * @param wordsToCheck
    * @return
    */
-  public double[] getInformalWordUseProbabilities(List<String> wordsToCheck) {
+  public double[] getWordUseProbabilities(List<String> wordsToCheck) {
     double[] probabilies = new double[wordsToCheck.size()];
     for (int i = 0; i < wordsToCheck.size(); ++i) {
       Pattern pattern = Pattern.compile(wordsToCheck.get(i) + " ");
