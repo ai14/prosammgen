@@ -65,41 +65,6 @@ public class Humanizer {
         }
         if (j >= numberOfWords) break;
         String newWord = wordsParagraph[j];
-        boolean wSA = false;
-        if (wSA) {//TODO: change in other to use de Writing Style Analyzer. So far it gets wrong synonyms
-          ImmutableList<String> wordToCheck;
-          wordToCheck = ImmutableList.of(newWord);
-          ImmutableSet<String> synonyms = informalLanguageWordNet.getSynonyms(wordToCheck);
-          if (synonyms.size() > 1) {
-
-            double[] wordProb = this.analyze.getInformalWordUseProbabilities(synonyms.asList());
-            newWord = chooseWord(synonyms.asList(), wordProb);
-            if (newWord.equals(wordsParagraph[j])) slanged = false;
-            else {
-              slanged = true;
-              System.out.println("SLANGED: " + wordsParagraph[j] + "    " + newWord);//TODO: remove print
-            }
-          }
-          boolean needStyle = false;
-          if (newWord.length() >= this.usualWordLength.length) needStyle = true;
-          else if (this.usualWordLength[newWord.length()] < 0.005) needStyle = true;
-          //
-          if (needStyle && !slanged) {
-            synonyms = wordNet.getSynonyms(wordToCheck);
-            if (synonyms.size() > 1) {
-              int max = -1;
-              for (String synonym : synonyms) {
-                if (synonym.equals(newWord)) {
-                  continue;
-                } else if (synonym.length() < this.usualWordLength.length && this.usualWordLength[synonym.length()] > max) {
-                  max = synonym.length();
-                  newWord = synonym;
-                }
-              }
-              System.out.println("WORD PROB: " + wordsParagraph[j] + "    " + newWord);//TODO: remove print
-            }
-          }
-        }
         int misspellingRate = (int) (misspellingProbability * numberOfWords); //calculate how often we want to misspell a word
         List<String> possibleMisspellingWords;
         if ((((j % misspellingRate)) == 0)) { //Check if it should misspell a word according to the calculated probability
