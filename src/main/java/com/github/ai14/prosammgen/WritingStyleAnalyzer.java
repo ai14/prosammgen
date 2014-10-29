@@ -234,7 +234,7 @@ public class WritingStyleAnalyzer {
   }
 
   /**
-   * Given a list of words gets its the frequency on the text
+   * Given a list of words gets their the frequency on the text
    *
    * @param wordsToCheck
    * @return
